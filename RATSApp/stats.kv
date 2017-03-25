@@ -1,0 +1,205 @@
+#:kivy 1.0
+#:import kivy kivy
+
+RandyScreenManager:
+# <> makes it a rule
+# this returns it as the root widget when we load with builder
+    orientation: 'vertical'
+    MenuScreen:
+
+
+<Separator@Widget>:
+    size_hint_y: None
+    height: dp(6)
+    color: 1, 1, 1, 1
+    background_image: ''
+
+    canvas:
+        Color:
+            rgba: root.color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: root.background_image
+
+
+<MenuScreen>
+    name:'menu'
+    BoxLayout:
+        orientation:'vertical'
+        padding:[40,40,40,40]
+        spacing:20
+        Label:
+            text:'Construct Your Life'
+            font_size:40
+
+        Button:
+            text:'Take Stats'
+            font_size:20
+            on_release:root.goto_confirm_input()
+
+        Button:
+            text:'Read Old Stats'
+            font_size:20
+            on_release:root.goto_read_stats()
+
+        Button:
+            text:'Switch Config'
+            font_size:20
+            on_release:root.goto_switch_config()
+
+        Button:
+            text:'Exit'
+            font_size:20
+            on_release:app.get_running_app().stop()
+
+<ConfirmInputScreen>
+    name: 'confirm_input'
+    BoxLayout:
+        orientation:'vertical'
+        padding:[40,40,40,40]
+        spacing:20
+        id:MainLayout
+
+        Label:
+            text:'This is the current config:'
+            font_size: 30
+        Label:
+            id:content_disp
+            size_hint_y: None
+            text_size: self.width, None
+        BoxLayout:
+            orientation:'horizontal'
+            padding:[40,40,40,40]
+            spacing:20
+
+            Button:
+                text:'confirm input'
+                font_size: 30
+                on_release:root.conf_input()
+            Button:
+                text:'Back'
+                font_size: 30
+                on_release:root.go_back()
+
+<ChooseStatsScreen>
+    name:'choosestats'
+    BoxLayout:
+        orientation:'vertical'
+        padding:[40,40,40,40]
+        spacing:20
+        id:BigBox
+
+        #Label:
+
+<ReadScreen>
+    name:'read_stats'
+    BoxLayout:
+        padding:[40,40,40,40]
+        spacing:5
+        id:BigBox
+        orientation:'vertical'
+
+
+<ConfigScreen>
+    name:'config_menu'
+    BoxLayout:
+        padding:[40,40,40,40]
+        spacing:20
+        id:BigBox
+        orientation:'vertical'
+        Label:
+            id:content_disp
+            size_hint_y: None
+            text_size: self.width, None
+
+
+<SwitchScreen>
+    name:'switch_config'
+    BoxLayout:
+        padding:[40,40,40,40]
+        spacing:20
+        id:BigBox
+        orientation:'vertical'
+
+
+<SelectOffenceScreen>
+    name:'select_offence'
+    BoxLayout:
+        orientation:'vertical'
+        padding:[40,40,40,40]
+        spacing:20
+        id:SOBox
+        Label:
+            text:'Which team is on offence:'
+            font_size: 30
+
+<PullingScreen>
+    name:'pulling'
+    BoxLayout:
+        id:BiggerBox
+        orientation:'vertical'
+        spacing:0
+        Label:
+            text:'What was the pull:'
+            font_size:20
+            size_hint:[1,1]
+        #this isn't centred like i'd imagine
+        #whatever
+        Label:
+            text:'Available players left, Available actions right'
+            font_size:15
+            size_hint:[0.5,0.5]
+
+        BoxLayout:
+            size_hint:[1,10]
+            id:BigBox
+            orientation:'horizontal'
+            BoxLayout:
+                id:LeftBox
+                orientation:'vertical'
+                padding:[40,40,40,40]
+            BoxLayout:
+                id:RightBox
+                orientation:'vertical'
+                padding:[40,40,40,40]
+
+<SelectActionScreen>
+    name:'select_action'
+    BoxLayout:
+        id:BiggerBox
+        orientation:'vertical'
+        spacing:0
+        Label:
+            text:'Select Player, then Action'
+            font_size:20
+            size_hint:[1,1]
+        #this isn't centred like i'd imagine
+        #whatever
+        Label:
+            text:'Event will be stored when you select action'
+            font_size:15
+            size_hint:[0.5,0.5]
+
+        BoxLayout:
+            size_hint:[1,10]
+            id:BigBox
+            orientation:'horizontal'
+            BoxLayout:
+                id:LeftBox
+                orientation:'vertical'
+                padding:[40,40,40,40]
+            BoxLayout:
+                id:RightBox
+                orientation:'vertical'
+                padding:[40,40,40,40]
+
+                # adding SpecialBox here puts it at the top bc this bit is done before action shit
+
+                BoxLayout:
+                    id:SpecialBox
+                    orientation:'horizontal'
+                    #padding:[40,40,40,40]
+                    # having padding set here fucks the whole thing up WHY
+                    # oh well no padding for us - just inherits from before
+                #Separator:

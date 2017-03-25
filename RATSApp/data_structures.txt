@@ -1,0 +1,3 @@
+# filenames
+
+team lists are text files stored in the format {tournament_abbreviation}-{team_name}.txt with all the whitespace removed

@@ -1,0 +1,67 @@
+# UI bugs:
+- confirm w/o selection in read old stats crashes < needs a back button
+
+## statistic fails:
+
+- totals of team touches blocks etc on that screen
+
+some text oddities
+
+# for some reason there was a nonetype object saved in the list of points
+# have check to protect against this but that's a bandaid
+
+
+## plans
+resuming saved game -> confirm input screen should have button -> popup -> select game to load- > continue
+
+###if you read old stats on a game and then continue to take new stats - it continues on from the previous game
+###
+###
+###
+
+
+DISPLAY STATS AT POINT END
+- smo goals: basic stats for broadcast
+
+
+- same line / set lines
+
+FIX GRAPHICS
+- whole UI needs a restrcture - can lean more on the kv file?
+- can definitely have superclasses of screens to bring consistency
+- can build out screens to be sublcasses of a screeen with whatever shit i want to go scross all of them
+
+Andy
+- differentiate between blocks and interceptions
+
+Super long term
+- have one device viewing stats and one taking stats simultaneously
+
+AFDA Scraping - csv team lists
+
+
+# BUSINESS
+- look at restructuring output into a relational database. Not sure about SQL, want open source.
+
+TODO LIST:
+
+STUFF TO BUILD:
+- the magic number
+- Expected Goals per Point (offence and defence)
+- Some kind of catchall player valuation metric
+- combination regressions
+
+- email Mike Palmer about livestream integration
+- take stats on Chilly game (fix player selection screen; Rob; make drops work)
+- make rewind function (not necessary until the next live taking)
+
+SOCIAL MEDIA
+- long term: build own website with good integration to our stuff
+- set up Google Account
+- need to decide on a name: The People's Statisticians, East Coast Bias, The Resident Statisticians;
+    The Rodent Statisticians
+- analysis posted in Google Sheets, any commentary in Google Docs
+- short term - set up Twitter/FB. Looking to get amongst Women's College Ulti, be explicit about our feminist utopia
+
+REDO WORKFLOW
+- Git instead of Mercurial.
