@@ -9,6 +9,7 @@
 # I need to tweak the data storage for some actions/events/calls at runtime
 
 # TODO: I feel like we could have a separate abstract class for timestamps (start, finish, duration, pause).
+# TODO: between point time outs???
 
 
 class Tournament(object):
@@ -30,6 +31,7 @@ class Tournament(object):
     def __init__(self, **kwargs):
 
         self.tournament = kwargs.get("tournament")
+        self.year = kwargs.get("year")  # TODO: turn this into a regex
         # self.location = kwargs.get("location")
         # self.surface = kwargs.get("surface")
         self.point_cap = kwargs.get("point_cap")
@@ -45,6 +47,8 @@ class Tournament(object):
 
 # TODO: define an abstract field class for heat maps; [x, y, z] with [0, 0, 0] as back left cone of defending end zone.
 
+# TODO: define TimeStamp class or look at ways to do it better
+
 
 class Game(Tournament):
     """"""
@@ -53,11 +57,11 @@ class Game(Tournament):
 
         super(Game, self).__init__(**kwargs)
 
-        self.score = [0, 0]
+        self.score = [[0, 0]]  # double nesting, want to just append the score here after each point
         self.points = []
         self.teams = kwargs.get("teams")  # two item list of pointers to team objects, 0 = offence, 1 = defence
-        self.stage = "TestStage"  # TODO: fix this
-        self.game = "{}-{}:{}-{}".format(self.tournament, self.stage, self.teams[0].name, self.teams[1].name)
+        self.stage = "stage"
+        self.game = "{}-{}:{}-{}".format(self.tournament, self.stage, self.teams[0].team, self.teams[1].team)
         self.game_start = None
         self.game_finish = None
         self.game_pause = None
@@ -78,15 +82,23 @@ class Point(Game):
     # TODO: want to consider upwind/downwind at some point here too
 
     def __init__(self, **kwargs):
+        """Double nesting is to handle injuries."""
 
         super(Point, self).__init__(**kwargs)
 
-        self.lines = kwargs.get("lines")  # two item list of 7 players, 0 = offence, 1 = defence
-        self.pull = kwargs.get("pull")
-        self.sequence = []
-        self.turnovers = [0, 0]  # two-item list [starting offence, starting defence]
-        # self.point_index = None  # TODO: set this as len(game.points); want to look at "clutch" plays
-        # self.point_difference = None # TODO: as above
+        self.teams = kwargs.get("teams")  # two item list of pointers to team objects, 0 = offence, 1 = defence
+        self.lines = [kwargs.get("lines")]  # two item list of pointers to 7 players, 0 = offence, 1 = defence
+        self.score = [kwargs.get("score"), None]  # TODO: inherit from Game.score, increment upon completion
+        self.number = self.score[0][0] + self.score[0][1] + 1  # theres a better way
+        self.starting_difference = self.score[0][0] - self.score[0][1]  # might want max() - min(), not sure
+        # current setup means that the difference is how the offence was positioned when it started the point:
+        # positive numbers mean they were winning, 0 means tied, negative means losing
+
+        self.pull = None
+        self.sequence = [[]]  # double nesting is to allow for injuries
+        self.turnovers = [[0, 0]]  # two-item list [starting offence, starting defence]
+        self.possessions = [[0, 0]]  # two-item list [starting offence, starting defence]
+        self.outcome = None  # from point_outcomes
 
 
 class Pull(Point):
@@ -124,87 +136,77 @@ class Pull(Point):
         # self.type = kwargs.get("type")
 
 
-# ANDY: attempting to define superclasses
 class Event(Point):
     """"""
 
-    events = {
-        u"offence":[
+    # class attributes
+    possessions = [
+        u"offensive",
+        u"defensive",
+    ]
+    types = [
+        u"throw",
+        u"reception",
+    ]
+    outcomes = [
+        u"completion",
+        u"turnover",
+    ]
+
+    sorted_actions = [
+        # offensive
+        [
+            # throws
             [
+                # completions
                 u"pass",
+                u"assist",
+            ],
+            [
+                # turnovers
                 u"double-touch",
                 u"down",
                 u"hand-over",
-                u"out-of-bound",
+                u"out-of-bounds",
             ],
+            # receptions
             [
+                # completions
                 u"catch",
-                u"drop",
                 u"goal",
             ],
+            [
+                # turnovers
+                u"drop"
+            ],
         ],
-        u"defence":[
-            [],
-            [],
-        ]
-    }
-
-    # class attributes
-    # TODO: not sure about the format here, could use the one in comments but I think we want the full list
-    # completions = [
-    #     u"pass",
-    #     u"catch",
-    # ]
-    # scoring = [
-    #     u"assist",
-    #     u"goal",
-    # ]
-    # thrower_turnovers = [
-    #     u"double-touch",
-    #     u"down",
-    #     u"hand-over",
-    #     u"out-of-bounds",
-    # ]
-    # marker_turnovers = [
-    #     u"foot-block",
-    #     u"hand-block",
-    #     u"stall-out",
-    # ]
-    # receiver_turnovers = [
-    #     u"drop",
-    # ]
-    # defender_turnovers = [
-    #     u"block",
-    #     u"intercept",
-    # ]
-    actions = [
-        # completions
-        u"pass",
-        u"catch",
-
-        # scoring
-        u"assist",
-        u"goal",
-
-        # thrower turnovers
-        u"double-touch",
-        u"down",
-        u"hand-over",
-        u"out-of-bounds",
-
-        # marker turnovers
-        u"foot-block"
-        u"hand-block",
-        u"stall-out",
-
-        # receiver turnovers
-        u"drop",
-
-        # defender turnovers
-        u"block",
-        u"intercept",
-        u"Callahan"
-
+        # defensive
+        [
+            # throws
+            [
+                # completions
+                u"marked-pass",
+                u"tipped-pass",
+            ],
+            [
+                # turnovers
+                u"foot-block",
+                u"hand-block",
+                u"stall-out",
+            ],
+            # receptions
+            [
+                # completions
+                u"marked-catch",
+                u""
+            ],
+            [
+                # turnovers
+                u"Callahan",
+                u"block",
+                u"intercept",
+            ],
+        ],
     ]
 
     def __init__(self, **kwargs):
@@ -213,7 +215,10 @@ class Event(Point):
 
         self.player = kwargs.get("player")  # pointer to player object
         self.action = None
-        self.outcome = None  # will get set by analysis functions
+        # not sure about below names but type is restricted
+        self.action_possession = None
+        self.action_type = None
+        self.action_outcome = None
         # self.location = None
         self.time = None
 
@@ -224,6 +229,7 @@ class Call(Point):
     # class attributes
     calls = [
         u"offside",
+        u"time-out",
         u"pick",
         u"foul",
         u"strip",
