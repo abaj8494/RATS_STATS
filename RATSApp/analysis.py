@@ -11,12 +11,12 @@ import csv
 import pickle
 
 # third party
-import numpy
-import scipy.stats as ss
+#import numpy
+#import scipy.stats as ss
 
 # local project
 import structures
-import game_structure
+#import game_structure
 
 
 def basic_info(game):
