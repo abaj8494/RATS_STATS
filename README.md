@@ -1,7 +1,6 @@
 # RATS_STATS
-# A Fresh Grind - Turn Up the Heat
-# 
-# RS @ 27/3/17
+A Fresh Grind - Turn Up the Heat
+27/3/17
 
 # What this is:
 A functional ultimate stat-taking program, that can pipe out data as csv files.
