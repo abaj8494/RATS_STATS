@@ -1,2 +1,2 @@
-# TODO: combine uc_team_scrape.py and wfdf_team_scape here
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-

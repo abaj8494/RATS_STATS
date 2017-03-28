@@ -111,7 +111,7 @@ def turnovers(game, player):
 def split_possessions(game):
 
     # only need this for the first point
-    starting_offence = game.starting_offence  # take this out you don't need it you're better than this
+    possessions = []
 
     # take the sequence and reverse it
     for point in game.points_list:
@@ -128,7 +128,7 @@ def split_possessions(game):
         # TODO: leaving this for now, need to build team/group classes
             # NOTE TO SELF: you're trying to extend classes but you don't know why
 
-    for event in sequence:
+    for event in game.points_list:
         pass
 
         # if event is goal:
@@ -191,6 +191,26 @@ def open_raw_game(raw_game):
     return pickle.load(open(raw_game, "rb"))
 
     # open the game file
+
+
+def analyse_pulls(game):
+    """Work out brick and conversion rates on pulls in a game."""
+
+    good_pulls = 0.0
+    bricks = 0.0
+
+    for point in game.points_list:
+        if point.pull.location == u"in":
+            good_pulls += 1
+        elif point.pull.location == u"brick":
+            bricks += 1
+        else:
+            print("{}: unexpected pull location.".format(point.pull.location))
+            raise ValueError
+
+    pull_conversion = good_pulls / good_pulls + bricks
+
+    print("\ngame pulls:\n{} good pulls, {} bricks\n{0:.2f}% of pulls were in.")
 
 
 def main():
