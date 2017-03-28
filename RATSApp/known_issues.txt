@@ -64,4 +64,4 @@ SOCIAL MEDIA
 - short term - set up Twitter/FB. Looking to get amongst Women's College Ulti, be explicit about our feminist utopia
 
 REDO WORKFLOW
-- Git instead of Mercurial.
+- have git - need to work on csv storage + sql database

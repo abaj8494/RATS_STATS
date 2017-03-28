@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#builtin
 from __future__ import absolute_import
 import pickle
 from functools import partial
 from copy import copy
+import csv
+from io import open
+import os, time
 
+#kivy
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -17,13 +22,23 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.widget import Widget
 
+#google drive
+import httplib2
+from apiclient import discovery
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
+
+#stats
 import structures as struct
 import analysis as anal
 from structures import Game, Point
-from io import open
-import os, time
-import csv
 
+try:
+    import argparse
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+except ImportError:
+    flags = None
 
 class PlayerButton(Button):
     def __init__(self, **kwargs):
@@ -90,13 +105,13 @@ class ReadScreen(Screen):
 
             # TODO: turn this on later
             # anal.write_csv_files(sApp.game)
-
+            # anal.gdrive_text(sApp.get_credentials())
         else:  # shouldn't happen
             self.ids.BigBox.add_widget(Label(text=u'Could not find a Game object'))
 
     def on_enter(self):
         self.ids.BigBox.add_widget(Button(text='Back',
-                                          size_hint=[0,0.1],
+                                          size_hint=[0.1,0.1],
                                           on_release=self.go_back))
 
     def go_back(self, *args):
@@ -163,15 +178,6 @@ class ConfigScreen(Screen):
         super(ConfigScreen, self).__init__(**kwargs)
 
         sApp = App.get_running_app()
-
-        ### DEBUG
-        debug = False
-        if debug:
-            sApp.teamfilenames = [os.path.join(sApp.user_data_dir,'teamlists','Brunch.txt'),
-                                  os.path.join(sApp.user_data_dir,'teamlists','FakeTeam.txt')]
-
-
-        sApp.game = sApp.import_config(sApp.teamfilenames)
         sApp.game = sApp.import_config(sApp.teamfilenames)
         if sApp.game:
             content = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.points_cap) + str(
@@ -254,6 +260,35 @@ class SwitchScreen(Screen):
         return True
 
 
+class SelectOffenceScreen(Screen):
+    # TODO: want this to get saved as a property of game
+
+    def __init__(self, **kwargs):
+        super(SelectOffenceScreen, self).__init__(**kwargs)
+
+        sApp = App.get_running_app()
+        for team in sApp.game.team_names:
+            teambutton = Button(text=team)
+            storecallback = partial(self.store_offence, sApp.game.team_names.index(team))
+            teambutton.bind(on_release=storecallback)
+            self.ids.SOBox.add_widget(teambutton)
+
+    def on_enter(self, *args):
+        sApp = App.get_running_app()
+
+        sApp.current_point = Point([sApp.temp_oline, sApp.temp_dline], sApp.temp_offence)
+
+        sApp.temp_offence = None
+        sApp.temp_dline = []
+        sApp.temp_oline = []
+
+    def store_offence(self, offence, *args):
+        sApp = App.get_running_app()
+        sApp.current_point.offence = offence
+        sApp.game.starting_offence = offence  # Andy, hoping this will save me time in anlysis.
+        sApp.root.switch_to(SelectPlayersScreen())
+        return True
+
 class SelectPlayersScreen(Screen):
     def __init__(self, **kwargs):
         super(SelectPlayersScreen, self).__init__(**kwargs)
@@ -261,6 +296,7 @@ class SelectPlayersScreen(Screen):
         self.temp_oline = []
         self.temp_dline = []
         sApp = App.get_running_app()
+
         for player in sApp.game.teams[sApp.current_point.offence]:
             pb = ToggleButton(text=player)
             pb.bind(on_release=partial(self.swap_state, pb, sApp.current_point.offence))
@@ -271,19 +307,6 @@ class SelectPlayersScreen(Screen):
             pb.bind(on_release=partial(self.swap_state, pb, 1 - sApp.current_point.offence))
             self.ids.RightBox.add_widget(pb)
 
-
-    def on_enter(self, *args):
-        sApp = App.get_running_app()
-
-        sApp.current_point = Point([sApp.temp_oline, sApp.temp_dline], sApp.temp_offence)
-        # do these get sued at all? confused b/n sApp temps and Screen temps
-        sApp.temp_offence = None
-        sApp.temp_dline = []
-        sApp.temp_oline = []
-
-        #pb.bind(on_release=partial(self.swap_state,pb,sApp.current_point.offence))
-        #pb.bind(on_release=partial(self.swap_state,pb,1-sApp.current_point.offence))
-
     def swap_state(self,pb,offence,*args):
         #this is the NEW state - normal button pressed will trigger the if 'down' branch of this
         # offence here is just for checking which team the call is coming from and hence which list to edit
@@ -292,7 +315,6 @@ class SelectPlayersScreen(Screen):
                 self.temp_dline.remove(pb.text)
             else:
                 self.temp_oline.remove(pb.text)
-
         elif pb.state == 'down':
             if offence:
                 self.temp_dline.append(pb.text)
@@ -301,7 +323,7 @@ class SelectPlayersScreen(Screen):
         else:
             print('something is broken in the state switching of player selection')
         self.ids.subtitle.text = 'Offence: '+str(len(self.temp_oline))+' | Defence: '+str(len(self.temp_dline))
-
+        return True
 
 
     def store_players(self):
@@ -507,12 +529,14 @@ class SelectActionScreen(Screen):
         sApp.game.points_list.append(sApp.current_point)
         sApp.current_point = None
 
-        sApp.root.switch_to(SelectPlayersScreen())
+        sApp.root.switch_to(SelectOffenceScreen())
         return True
 
     def end_game(self, *args):
-        self.end_point()
+        if self.popup:
+            self.popup.dismiss()
         sApp = App.get_running_app()
+        sApp.game.points_list.append(sApp.current_point)
         sApp.game.time_game_end = time.time()
         #this path
         savename = sApp.game.tournament.strip() + '_' + sApp.game.team_names[0].strip() + "v" + sApp.game.team_names[1].strip() + ".p"
@@ -566,6 +590,43 @@ class StatsApp(App):
     def on_pause(self):
         self.save_game()
         return True
+
+    def get_credentials(self):
+        sApp = App.get_running_app()
+
+        # If modifying these scopes, delete your previously saved credentials
+        # at ~/.credentials/drive-python-quickstart.json
+        SCOPES = 'https://www.googleapis.com/auth/drive'
+        CLIENT_SECRET_FILE = 'client_secret.json'
+        APPLICATION_NAME = 'Drive API Python Quickstart'
+
+        """Gets valid user credentials from storage.
+
+        If nothing has been stored, or if the stored credentials are invalid,
+        the OAuth2 flow is completed to obtain the new credentials.
+
+        Returns:
+            Credentials, the obtained credential.
+        """
+        home_dir = os.path.expanduser('~')
+        credential_dir = os.path.join(sApp.user_data_dir, '.credentials')
+        if not os.path.exists(credential_dir):
+            os.makedirs(credential_dir)
+        credential_path = os.path.join(credential_dir,
+                                       'drive-python-quickstart.json')
+        print(credential_path)
+
+        store = Storage(credential_path)
+        credentials = store.get()
+        if not credentials or credentials.invalid:
+            flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+            flow.user_agent = APPLICATION_NAME
+            if flags:
+                credentials = tools.run_flow(flow, store, flags)
+            else:  # Needed only for compatibility with Python 2.6
+                credentials = tools.run(flow, store)
+            print('Storing credentials to ' + credential_path)
+        return credentials
 
     def on_resume(self):
         # this won't work because it's saving properly now

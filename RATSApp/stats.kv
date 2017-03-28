@@ -134,6 +134,39 @@ RandyScreenManager:
             text:'Which team is on offence:'
             font_size: 30
 
+<SelectPlayersScreen>
+    name:'select_players'
+    BoxLayout:
+        id:BiggerBox
+        orientation:'vertical'
+        spacing:0
+        Label:
+            text:'Who is on the line:'
+            font_size:20
+            size_hint:[1,1]
+        #this isn't centred like i'd imagine
+        #whatever
+        Label:
+            id:subtitle
+            # this should display the number of selected players
+            font_size:15
+            size_hint:[0.5,0.5]
+        Button:
+            text:'confirm lines'
+            on_release:root.store_players()
+        BoxLayout:
+            size_hint:[1,10]
+            id:BigBox
+            orientation:'horizontal'
+            BoxLayout:
+                id:LeftBox
+                orientation:'vertical'
+                padding:[40,40,40,40]
+            BoxLayout:
+                id:RightBox
+                orientation:'vertical'
+                padding:[40,40,40,40]
+
 <PullingScreen>
     name:'pulling'
     BoxLayout:
