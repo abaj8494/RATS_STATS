@@ -15,7 +15,7 @@ class Root(object):
     """Wrapper class for debugging."""
 
     def __init__(self, **kwargs):
-        """Throws an error if any unexpected kwargs exist on creation."""
+        """Returns an AssertionError if any unexpected kwargs exist on initialisation."""
 
         print("Root.__init__() called.")
 
@@ -107,6 +107,9 @@ class Tournament(Root):
     levels = [
         u"club",
         u"international",
+        u"league",
+        u"hat",
+        u"pickup",
     ]
     # formats = [u"round-robin", u"Swiss-elimination", "etc."]
 
