@@ -236,6 +236,8 @@ class Point(TimeStamp):
     timestamps = [None, None]  # TODO: check that subclasses inherit timestamps
     # TODO: check if class attributes are mutable, won't work if not
 
+    # rob - every Point object will have ts_start / end etc - is this doubling up?
+
     def __init__(self, **kwargs):
         """Takes point_teams, point_lines, point_score as a mandatory arguments."""
 
@@ -256,6 +258,8 @@ class Point(TimeStamp):
         self.turnovers = [[0, 0]]  # [offence, defence]
         self.possessions = [[1, 0]]  # [offence, defence]
         self.point_outcome = None  # from point_outcomes
+
+        self.offence = 0 # starting offence is zero, this is to be able to track offence changes
 
         super(Point, self).__init__(**kwargs)
 

@@ -33,6 +33,7 @@ from oauth2client.file import Storage
 import structures as struct
 import analysis as anal
 from structures import Game, Point
+import game_hierarchy as hierarch
 
 try:
     import argparse
@@ -50,74 +51,11 @@ class PlayerButton(Button):
 
     __repr__ = __str__
 
-
 class Separator(Widget):
     pass
 
 
-class ChooseStatsScreen(Screen):
-    def __init__(self,**kwargs):
-        super(ChooseStatsScreen, self).__init__(**kwargs)
-
-    def on_pre_enter(self, *args):
-        sApp = App.get_running_app()
-        # loadpath = os.path.join(sApp.user_data_dir)
-        # self.ids.BigBox.add_widget(Label(text='Select Team A (this is arbitrary)'))
-        loadpath = sApp.user_data_dir
-        self.filechA = FileChooserListView(path=loadpath, size_hint_y=5)
-        # path, game = os.path.split(filechA.selection[0])
-        self.ids.BigBox.add_widget(self.filechA)
-        conf = Button(text=u'confirm')
-        conf.bind(on_release=self.pick_game)
-        self.ids.BigBox.add_widget(conf)
-
-    def pick_game(self,*args):
-        sApp = App.get_running_app()
-        #print(self.filechA.selection)
-        self.path = self.filechA.selection[0]
-        sApp.game = pickle.load(open(self.path, 'rb'))
-        #
-        # for some reason in the SMO ellipsis v rogue game there was a None object saved in the pointslist, crashing it
-        # this is clearly a workaround - why the None ??
-        # - works still -
-        #
-        for point in sApp.game.points_list:
-            if point == None:
-                print("Detected a NoneType obj in game.points_list, discarding")
-                sApp.game.points_list.remove(point)
-
-        sApp.root.switch_to(ReadScreen())
-
-
-class ReadScreen(Screen):
-    def __init__(self, **kwargs):
-        super(ReadScreen, self).__init__(**kwargs)
-        self.ids.BigBox.add_widget(Label(text='stats go here',
-                                         size_hint=[1,0.05]))
-
-    def on_pre_enter(self):
-        sApp = App.get_running_app()
-        if sApp.game:
-            self.ids.BigBox.add_widget(Label(text=str(anal.basic_info(sApp.game)), size_hint=[1,0.01]))
-
-            for point in sApp.game.points_list:
-                print(point)
-
-            # TODO: turn this on later
-            # anal.write_csv_files(sApp.game)
-            # anal.gdrive_text(sApp.get_credentials())
-        else:  # shouldn't happen
-            self.ids.BigBox.add_widget(Label(text=u'Could not find a Game object'))
-
-    def on_enter(self):
-        self.ids.BigBox.add_widget(Button(text='Back',
-                                          size_hint=[0.1,0.1],
-                                          on_release=self.go_back))
-
-    def go_back(self, *args):
-        sApp = App.get_running_app()
-        sApp.root.switch_to(MenuScreen())
-        return True
+#rs # i'm reorganising the main.py file to more accurately match the flow through live stat taking
 
 
 class MenuScreen(Screen):
@@ -152,75 +90,68 @@ class ConfirmInputScreen(Screen):
     def __init__(self, **kwargs):
         super(ConfirmInputScreen, self).__init__(**kwargs)
         sApp = App.get_running_app()
-        if sApp.game:
-            self.ids.content_disp.text = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.points_cap) + str(
-                sApp.game.team_names) + '\n' + str(sApp.game.team_players[0]) + '\n' + str(sApp.game.team_players[1])
-            # self.ids.BigBox.add_widget(Label(text=content, size_hint=[1.5, 4]))
+
+        configpath = os.join(sApp.user_data_dir,'AUCDivisionII.cfg')
+        sApp.tournament_data = self.import_config(configpath)
+        # doing this instead of instantiating a tournament object rn
+
+        if sApp.tournament_data:
+            content = ''
+            for item in sApp.tournament_data:
+                content = content +str(item)
+                content = content + '\n'
+            self.ids.content_disp.text = content
         else:
-            self.ids.content_disp.text = 'no game object found - go to switch config'
+            self.ids.content_disp.text = 'unable to load tournament configuration :('
 
     def conf_input(self, *args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(SelectOffenceScreen())
+        sApp.root.switch_to(TeamSelectScreen())
         return True
 
-    def go_back(self, *args):
-        sApp = App.get_running_app()
-        sApp.root.switch_to(MenuScreen())
-        return True
+    def import_config(self, path):
+        if path is not None:
+            sApp = App.get_running_app()
 
-    def on_enter(self):
-        pass
+            file = open(os.path.join(sApp.user_data_dir, path), u'rb')
+            for line in file.readlines():
+                key, value = line.split(u':')
+                if key == u'name':
+                    tournament_name = [key,value]
+                elif key == u'timecap':
+                    time_cap = [key,value]
+                elif key == u'pointscap':
+                    point_cap = [key,value]
+                elif key == u'timeouts':
+                    timeouts = [key,value]
+                elif key == u'divisions':
+                    divisions = value.split(u'|')
+                    # this is unused atm
+                else:
+                    pass
+                    #print(key,value)
+            file.close()
 
+            # tournament = hierarch.Tournament(tournament=tournament_name,
+            #                                  year=2017,
+            #                                  point_cap=point_cap,
+            #                                  time_cap=time_cap)
+            # this year business is pretty bullshit rn
 
-class ConfigScreen(Screen):
-    def __init__(self, **kwargs):
-        super(ConfigScreen, self).__init__(**kwargs)
+            tournament_data = [tournament_name,['year',2017],point_cap,time_cap]
 
-        sApp = App.get_running_app()
-        sApp.game = sApp.import_config(sApp.teamfilenames)
-        if sApp.game:
-            content = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.points_cap) + str(
-                sApp.game.team_names) + '\n' + str(sApp.game.team_players)
+            return tournament_data
         else:
-            content = 'no game found - go to switch config'
-        self.ids.content_disp.text = content
-
-        optionsBox = BoxLayout(orientation='horizontal')
-
-        self.ids.BigBox.add_widget(optionsBox)
-
-        confBut = Button(text='switch',
-                         size_hint=[1,0.2])
-        confBut.bind(on_release=self.switch_config)
-        optionsBox.add_widget(confBut)
-
-        backBut = Button(text='main menu',
-                         size_hint=[1,0.2])
-        backBut.bind(on_release=self.go_back)
-        optionsBox.add_widget(backBut)
-
-    def switch_config(self, *args):
-        sApp = App.get_running_app()
-        sApp.root.switch_to(SwitchScreen())
-        return True
+            return None
 
     def go_back(self, *args):
         sApp = App.get_running_app()
         sApp.root.switch_to(MenuScreen())
         return True
 
-    def do_import(self,filenames):
-        sApp = App.get_running_app()
-        return sApp.import_config(filenames)
-
-    def on_enter(self):
-        pass
-
-
-class SwitchScreen(Screen):
+class TeamSelectScreen(Screen):
     def __init__(self, **kwargs):
-        super(SwitchScreen, self).__init__(**kwargs)
+        super(TeamSelectScreen, self).__init__(**kwargs)
         sApp = App.get_running_app()
 
         teamlistpath = os.path.join(sApp.user_data_dir, 'teamlists'.strip())
@@ -238,20 +169,54 @@ class SwitchScreen(Screen):
 
         specialBox = BoxLayout(orientation='horizontal')
         self.ids.BigBox.add_widget(specialBox)
-        confBut = Button(text='confirm selections')
+
+        confBut = Button(text='Confirm Teams')
         confBut.bind(on_release=self.conf_selec)
         specialBox.add_widget(confBut)
+
         menuBut = Button(text='Back')
         menuBut.bind(on_release=self.go_back)
         specialBox.add_widget(menuBut)
 
     def conf_selec(self, *args):
+        sApp = App.get_running_app()
+
+        # this feels clunky, i'm splitting and joining all over the shop
+        # TODO: split out file access functions and make them good
+
         path, teamAfn = os.path.split(self.filechA.selection[0])
         path, teamBfn = os.path.split(self.filechB.selection[0])
-        sApp = App.get_running_app()
-        sApp.teamfilenames = [teamAfn, teamBfn]
-        #print(sApp.teamfilenames)
-        sApp.root.switch_to(ConfigScreen())
+
+        filenames = [teamAfn,teamBfn]
+        for filename in filenames:
+            full_path = os.path.join(sApp.user_data_dir, 'teamlists', filename)
+            file = open(full_path, u'rb')
+
+            # create the Team() object here
+            team = hierarch.Team(team_name=)
+            players = []
+            for line in file.readlines():
+                key, value = line.split(u':')
+                if key == u'name':
+                    team_name = value
+                elif key == u'players':
+                    team = value.split(u',')
+                    for player in team:
+                        player = player.strip() # trailing newline on last player
+                        player_obj = hierarch.Player(player_name=player,
+                                                     player_number=420)
+                        players.append(player_obj)
+
+            team = hierarch.Team(team_name=team_name,
+                                 team_players=players,
+                                 team_division='womens is better')
+
+            file.close()
+
+            # what do i do with the team object here?
+            sApp.unordered_teams.append(team)
+
+        sApp.root.switch_to(SelectOffenceScreen())
         return True
 
     def go_back(self, *args):
@@ -261,65 +226,75 @@ class SwitchScreen(Screen):
 
 
 class SelectOffenceScreen(Screen):
-    # TODO: want this to get saved as a property of game
-
     def __init__(self, **kwargs):
         super(SelectOffenceScreen, self).__init__(**kwargs)
 
         sApp = App.get_running_app()
-        for team in sApp.game.team_names:
-            teambutton = Button(text=team)
-            storecallback = partial(self.store_offence, sApp.game.team_names.index(team))
+        for team in sApp.game.unordered_teams:
+            teambutton = Button(text=team.team_name)
+            storecallback = partial(self.store_offence, teambutton)
             teambutton.bind(on_release=storecallback)
             self.ids.SOBox.add_widget(teambutton)
 
-    def on_enter(self, *args):
+    def store_offence(self, teambutton, *args):
         sApp = App.get_running_app()
+        offence_name = teambutton.text
+        if sApp.unordered_teams[0].team_name == offence_name:
+            teams = sApp.unordered_teams
+        elif sApp.unordered_teams[1].team_name == offence_name:
+            teams = sApp.unordered_teams
+            teams.reverse()
+        else:
+            print('invalid team selected for offence') # literally no idea
 
-        sApp.current_point = Point([sApp.temp_oline, sApp.temp_dline], sApp.temp_offence)
+        # keywords here looks like [[key,value],[key,value]] etc
+        #TODO: check that this kwarg passing shit actually works
+        keywords = sApp.tournament_data
+        keywords.append(['game_teams', teams],['game_stage','default_stage'])
+        keywords = dict(sApp.tournament_data)
+        sApp.game = hierarch.Game(**keywords)
 
-        sApp.temp_offence = None
-        sApp.temp_dline = []
-        sApp.temp_oline = []
-
-    def store_offence(self, offence, *args):
-        sApp = App.get_running_app()
-        sApp.current_point.offence = offence
-        sApp.game.starting_offence = offence  # Andy, hoping this will save me time in anlysis.
         sApp.root.switch_to(SelectPlayersScreen())
         return True
+
 
 class SelectPlayersScreen(Screen):
     def __init__(self, **kwargs):
         super(SelectPlayersScreen, self).__init__(**kwargs)
+        sApp = App.get_running_app()
+        if len(sApp.game.points_list) == 0: # if this is the first point
+            self.offence = 0
+            self.score = [0,0]
+        else:
+            self.offence = 1 - sApp.game.points_list[-1].offence # opposite offence to end of last point
+            self.score = sApp.game.points_list[-1].point_score # should be incremented when the goal is scored, hence correct here
 
         self.temp_oline = []
         self.temp_dline = []
-        sApp = App.get_running_app()
 
-        for player in sApp.game.teams[sApp.current_point.offence]:
-            pb = ToggleButton(text=player)
-            pb.bind(on_release=partial(self.swap_state, pb, sApp.current_point.offence))
+        for player in sApp.game.teams[self.offence]:
+            pb = ToggleButton(text=player.player_name)
+            pb.bind(on_release=partial(self.swap_state, pb, player, self.offence))
             self.ids.LeftBox.add_widget(pb)
 
-        for player in sApp.game.teams[1 - sApp.current_point.offence]:
-            pb = ToggleButton(text=player)
-            pb.bind(on_release=partial(self.swap_state, pb, 1 - sApp.current_point.offence))
+        for player in sApp.game.teams[1 - self.offence]:
+            pb = ToggleButton(text=player.player_name)
+            pb.bind(on_release=partial(self.swap_state, pb, player, 1 - self.offence))
             self.ids.RightBox.add_widget(pb)
 
-    def swap_state(self,pb,offence,*args):
+    def swap_state(self,pb,player,side,*args):
         #this is the NEW state - normal button pressed will trigger the if 'down' branch of this
         # offence here is just for checking which team the call is coming from and hence which list to edit
         if pb.state == 'normal':
-            if offence:
-                self.temp_dline.remove(pb.text)
+            if side:
+                self.temp_dline.remove(player)
             else:
-                self.temp_oline.remove(pb.text)
+                self.temp_oline.remove(player)
         elif pb.state == 'down':
-            if offence:
-                self.temp_dline.append(pb.text)
+            if side:
+                self.temp_dline.append(player)
             else:
-                self.temp_oline.append(pb.text)
+                self.temp_oline.append(player)
         else:
             print('something is broken in the state switching of player selection')
         self.ids.subtitle.text = 'Offence: '+str(len(self.temp_oline))+' | Defence: '+str(len(self.temp_dline))
@@ -329,8 +304,11 @@ class SelectPlayersScreen(Screen):
     def store_players(self):
         sApp = App.get_running_app()
         if len(self.temp_dline) == 7 and len(self.temp_oline) == 7:
-            sApp.current_point.lines[sApp.current_point.offence] = self.temp_oline
-            sApp.current_point.lines[1 - sApp.current_point.offence] = self.temp_dline
+            #order has already been checked when we look for offence in the __init__ of this screen
+            lines = [self.temp_oline,self.temp_dline]
+            sApp.current_point = hierarch.Point(point_teams=sApp.game.teams,
+                                                point_lines=lines,
+                                                point_score=self.score)
             sApp.root.switch_to(PullingScreen())
         else:
             pass
@@ -549,10 +527,127 @@ class SelectActionScreen(Screen):
         return True
 
 
-class RandyScreenManager(ScreenManager):
+# these are important but not part of the live stat taking - consider breaking up screen definitions
+
+
+class ChooseStatsScreen(Screen):
+    def __init__(self,**kwargs):
+        super(ChooseStatsScreen, self).__init__(**kwargs)
+
+    def on_pre_enter(self, *args):
+        sApp = App.get_running_app()
+        # loadpath = os.path.join(sApp.user_data_dir)
+        # self.ids.BigBox.add_widget(Label(text='Select Team A (this is arbitrary)'))
+        loadpath = sApp.user_data_dir
+        self.filechA = FileChooserListView(path=loadpath, size_hint_y=5)
+        # path, game = os.path.split(filechA.selection[0])
+        self.ids.BigBox.add_widget(self.filechA)
+        conf = Button(text=u'confirm')
+        conf.bind(on_release=self.pick_game)
+        self.ids.BigBox.add_widget(conf)
+
+    def pick_game(self,*args):
+        sApp = App.get_running_app()
+        #print(self.filechA.selection)
+        self.path = self.filechA.selection[0]
+        sApp.game = pickle.load(open(self.path, 'rb'))
+        #
+        # for some reason in the SMO ellipsis v rogue game there was a None object saved in the pointslist, crashing it
+        # this is clearly a workaround - why the None ??
+        # - works still -
+        #
+        for point in sApp.game.points_list:
+            if point == None:
+                print("Detected a NoneType obj in game.points_list, discarding")
+                sApp.game.points_list.remove(point)
+
+        sApp.root.switch_to(ReadScreen())
+
+
+class ReadScreen(Screen):
+    def __init__(self, **kwargs):
+        super(ReadScreen, self).__init__(**kwargs)
+        self.ids.BigBox.add_widget(Label(text='stats go here',
+                                         size_hint=[1,0.05]))
+
+    def on_pre_enter(self):
+        sApp = App.get_running_app()
+        if sApp.game:
+            self.ids.BigBox.add_widget(Label(text=str(anal.basic_info(sApp.game)), size_hint=[1,0.01]))
+
+            for point in sApp.game.points_list:
+                print(point)
+
+            # TODO: turn this on later
+            # anal.write_csv_files(sApp.game)
+            # anal.gdrive_text(sApp.get_credentials())
+        else:  # shouldn't happen
+            self.ids.BigBox.add_widget(Label(text=u'Could not find a Game object'))
+
+    def on_enter(self):
+        self.ids.BigBox.add_widget(Button(text='Back',
+                                          size_hint=[0.1,0.1],
+                                          on_release=self.go_back))
+
+    def go_back(self, *args):
+        sApp = App.get_running_app()
+        sApp.root.switch_to(MenuScreen())
+        return True
+
+
+class ConfigScreen(Screen):
+    def __init__(self, **kwargs):
+        super(ConfigScreen, self).__init__(**kwargs)
+
+        sApp = App.get_running_app()
+        sApp.game = sApp.import_config(sApp.teamfilenames)
+        if sApp.game:
+            content = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.points_cap) + str(
+                sApp.game.team_names) + '\n' + str(sApp.game.team_players)
+        else:
+            content = 'no game found - go to switch config'
+        self.ids.content_disp.text = content
+
+        optionsBox = BoxLayout(orientation='horizontal')
+
+        self.ids.BigBox.add_widget(optionsBox)
+
+        confBut = Button(text='switch',
+                         size_hint=[1,0.2])
+        confBut.bind(on_release=self.switch_config)
+        optionsBox.add_widget(confBut)
+
+        backBut = Button(text='main menu',
+                         size_hint=[1,0.2])
+        backBut.bind(on_release=self.go_back)
+        optionsBox.add_widget(backBut)
+
+    def switch_config(self, *args):
+        sApp = App.get_running_app()
+        sApp.root.switch_to(SwitchScreen())
+        return True
+
+    def go_back(self, *args):
+        sApp = App.get_running_app()
+        sApp.root.switch_to(MenuScreen())
+        return True
+
+    def do_import(self,filenames):
+        sApp = App.get_running_app()
+        return sApp.import_config(filenames)
+
+    def on_enter(self):
+        pass
+
+
+
+
+class RatsScreenManager(ScreenManager):
     def go_back(self):
         # GO BACK TO THE PREVIOUS SCREEN
-        # will have to track screens or something bc screenmanager doesn't do that
+        # this functionality will probably require redoing switch_to
+        # or some shit who knows
+        #
         pass
 
     #timer might also sit here?
@@ -562,12 +657,14 @@ class StatsApp(App):
     def __init__(self):
         super(StatsApp, self).__init__()
 
-        #i guess here we need to check for and possibly also import
-
-
+        self.tournament_data = None
         self.current_point = None
         self.game = None
-        self.teamfilenames = None
+        # game files aren't currently linked to tournament objects
+
+        self.unordered_teams = [] # read in teams, check whos on offence next screen
+        self.last_offence = 1 # carry offence through, default 1 means we'll start with 0 as offence as desired
+
         # these are used to carry information before we have it all
         # when we have all the info we dump it into a Point as current_point
         self.temp_offence = None
@@ -629,65 +726,7 @@ class StatsApp(App):
         return credentials
 
     def on_resume(self):
-        # this won't work because it's saving properly now
-        # load most recent game ???
-        # sort files by date modified - pick most recent and load that
-        # start timestamping saves !! - this is for choosing which game to load
-        # YYMMDD at the start of a filename will alphabetically sort by game date < good
-
-
-        sApp = App.get_running_app()
-        tempsave = os.path.join(sApp.user_data_dir, 'tempsave.p')
-        sApp.game = pickle.load(open(tempsave, 'rb'))
-        os.remove(tempsave)
         pass
-        # def on_start(self):
-        #     pass
-        # def on_stop(self):
-        #     pass
-
-    def import_config(self, filenames):
-        if filenames is not None:
-            teamnames = []
-            teams = []
-
-            sApp = App.get_running_app()
-            for filename in filenames:
-                full_path = os.path.join(sApp.user_data_dir, 'teamlists', filename)
-                file = open(full_path, u'rb')
-                # print('file opened #RANDY')
-
-                for line in file.readlines():
-                    key, value = line.split(u':')
-                    if key == u'name':
-                        teamnames.append(value)
-                    elif key == u'players':
-                        team = value.split(u',')
-                        for player in team:
-                            player = player.strip()
-                        # trailing newline on last player
-                        teams.append(team)
-                file.close()
-
-            file = open(os.path.join(sApp.user_data_dir, struct.cfg_filename), u'rb')
-            for line in file.readlines():
-                key, value = line.split(u':')
-                if key == u'time_cap':
-                    time_cap = value
-                elif key == u'tournament_name':
-                    tournament_name = value
-                elif key == u'points_cap':
-                    points_cap = value
-                else:
-                    pass
-                    #print(key,value)
-            file.close()
-
-            game = Game(tournament_name, time_cap, points_cap, teams, teamnames)
-            return game
-
-        else:
-            return None
 
 
 if __name__ == u'__main__':

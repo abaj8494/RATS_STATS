@@ -1,7 +1,7 @@
 #:kivy 1.0
 #:import kivy kivy
 
-RandyScreenManager:
+RatsScreenManager:
 # <> makes it a rule
 # this returns it as the root widget when we load with builder
     orientation: 'vertical'
@@ -62,7 +62,7 @@ RandyScreenManager:
         id:MainLayout
 
         Label:
-            text:'This is the current config:'
+            text:'Ready to take ratstats for:'
             font_size: 30
         Label:
             id:content_disp
@@ -74,7 +74,7 @@ RandyScreenManager:
             spacing:20
 
             Button:
-                text:'confirm input'
+                text:'Continue'
                 font_size: 30
                 on_release:root.conf_input()
             Button:
@@ -114,8 +114,8 @@ RandyScreenManager:
             text_size: self.width, None
 
 
-<SwitchScreen>
-    name:'switch_config'
+<TeamSelectScreen>
+    name:'team_select'
     BoxLayout:
         padding:[40,40,40,40]
         spacing:20
