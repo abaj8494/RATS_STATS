@@ -21,6 +21,15 @@ class Root(object):
 
         assert not kwargs
 
+"""
+PEOPLE
+
+classification levels for people in a game:
+    - INDIVIDUAL: each player on each team
+    - TEAM: each team considered as a whole
+    - GAME: everyone in the game as a whole
+"""
+
 
 # TODO: insert this class
 class Group(Root):
@@ -93,6 +102,14 @@ class Player(Team):
 
         super(Player, self).__init__(**kwargs)
 
+"""
+GAME STRUCTURE
+
+classification levels for games:
+    - INDIVIDUAL: a single game
+    - DIVISION: a game as part of all games in a division
+    - TOURNAMENT: a game as part of all games at a tournament
+"""
 
 class Tournament(Root):
     """Superclass for Game, provides scoring and field information."""
@@ -154,6 +171,17 @@ class Division(Tournament):
         super(Division, self).__init__(**kwargs)
 
 
+"""
+SEQUENCE
+
+classification levels for live game sequences:
+    - INDIVIDUAL: a single item within a game
+    - POSSESSION: all items from players on the same team for a possession
+    - POINT: all items from all players for a point
+    - GAME: all items from all players for all points in a game
+"""
+
+
 class Game(Division):
     """"""
 
@@ -183,7 +211,20 @@ class Game(Division):
         return self.game_name
 
 
-class Point(Game):
+class TimeStamp(Root):
+    """TimeStamps are datetime objects referring to the start and end of an Event."""
+
+    def __init__(self, **kwargs):
+        """Takes ts_start, ts_end as mandatory arguments."""
+
+        self.ts_start = kwargs.pop("ts_start")
+        self.ts_end = kwargs.pop("ts_end")
+        self.ts_duration = self.ts_end - self.ts_start
+
+        super(TimeStamp, self).__init__(**kwargs)
+
+
+class Point(TimeStamp):
     """"""
 
     # class attributes
@@ -192,6 +233,8 @@ class Point(Game):
         u"hold"
     ]
     # TODO: want to consider upwind/downwind at some point here too
+    timestamps = [None, None]  # TODO: check that subclasses inherit timestamps
+    # TODO: check if class attributes are mutable, won't work if not
 
     def __init__(self, **kwargs):
         """Takes point_teams, point_lines, point_score as a mandatory arguments."""
@@ -214,12 +257,10 @@ class Point(Game):
         self.possessions = [[1, 0]]  # [offence, defence]
         self.point_outcome = None  # from point_outcomes
 
-        self.time_stamp = None  # TODO: this only needs to be inherited by TimeOut, Pull, Event, Call
-
         super(Point, self).__init__(**kwargs)
 
 
-class Pull(Point):
+class Pull(TimeStamp):
     """"""
 
     all_pulls = [
@@ -251,7 +292,7 @@ class Pull(Point):
         super(Pull, self).__init__(**kwargs)
 
 
-class Event(Point):
+class Event(TimeStamp):
     """"""
 
     # class attributes
@@ -311,7 +352,6 @@ class Event(Point):
         self.event_player = kwargs.pop("event_player")  # pointer to player object
         self.event_action = kwargs.pop("event_action")
 
-        # not sure about below names but type is restricted
         # TODO: set these off the action
         self.action_possession = None
         self.action_type = None
@@ -321,7 +361,7 @@ class Event(Point):
         super(Event, self).__init__(**kwargs)
 
 
-class Call(Point):
+class Call(TimeStamp):
     """"""
 
     # class attributes
@@ -359,7 +399,7 @@ class Call(Point):
         super(Call, self).__init__(**kwargs)
 
 
-class TimeOut(Point):
+class TimeOut(TimeStamp):
     """"""
 
     def __init__(self, **kwargs):
