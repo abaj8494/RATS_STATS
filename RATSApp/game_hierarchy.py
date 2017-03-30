@@ -19,7 +19,7 @@ class Root(object):
         """Returns an AssertionError if any unexpected kwargs exist on initialisation."""
 
         print("Root.__init__() called.")
-
+        print(kwargs)
         assert not kwargs
 
 
@@ -51,8 +51,8 @@ class Group(Root):
         # self.group_name = kwargs.pop("group_name")
         # self.group_teams = []  # list of pointers to Team Objects
         # self.group_type = kwargs.pop("group_type")
-
-        super(Group, self).__init__(**kwargs)
+        if kwargs:
+            super(Group, self).__init__(**kwargs)
 
 
 class Team(Root):
@@ -67,12 +67,16 @@ class Team(Root):
         self.team_players = kwargs.pop("team_players")
         # self.team_gender = kwargs.pop("team_gender")
         # self.team_age = kwargs.pop("team_age")
-        self.team_division = kwargs.pop("team_division")
+
+        # games have a division property - this is on hold
+        if 'team_division' in kwargs:
+            self.team_division = kwargs.pop("team_division")
+
 
         self.games = []  # ANDY: this is just a place for me to play with team scrapes from worlds
         # self.team_tournaments = None  # TODO: work out database for storing games
-
-        super(Team, self).__init__(**kwargs)
+        if kwargs:
+            super(Team, self).__init__(**kwargs)
 
     def append_game(self, game):
         """Appends a game object to self.games"""
@@ -101,9 +105,11 @@ class Player(Team):
         self.player_number = kwargs.pop("player_number")
 
         # TODO: analysis attributes go here
+        if kwargs:
+            super(Player, self).__init__(**kwargs)
 
-        super(Player, self).__init__(**kwargs)
-
+    def __str__(self):
+        return self.player_name
 
 """
 GAME STRUCTURE
@@ -146,13 +152,13 @@ class Tournament(Root):
         # self.tournament_surface = kwargs.pop("tournament_surface")
         self.point_cap = kwargs.pop("point_cap")
         self.time_cap = kwargs.pop("time_cap")
-        self.time_outs = kwargs.pop("time_outs")
+        self.timeouts = kwargs.pop("timeouts")
         self.tournament_divisions = kwargs.pop("tournament_divisions")
         # self.tournament_start = None
         # self.tournament_finish = None
         # self.tournament_duration = self.tournament_finish - self.tournament_start
-
-        super(Tournament, self).__init__(**kwargs)
+        if kwargs:
+            super(Tournament, self).__init__(**kwargs)
 
     def __str__(self):
         return self.tournament_name
@@ -171,8 +177,8 @@ class Division(Tournament):
 
         self.division_name = kwargs.get("division_name")
         self.division_teams = kwargs.get("division_teams")
-
-        super(Division, self).__init__(**kwargs)
+        if kwargs:
+            super(Division, self).__init__(**kwargs)
 
 
 """
@@ -201,16 +207,15 @@ class Game(Division):
         self.game_name = "{}-{}:{}-{}".format(
             self.tournament_name,
             self.game_stage,
-            self.game_teams[0].team,
-            self.game_teams[1].team
+            self.game_teams[0].team_name,
+            self.game_teams[1].team_name
         )
         # self.game_start = None
         # self.game_finish = None
         # self.game_pause = None
         # self.game_weather = kwargs.pop("game_weather")
-        self.spirit = None  # ily Rich I'll do this eventually
-
-        super(Game, self).__init__(**kwargs)
+        if kwargs:
+            super(Game, self).__init__(**kwargs)
 
     def __str__(self):
         return self.game_name
@@ -222,15 +227,13 @@ class TimeStamp(Root):
     """
 
     def __init__(self, **kwargs):
-        """Takes ts_start, ts_end, disc_start, disc_end as mandatory arguments."""
-
-        print("TimeStamp.__init__() called.")
+        """Takes ts_start, ts_end as mandatory arguments."""
 
         self.ts_start = kwargs.pop("ts_start")
         self.ts_end = kwargs.pop("ts_end")
         self.ts_duration = self.ts_end - self.ts_start
-
-        super(TimeStamp, self).__init__(**kwargs)
+        if kwargs:
+            super(TimeStamp, self).__init__(**kwargs)
 
 
 class Point(TimeStamp):
@@ -242,6 +245,10 @@ class Point(TimeStamp):
         u"hold"
     ]
     # TODO: want to consider upwind/downwind at some point here too
+    timestamps = [None, None]  # TODO: check that subclasses inherit timestamps
+    # TODO: check if class attributes are mutable, won't work if not
+
+    # rob - every Point object will have ts_start / end etc - is this doubling up?
 
     def __init__(self, **kwargs):
         """Takes point_teams, point_lines, point_score as a mandatory arguments."""
@@ -251,21 +258,28 @@ class Point(TimeStamp):
         self.point_teams = kwargs.pop("point_teams")  # [offence, defence]
 
         temp_lines = kwargs.pop("point_lines") # [[offence_players], [defence_players]]
-        self.point_lines = [[temp_lines[0]], [temp_lines[1]]]  # nesting for subs
+        self.point_lines = [temp_lines]  # nesting for subs
+        self.line_set = 0 # pair of lines is a set - after sub, new set, increment
+                            # use current_lines()
 
-        self.point_score = [kwargs.get("point_score"), None]
-        self.point_number = self.point_score[0][0] + self.point_score[0][1] + 1
-        self.point_difference = [self.point_score[0][0] - self.point_score[0][1], None]
+        self.point_score = kwargs.pop("point_score")
+        self.point_number = self.point_score[0] + self.point_score[1] + 1
+        self.point_difference = [self.point_score[0] - self.point_score[1], None]
         # point_difference is a two item list of the relative offensive position at the start of the point:
         # positive numbers = winning, 0 = tied, negative numbers = losing
 
-        self.sequence = []
+        self.sequence = []  # double nesting is to allow for injuries
         self.turnovers = [[0, 0]]  # [offence, defence]
         self.possessions = [[1, 0]]  # [offence, defence]
         self.point_outcome = None  # from point_outcomes
 
-        super(Point, self).__init__(**kwargs)
+        self.offence = 0 # starting offence is zero, this is to be able to track offence changes
+        if kwargs:
+            print(kwargs)
+            super(Point, self).__init__(**kwargs)
 
+    def current_lines(self):
+        return self.point_lines[self.line_set]
 
 class Possession(TimeStamp):
     """Superclass for Events from players on the same team."""
@@ -307,7 +321,7 @@ class Pull(Possession, DiscStatus):
         # out-of-bounds
         u"brick",
         u"sideline",
-        # in,  # ANDY: this how I'm thinking about looking at offside pulls (can still get the data on location)
+        # in
         u"caught",
         u"landed",
         u"touched",
@@ -328,8 +342,9 @@ class Pull(Possession, DiscStatus):
         self.pull_location = None  # Set this off pull_action
         self.pull_reception = None  # as above
         # self.type = kwargs.pop("pull_type")
+        if kwargs:
+            super(Pull, self).__init__(**kwargs)
 
-        super(Pull, self).__init__(**kwargs)
 
 
 class Event(Possession, DiscStatus):
@@ -386,6 +401,44 @@ class Event(Possession, DiscStatus):
         u"intercept",
     ]
 
+    # i should be doing all this shit by slicing the all_actions list maybe
+    # way less readable tho
+
+    turnover_actions = [
+        u'double-touch',
+        u'down',
+        u'hand-over',
+        u'out-of-bounds',
+        u'drop',
+        u'foot-block',
+        u'hand-block',
+        u'stall-out',
+        u'block',
+        u'intercept',
+    ]
+
+
+    # these categories are for visual display purposes
+    primary_actions = [
+        u'pass',
+        u'down',
+        u'drop',
+        u'out-of-bounds',
+        u'goal',
+    ]
+
+    secondary_actions = [
+        u'stall-out',
+        u'double-touch',
+        u'hand-over',
+    ]
+
+    defensive_actions = [
+        u'block',
+        u'intercept',
+        #u'Callahan',
+    ]
+
     def __init__(self, **kwargs):
         """Takes event_player, event_action as mandatory arguments."""
 
@@ -395,13 +448,23 @@ class Event(Possession, DiscStatus):
         self.event_action = kwargs.pop("event_action")
 
         # TODO: set these off the action
+        # setting these off the action is doable here
+        # setting action things that require information from other points
+        #   will have to be a function of the class where the other point is passed in at runtime
         self.action_possession = None
         self.action_type = None
         self.action_outcome = None
-        # self.action_location = None
+        # self.location = None
 
-        super(Event, self).__init__(**kwargs)
+        # this feels weird am i doing this right
+        if self.event_action in self.turnover_actions:
+            print('event_action (in turnovers): '+self.event_action)
+            self.action_outcome = self.outcomes[1]
+        else:
+            self.action_outcome = self.outcomes[0]
 
+        if kwargs:
+            super(Event, self).__init__(**kwargs)
 
 class Call(TimeStamp, DiscStatus):
     """"""
@@ -409,6 +472,7 @@ class Call(TimeStamp, DiscStatus):
     # class attributes
     calls = [
         u"offside",
+        u"time-out",
         u"pick",
         u"foul",
         u"strip",
@@ -439,7 +503,8 @@ class Call(TimeStamp, DiscStatus):
         self.call_outcome = kwargs.pop("call_outcome")
         # TODO: game adviser/observer should probably go here
 
-        super(Call, self).__init__(**kwargs)
+        if kwargs:
+            super(Call, self).__init__(**kwargs)
 
 
 class TimeOut(TimeStamp):
@@ -454,4 +519,5 @@ class TimeOut(TimeStamp):
         self.to_caller = kwargs.pop("to_caller")
         self.to_category = kwargs.pop("to_category")  # live or dead disc
 
-        super(TimeOut, self).__init__(**kwargs)
+        if kwargs:
+            super(TimeOut, self).__init__(**kwargs)

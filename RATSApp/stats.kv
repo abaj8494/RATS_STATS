@@ -1,7 +1,7 @@
 #:kivy 1.0
 #:import kivy kivy
 
-RandyScreenManager:
+RatsScreenManager:
 # <> makes it a rule
 # this returns it as the root widget when we load with builder
     orientation: 'vertical'
@@ -46,7 +46,7 @@ RandyScreenManager:
         Button:
             text:'Switch Config'
             font_size:20
-            on_release:root.goto_switch_config()
+            #on_release:root.goto_switch_config()
 
         Button:
             text:'Exit'
@@ -62,7 +62,7 @@ RandyScreenManager:
         id:MainLayout
 
         Label:
-            text:'This is the current config:'
+            text:'Ready to take ratstats for:'
             font_size: 30
         Label:
             id:content_disp
@@ -74,7 +74,7 @@ RandyScreenManager:
             spacing:20
 
             Button:
-                text:'confirm input'
+                text:'Continue'
                 font_size: 30
                 on_release:root.conf_input()
             Button:
@@ -114,8 +114,8 @@ RandyScreenManager:
             text_size: self.width, None
 
 
-<SwitchScreen>
-    name:'switch_config'
+<TeamSelectScreen>
+    name:'team_select'
     BoxLayout:
         padding:[40,40,40,40]
         spacing:20
@@ -226,13 +226,3 @@ RandyScreenManager:
                 id:RightBox
                 orientation:'vertical'
                 padding:[40,40,40,40]
-
-                # adding SpecialBox here puts it at the top bc this bit is done before action shit
-
-                BoxLayout:
-                    id:SpecialBox
-                    orientation:'horizontal'
-                    #padding:[40,40,40,40]
-                    # having padding set here fucks the whole thing up WHY
-                    # oh well no padding for us - just inherits from before
-                #Separator:
