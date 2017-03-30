@@ -8,7 +8,8 @@
 # App button options should call class attributes (rather than the floating lists we had before)
 # I need to tweak the data storage for some actions/events/calls at runtime
 
-# TODO: I can't work out what needs to inherit from what - currently everything inherits everything up the structure
+# TODO: Validate inputs, check out https://github.com/alecthomas/voluptuous
+# TODO: make the team order explicitly store offence and defence as categories instead of numbers
 
 
 class Root(object):
@@ -20,6 +21,7 @@ class Root(object):
         print("Root.__init__() called.")
 
         assert not kwargs
+
 
 """
 PEOPLE
@@ -102,6 +104,7 @@ class Player(Team):
 
         super(Player, self).__init__(**kwargs)
 
+
 """
 GAME STRUCTURE
 
@@ -110,6 +113,7 @@ classification levels for games:
     - DIVISION: a game as part of all games in a division
     - TOURNAMENT: a game as part of all games at a tournament
 """
+
 
 class Tournament(Root):
     """Superclass for Game, provides scoring and field information."""
@@ -191,7 +195,7 @@ class Game(Division):
         print("Game.__init__() called.")
 
         self.game_score = [[0, 0]]  # double nesting, want to just append the score here after each point
-        self.game_points = []
+        self.points = []
         self.game_teams = kwargs.pop("game_teams")
         self.game_stage = kwargs.pop("game_stage")
         self.game_name = "{}-{}:{}-{}".format(
@@ -204,6 +208,7 @@ class Game(Division):
         # self.game_finish = None
         # self.game_pause = None
         # self.game_weather = kwargs.pop("game_weather")
+        self.spirit = None  # ily Rich I'll do this eventually
 
         super(Game, self).__init__(**kwargs)
 
@@ -212,10 +217,14 @@ class Game(Division):
 
 
 class TimeStamp(Root):
-    """TimeStamps are datetime objects referring to the start and end of an Event."""
+    """
+    TimeStamps are datetime objects referring to the start and end of an Event.
+    """
 
     def __init__(self, **kwargs):
-        """Takes ts_start, ts_end as mandatory arguments."""
+        """Takes ts_start, ts_end, disc_start, disc_end as mandatory arguments."""
+
+        print("TimeStamp.__init__() called.")
 
         self.ts_start = kwargs.pop("ts_start")
         self.ts_end = kwargs.pop("ts_end")
@@ -233,8 +242,6 @@ class Point(TimeStamp):
         u"hold"
     ]
     # TODO: want to consider upwind/downwind at some point here too
-    timestamps = [None, None]  # TODO: check that subclasses inherit timestamps
-    # TODO: check if class attributes are mutable, won't work if not
 
     def __init__(self, **kwargs):
         """Takes point_teams, point_lines, point_score as a mandatory arguments."""
@@ -252,7 +259,7 @@ class Point(TimeStamp):
         # point_difference is a two item list of the relative offensive position at the start of the point:
         # positive numbers = winning, 0 = tied, negative numbers = losing
 
-        self.sequence = []  # double nesting is to allow for injuries
+        self.sequence = []
         self.turnovers = [[0, 0]]  # [offence, defence]
         self.possessions = [[1, 0]]  # [offence, defence]
         self.point_outcome = None  # from point_outcomes
@@ -260,14 +267,47 @@ class Point(TimeStamp):
         super(Point, self).__init__(**kwargs)
 
 
-class Pull(TimeStamp):
+class Possession(TimeStamp):
+    """Superclass for Events from players on the same team."""
+
+    def __init__(self, **kwargs):
+        """Takes possession_team, as mandatory arguments."""
+
+        print("Possession.__init__() called.")
+
+        self.possession_team = kwargs.pop("possession_team")
+
+        super(Possession, self).__init__(**kwargs)
+
+
+class DiscStatus(Root):
+    """
+    Object for WFDF rule 8. Status of the Disc. 
+    Used for the effect of calls and time outs on possession.
+    """
+
+    # class attribute - possible states for the disc
+    status = [u"dead", u"live"]
+
+    def __init__(self, **kwargs):
+        """Takes disc_status, as mandatory inputs."""
+
+        print("DiscStatus.__init__() called.")
+
+        self.disc_start = kwargs.pop("disc_status")
+        self.disc_end = kwargs.pop("disc_end")
+
+        super(DiscStatus, self).__init__(**kwargs)
+
+
+class Pull(Possession, DiscStatus):
     """"""
 
     all_pulls = [
         # out-of-bounds
         u"brick",
         u"sideline",
-        # in
+        # in,  # ANDY: this how I'm thinking about looking at offside pulls (can still get the data on location)
         u"caught",
         u"landed",
         u"touched",
@@ -292,10 +332,11 @@ class Pull(TimeStamp):
         super(Pull, self).__init__(**kwargs)
 
 
-class Event(TimeStamp):
+class Event(Possession, DiscStatus):
     """"""
 
     # class attributes
+    # ANDY: these don't need to display, they're validation checks
     possessions = [
         u"offensive",
         u"defensive",
@@ -309,6 +350,7 @@ class Event(TimeStamp):
         u"turnover",
     ]
 
+    # ANDY: these need to display
     all_actions = [
         # offensive
         # throws
@@ -356,18 +398,17 @@ class Event(TimeStamp):
         self.action_possession = None
         self.action_type = None
         self.action_outcome = None
-        # self.location = None
+        # self.action_location = None
 
         super(Event, self).__init__(**kwargs)
 
 
-class Call(TimeStamp):
+class Call(TimeStamp, DiscStatus):
     """"""
 
     # class attributes
     calls = [
         u"offside",
-        u"time-out",
         u"pick",
         u"foul",
         u"strip",
@@ -377,6 +418,8 @@ class Call(TimeStamp):
         u"equipment",
         u"delay-of-game",
         u"injury",
+        u"down",
+        u"out",
     ]
     call_outcomes = [
         u"contested",
@@ -391,7 +434,7 @@ class Call(TimeStamp):
         print("Call.__init__() called.")
 
         self.caller = kwargs.pop("caller")  # pointer to Player object
-        self.call = kwargs.pop("call")
+        self.call_made = kwargs.pop("call_made")
         self.call_against = kwargs.pop("call_against")  # pointer to Player object
         self.call_outcome = kwargs.pop("call_outcome")
         # TODO: game adviser/observer should probably go here
