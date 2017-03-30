@@ -18,8 +18,9 @@ class Root(object):
         """Returns an AssertionError if any unexpected kwargs exist on initialisation."""
 
         print("Root.__init__() called.")
-
+        print(kwargs)
         assert not kwargs
+
 
 """
 PEOPLE
@@ -49,8 +50,8 @@ class Group(Root):
         # self.group_name = kwargs.pop("group_name")
         # self.group_teams = []  # list of pointers to Team Objects
         # self.group_type = kwargs.pop("group_type")
-
-        super(Group, self).__init__(**kwargs)
+        if kwargs:
+            super(Group, self).__init__(**kwargs)
 
 
 class Team(Root):
@@ -59,18 +60,22 @@ class Team(Root):
     def __init__(self, **kwargs):
         """Takes team_name, [team_players], team_division as mandatory arguments."""
 
-        print("Team.__init() called.")
+        #print("Team.__init() called.")
 
         self.team_name = kwargs.pop("team_name")
         self.team_players = kwargs.pop("team_players")
         # self.team_gender = kwargs.pop("team_gender")
         # self.team_age = kwargs.pop("team_age")
-        self.team_division = kwargs.pop("team_division")
+
+        # games have a division property - this is on hold
+        if 'team_division' in kwargs:
+            self.team_division = kwargs.pop("team_division")
+
 
         self.games = []  # ANDY: this is just a place for me to play with team scrapes from worlds
         # self.team_tournaments = None  # TODO: work out database for storing games
-
-        super(Team, self).__init__(**kwargs)
+        if kwargs:
+            super(Team, self).__init__(**kwargs)
 
     def append_game(self, game):
         """Appends a game object to self.games"""
@@ -93,14 +98,17 @@ class Player(Team):
     def __init__(self, **kwargs):
         """Takes player_name, player_number as mandatory arguments."""
 
-        print("Player.__init__() called.")
+        #print("Player.__init__() called.")
 
         self.player_name = kwargs.pop("player_name")
         self.player_number = kwargs.pop("player_number")
 
         # TODO: analysis attributes go here
+        if kwargs:
+            super(Player, self).__init__(**kwargs)
 
-        super(Player, self).__init__(**kwargs)
+    def __str__(self):
+        return self.player_name
 
 """
 GAME STRUCTURE
@@ -131,24 +139,23 @@ class Tournament(Root):
     # formats = [u"round-robin", u"Swiss-elimination", "etc."]
 
     def __init__(self, **kwargs):
-        """Takes tournament_name, tournament_year, point_cap, time_cap, time_outs, tournament_division as mandatory 
+        """Takes tournament_name, tournament_year, point_cap, time_cap, timeouts, tournament_division as mandatory 
         arguments."""
 
         print("Tournament.__init__() called.")
-
         self.tournament_name = kwargs.pop("tournament_name")
         # self.tournament_year = kwargs.pop("tournament_year")  # TODO: turn this into a regex
         # self.tournament_location = kwargs.pop("tournament_location")
         # self.tournament_surface = kwargs.pop("tournament_surface")
         self.point_cap = kwargs.pop("point_cap")
         self.time_cap = kwargs.pop("time_cap")
-        self.time_outs = kwargs.pop("time_outs")
+        self.timeouts = kwargs.pop("timeouts")
         self.tournament_divisions = kwargs.pop("tournament_divisions")
         # self.tournament_start = None
         # self.tournament_finish = None
         # self.tournament_duration = self.tournament_finish - self.tournament_start
-
-        super(Tournament, self).__init__(**kwargs)
+        if kwargs:
+            super(Tournament, self).__init__(**kwargs)
 
     def __str__(self):
         return self.tournament_name
@@ -167,8 +174,8 @@ class Division(Tournament):
 
         self.division_name = kwargs.get("division_name")
         self.division_teams = kwargs.get("division_teams")
-
-        super(Division, self).__init__(**kwargs)
+        if kwargs:
+            super(Division, self).__init__(**kwargs)
 
 
 """
@@ -189,23 +196,22 @@ class Game(Division):
         """Takes a two-item list of game_teams (0=offence, 1=defence), game_stage as mandatory inputs. """
 
         print("Game.__init__() called.")
-
         self.game_score = [[0, 0]]  # double nesting, want to just append the score here after each point
         self.game_points = []
         self.game_teams = kwargs.pop("game_teams")
         self.game_stage = kwargs.pop("game_stage")
-        self.game_name = "{}-{}:{}-{}".format(
-            self.tournament_name,
+        self.game_name = "{}:{}-{}".format(
+            #self.tournament_name,
             self.game_stage,
-            self.game_teams[0].team,
-            self.game_teams[1].team
+            self.game_teams[0].team_name,
+            self.game_teams[1].team_name
         )
         # self.game_start = None
         # self.game_finish = None
         # self.game_pause = None
         # self.game_weather = kwargs.pop("game_weather")
-
-        super(Game, self).__init__(**kwargs)
+        if kwargs:
+            super(Game, self).__init__(**kwargs)
 
     def __str__(self):
         return self.game_name
@@ -220,8 +226,8 @@ class TimeStamp(Root):
         self.ts_start = kwargs.pop("ts_start")
         self.ts_end = kwargs.pop("ts_end")
         self.ts_duration = self.ts_end - self.ts_start
-
-        super(TimeStamp, self).__init__(**kwargs)
+        if kwargs:
+            super(TimeStamp, self).__init__(**kwargs)
 
 
 class Point(TimeStamp):
@@ -246,11 +252,13 @@ class Point(TimeStamp):
         self.point_teams = kwargs.pop("point_teams")  # [offence, defence]
 
         temp_lines = kwargs.pop("point_lines") # [[offence_players], [defence_players]]
-        self.point_lines = [[temp_lines[0]], [temp_lines[1]]]  # nesting for subs
+        self.point_lines = [temp_lines]  # nesting for subs
+        self.line_set = 0 # pair of lines is a set - after sub, new set, increment
+                            # use current_lines()
 
-        self.point_score = [kwargs.get("point_score"), None]
-        self.point_number = self.point_score[0][0] + self.point_score[0][1] + 1
-        self.point_difference = [self.point_score[0][0] - self.point_score[0][1], None]
+        self.point_score = kwargs.pop("point_score")
+        self.point_number = self.point_score[0] + self.point_score[1] + 1
+        self.point_difference = [self.point_score[0] - self.point_score[1], None]
         # point_difference is a two item list of the relative offensive position at the start of the point:
         # positive numbers = winning, 0 = tied, negative numbers = losing
 
@@ -260,8 +268,13 @@ class Point(TimeStamp):
         self.point_outcome = None  # from point_outcomes
 
         self.offence = 0 # starting offence is zero, this is to be able to track offence changes
+        if kwargs:
+            print(kwargs)
+            super(Point, self).__init__(**kwargs)
 
-        super(Point, self).__init__(**kwargs)
+    def current_lines(self):
+        return self.point_lines[self.line_set]
+
 
 
 class Pull(TimeStamp):
@@ -283,7 +296,7 @@ class Pull(TimeStamp):
     # ob_receptions = all_pulls[2:]
 
     def __init__(self, **kwargs):
-        """Takes puller, pull_location, pull_reception as mandatory arguments."""
+        """Takes puller, pull_action as mandatory arguments."""
 
         print("Pull.__init__() called.")
 
@@ -292,8 +305,8 @@ class Pull(TimeStamp):
         self.pull_location = None  # Set this off pull_action
         self.pull_reception = None  # as above
         # self.type = kwargs.pop("pull_type")
-
-        super(Pull, self).__init__(**kwargs)
+        if kwargs:
+            super(Pull, self).__init__(**kwargs)
 
 
 class Event(TimeStamp):
@@ -348,21 +361,70 @@ class Event(TimeStamp):
         u"intercept",
     ]
 
+    # i should be doing all this shit by slicing the all_actions list maybe
+    # way less readable tho
+
+    turnover_actions = [
+        u'double-touch',
+        u'down',
+        u'hand-over',
+        u'out-of-bounds',
+        u'drop',
+        u'foot-block',
+        u'hand-block',
+        u'stall-out',
+        u'block',
+        u'intercept',
+    ]
+
+
+    # these categories are for visual display purposes
+    primary_actions = [
+        u'pass',
+        u'down',
+        u'drop',
+        u'out-of-bounds',
+        u'goal',
+    ]
+
+    secondary_actions = [
+        u'stall-out',
+        u'double-touch',
+        u'hand-over',
+    ]
+
+    defensive_actions = [
+        u'block',
+        u'intercept',
+        #u'Callahan',
+    ]
+
     def __init__(self, **kwargs):
         """Takes event_player, event_action as mandatory arguments."""
 
-        print("Event.__init__() called.")
+        #print("Event.__init__() called.")
 
         self.event_player = kwargs.pop("event_player")  # pointer to player object
         self.event_action = kwargs.pop("event_action")
 
         # TODO: set these off the action
+        # setting these off the action is doable here
+        # setting action things that require information from other points
+        #   will have to be a function of the class where the other point is passed in at runtime
         self.action_possession = None
         self.action_type = None
         self.action_outcome = None
         # self.location = None
 
-        super(Event, self).__init__(**kwargs)
+        # this feels weird am i doing this right
+        if self.event_action in self.turnover_actions:
+            print('event_action (in turnovers): '+self.event_action)
+            self.action_outcome = self.outcomes[1]
+        else:
+            self.action_outcome = self.outcomes[0]
+
+        if kwargs:
+            super(Event, self).__init__(**kwargs)
 
 
 class Call(TimeStamp):
@@ -400,7 +462,8 @@ class Call(TimeStamp):
         self.call_outcome = kwargs.pop("call_outcome")
         # TODO: game adviser/observer should probably go here
 
-        super(Call, self).__init__(**kwargs)
+        if kwargs:
+            super(Call, self).__init__(**kwargs)
 
 
 class TimeOut(TimeStamp):
@@ -415,4 +478,5 @@ class TimeOut(TimeStamp):
         self.to_caller = kwargs.pop("to_caller")
         self.to_category = kwargs.pop("to_category")  # live or dead disc
 
-        super(TimeOut, self).__init__(**kwargs)
+        if kwargs:
+            super(TimeOut, self).__init__(**kwargs)

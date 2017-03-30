@@ -46,7 +46,7 @@ RatsScreenManager:
         Button:
             text:'Switch Config'
             font_size:20
-            on_release:root.goto_switch_config()
+            #on_release:root.goto_switch_config()
 
         Button:
             text:'Exit'
@@ -226,13 +226,3 @@ RatsScreenManager:
                 id:RightBox
                 orientation:'vertical'
                 padding:[40,40,40,40]
-
-                # adding SpecialBox here puts it at the top bc this bit is done before action shit
-
-                BoxLayout:
-                    id:SpecialBox
-                    orientation:'horizontal'
-                    #padding:[40,40,40,40]
-                    # having padding set here fucks the whole thing up WHY
-                    # oh well no padding for us - just inherits from before
-                #Separator:

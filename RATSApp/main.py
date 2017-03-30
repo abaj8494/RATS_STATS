@@ -30,9 +30,7 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 #stats
-import structures as struct
 import analysis as anal
-from structures import Game, Point
 import game_hierarchy as hierarch
 
 try:
@@ -91,13 +89,14 @@ class ConfirmInputScreen(Screen):
         super(ConfirmInputScreen, self).__init__(**kwargs)
         sApp = App.get_running_app()
 
-        configpath = os.join(sApp.user_data_dir,'AUCDivisionII.cfg')
+        configpath = os.path.join(sApp.user_data_dir,'AUCDivisionII.cfg')
         sApp.tournament_data = self.import_config(configpath)
         # doing this instead of instantiating a tournament object rn
 
         if sApp.tournament_data:
             content = ''
             for item in sApp.tournament_data:
+                # lol this produces such gross output
                 content = content +str(item)
                 content = content + '\n'
             self.ids.content_disp.text = content
@@ -116,29 +115,28 @@ class ConfirmInputScreen(Screen):
             file = open(os.path.join(sApp.user_data_dir, path), u'rb')
             for line in file.readlines():
                 key, value = line.split(u':')
-                if key == u'name':
+                value = value.strip()
+                if key == u'tournament_name':
                     tournament_name = [key,value]
-                elif key == u'timecap':
+                elif key == u'time_cap':
                     time_cap = [key,value]
-                elif key == u'pointscap':
+                elif key == u'point_cap':
                     point_cap = [key,value]
                 elif key == u'timeouts':
                     timeouts = [key,value]
                 elif key == u'divisions':
                     divisions = value.split(u'|')
-                    # this is unused atm
+                    tournament_divisions = ['tournament_divisions',divisions]
                 else:
                     pass
                     #print(key,value)
             file.close()
 
             # tournament = hierarch.Tournament(tournament=tournament_name,
-            #                                  year=2017,
             #                                  point_cap=point_cap,
             #                                  time_cap=time_cap)
-            # this year business is pretty bullshit rn
 
-            tournament_data = [tournament_name,['year',2017],point_cap,time_cap]
+            tournament_data = [tournament_name,point_cap,time_cap,timeouts,tournament_divisions]
 
             return tournament_data
         else:
@@ -192,8 +190,6 @@ class TeamSelectScreen(Screen):
             full_path = os.path.join(sApp.user_data_dir, 'teamlists', filename)
             file = open(full_path, u'rb')
 
-            # create the Team() object here
-            team = hierarch.Team(team_name=)
             players = []
             for line in file.readlines():
                 key, value = line.split(u':')
@@ -212,8 +208,6 @@ class TeamSelectScreen(Screen):
                                  team_division='womens is better')
 
             file.close()
-
-            # what do i do with the team object here?
             sApp.unordered_teams.append(team)
 
         sApp.root.switch_to(SelectOffenceScreen())
@@ -230,7 +224,7 @@ class SelectOffenceScreen(Screen):
         super(SelectOffenceScreen, self).__init__(**kwargs)
 
         sApp = App.get_running_app()
-        for team in sApp.game.unordered_teams:
+        for team in sApp.unordered_teams:
             teambutton = Button(text=team.team_name)
             storecallback = partial(self.store_offence, teambutton)
             teambutton.bind(on_release=storecallback)
@@ -250,7 +244,8 @@ class SelectOffenceScreen(Screen):
         # keywords here looks like [[key,value],[key,value]] etc
         #TODO: check that this kwarg passing shit actually works
         keywords = sApp.tournament_data
-        keywords.append(['game_teams', teams],['game_stage','default_stage'])
+        keywords.append(['game_teams', teams])
+        keywords.append(['game_stage','default_stage'])
         keywords = dict(sApp.tournament_data)
         sApp.game = hierarch.Game(**keywords)
 
@@ -262,36 +257,36 @@ class SelectPlayersScreen(Screen):
     def __init__(self, **kwargs):
         super(SelectPlayersScreen, self).__init__(**kwargs)
         sApp = App.get_running_app()
-        if len(sApp.game.points_list) == 0: # if this is the first point
+        if len(sApp.game.game_points) == 0: # if this is the first point
             self.offence = 0
             self.score = [0,0]
         else:
-            self.offence = 1 - sApp.game.points_list[-1].offence # opposite offence to end of last point
-            self.score = sApp.game.points_list[-1].point_score # should be incremented when the goal is scored, hence correct here
-
+            self.offence = 1 - sApp.game.game_points[-1].offence # opposite offence to end of last point
+            self.score = sApp.game.game_points[-1].point_score # should be incremented when the goal is scored, hence correct here
         self.temp_oline = []
         self.temp_dline = []
 
-        for player in sApp.game.teams[self.offence]:
+        for player in sApp.game.game_teams[self.offence].team_players:
             pb = ToggleButton(text=player.player_name)
-            pb.bind(on_release=partial(self.swap_state, pb, player, self.offence))
+            pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.LeftBox.add_widget(pb)
 
-        for player in sApp.game.teams[1 - self.offence]:
+        for player in sApp.game.game_teams[1 - self.offence].team_players:
             pb = ToggleButton(text=player.player_name)
-            pb.bind(on_release=partial(self.swap_state, pb, player, 1 - self.offence))
+            pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.RightBox.add_widget(pb)
 
-    def swap_state(self,pb,player,side,*args):
+    def swap_state(self,pb,player,*args):
         #this is the NEW state - normal button pressed will trigger the if 'down' branch of this
         # offence here is just for checking which team the call is coming from and hence which list to edit
+        sApp = App.get_running_app()
         if pb.state == 'normal':
-            if side:
+            if player in sApp.game.game_teams[1 - self.offence].team_players:
                 self.temp_dline.remove(player)
             else:
                 self.temp_oline.remove(player)
         elif pb.state == 'down':
-            if side:
+            if player in sApp.game.game_teams[1 - self.offence].team_players:
                 self.temp_dline.append(player)
             else:
                 self.temp_oline.append(player)
@@ -305,8 +300,9 @@ class SelectPlayersScreen(Screen):
         sApp = App.get_running_app()
         if len(self.temp_dline) == 7 and len(self.temp_oline) == 7:
             #order has already been checked when we look for offence in the __init__ of this screen
+            #TODO: confirm this
             lines = [self.temp_oline,self.temp_dline]
-            sApp.current_point = hierarch.Point(point_teams=sApp.game.teams,
+            sApp.current_point = hierarch.Point(point_teams=sApp.game.game_teams,
                                                 point_lines=lines,
                                                 point_score=self.score)
             sApp.root.switch_to(PullingScreen())
@@ -319,15 +315,15 @@ class PullingScreen(Screen):
     def __init__(self, **kwargs):
         super(PullingScreen, self).__init__(**kwargs)
         sApp = App.get_running_app()
-        sApp.current_point.pull[0] = 'puller_not_set'
+        self.puller = 'puller_not_set'
 
-        for player in sApp.current_point.lines[1 - sApp.current_point.offence]:
-            pb = ToggleButton(text=player, group=u'players')
-            pickcallback = partial(self.set_puller, pb)
+        for player in sApp.current_point.current_lines()[1 - sApp.current_point.offence]:
+            pb = ToggleButton(text=player.player_name, group=u'players')
+            pickcallback = partial(self.set_puller, pb, player)
             pb.bind(on_release=pickcallback)
             self.ids.LeftBox.add_widget(pb)
 
-        for action in struct.pull_outcomes:
+        for action in hierarch.Pull.all_pulls:
             outcome = Button(text=action)
             outcomecallback = partial(self.set_pull_outcome, outcome)
             outcome.bind(on_release=outcomecallback)
@@ -336,21 +332,24 @@ class PullingScreen(Screen):
     def on_enter(self, *args):
         pass
 
-    def set_puller(self, puller, *args):
+    def set_puller(self, puller, player, *args):
         sApp = App.get_running_app()
-        sApp.current_point.pull[0] = puller.text
+        self.puller = player
         return True
 
     def set_pull_outcome(self, outcome, *args):
         sApp = App.get_running_app()
-        if sApp.current_point.pull[0] != 'puller_not_set':
-            #if they haven't selected a puller, button will do nothing
-            sApp.current_point.pull[1] = outcome.text
-            if sApp.current_point.pull[1] in struct.pull_outcomes_turnovers:
+        if self.puller != 'puller_not_set':
+
+            pull = hierarch.Pull(puller=self.puller,
+                                 pull_action=outcome)
+            if outcome == u'dropped-pull':
                 sApp.current_point.offence = 1 - sApp.current_point.offence
-            sApp.current_point.time_start = time.time()
-            if sApp.game.score == [0,0]:
-                sApp.game.time_game_start = time.time()
+
+            sApp.current_point.ts_start = time.time()
+            #if sApp.current_point.score == [0,0]:
+            #    sApp.game.ts_start = time.time()
+            # TODO: game start time?
             sApp.root.switch_to(SelectActionScreen())
 
         return True
@@ -359,40 +358,45 @@ class PullingScreen(Screen):
 class SelectActionScreen(Screen):
     def __init__(self, **kwargs):
         super(SelectActionScreen, self).__init__(**kwargs)
+
         self.popup = None
-        self.temp_event = ['player_not_set', None, 0]  # [player, action, timestamp]
+        self.temp_event = [hierarch.Player, None, None, None]  # [player, action, player_ts, action_ts]
         self.pblist = []
         sApp = App.get_running_app()
-        for player in sApp.current_point.lines[sApp.current_point.offence]:
-            pb = ToggleButton(text=player, group=u'players')
-            pickcallback = partial(self.set_player, pb)
+
+        for player in sApp.current_point.current_lines()[sApp.current_point.offence]:
+            pb = ToggleButton(text=player.player_name, group=u'players')
+            pickcallback = partial(self.set_player, player)
             pb.bind(on_release=pickcallback)
             self.pblist.append(pb)
             self.ids.LeftBox.add_widget(pb)
 
-        for action in struct.actions:
+        for action in hierarch.Event.primary_actions:
             select = Button(text=action)
-            selectcallback = partial(self.set_action, select)
+            selectcallback = partial(self.set_action, action)
             select.bind(on_release=selectcallback)
             self.ids.RightBox.add_widget(select)
 
-        # save button
-        goBut = Button(text=u'save')
-        goButcallback = partial(sApp.save_game) # call some save shit here
-        goBut.bind(on_release=goButcallback)
-        self.ids.SpecialBox.add_widget(goBut)
+        secondaryBox = BoxLayout(orientation='horizontal',
+                                 padding=[0,10])
+        for action in hierarch.Event.secondary_actions:
+            select = Button(text=action)
+            selectcallback = partial(self.set_action, action)
+            select.bind(on_release=selectcallback)
+            secondaryBox.add_widget(select)
+        self.ids.RightBox.add_widget(secondaryBox)
 
-        # block button
-        blockBut = Button(text=u'block')
-        blockButcallback = partial(self.set_action, blockBut)
-        blockBut.bind(on_release=blockButcallback)
-        self.ids.SpecialBox.add_widget(blockBut)
+        for action in hierarch.Event.defensive_actions:
+            select = Button(text=action)
+            selectcallback = partial(self.set_action, action)
+            select.bind(on_release=selectcallback)
+            self.ids.RightBox.add_widget(select)
 
-    def on_enter(self, *args):
-        pass
 
     def set_player(self, player, *args):
-        self.temp_event[0] = player.text
+        sApp = App.get_running_app()
+        self.temp_event[0] = player
+        self.temp_event[2] = time.time() - sApp.current_point.ts_start
         return True
 
     def set_action(self, action, *args):
@@ -400,39 +404,44 @@ class SelectActionScreen(Screen):
         sApp = App.get_running_app()
         if self.temp_event[0] != 'player_not_set':
             #button does nothing if haven't picked a player
-            self.temp_event[1] = action.text
-            self.temp_event[2] = time.time() - sApp.current_point.time_start
+            self.temp_event[1] = action
+            self.temp_event[3] = time.time() - sApp.current_point.ts_start
             #timestamps are time since start of the point
-            sApp.current_point.sequence.append(copy(self.temp_event))
+
+            event_obj = hierarch.Event(event_player=self.temp_event[0],
+                                       event_action=self.temp_event[1],
+                                       ts_start=self.temp_event[2],
+                                       ts_end=self.temp_event[3])
+
+            sApp.current_point.sequence.append(copy(event_obj))
             sApp.save_game()
             for pb in self.pblist:
-                pb.state = u'normal'
-
-            if self.temp_event[1] in struct.turnovers:
+                pb.state = u'normal' # reset the player buttons
+            # offensive turnovers
+            if event_obj.action_outcome == u'turnover' and event_obj.event_action not in hierarch.Event.defensive_actions:
                 sApp.current_point.offence = 1 - sApp.current_point.offence
                 sApp.root.switch_to(SelectActionScreen())
-
-            if self.temp_event[1] == u'block':
+            # defensive turnovers
+            if event_obj.event_action in hierarch.Event.defensive_actions:
                 popupContent = BoxLayout(orientation=u'vertical')
-                #blockLabel = Label(text='who got the block')
-                #popupContent.add_widget(blockLabel)
-                for player in sApp.current_point.lines[1-sApp.current_point.offence]:
-                    pb = Button(text=player)
-                    pbcallback = partial(self.save_block,pb)
+                for player in sApp.current_point.current_lines()[1-sApp.current_point.offence]:
+                    pb = Button(text=player.player_name)
+                    pbcallback = partial(self.save_defensive_action, player , event_obj.event_action)
                     pb.bind(on_release=pbcallback)
                     popupContent.add_widget(pb)
 
-                self.popup = Popup(title=u'who got the block',
+                self.popup = Popup(title=u'who got the block/int',
                                    content=popupContent,
                                    size_hint=[0.7, 0.7])
                 self.popup.open()
 
-            if self.temp_event[1] == u'goal':
+            if event_obj.event_action == u'goal':
                 # change this to the stacked or whatever, even x/y  boxex
                 popupContent = BoxLayout()
                 sApp.current_point.time_end = time.time()
-                sApp.game.score[sApp.current_point.offence] += 1
-                scoreLabel = Label(text='the score is '+str(sApp.game.score))
+                sApp.current_point.point_score[sApp.current_point.offence] += 1
+                sApp.game.game_score.append(sApp.current_point.point_score)
+                scoreLabel = Label(text='the score is '+str(sApp.current_point.point_score))
                 popupContent.add_widget(scoreLabel)
 
                 yes = Button(text=u'yes')
@@ -443,19 +452,19 @@ class SelectActionScreen(Screen):
                 no.bind(on_release=self.end_point)
                 popupContent.add_widget(no)
 
-                #paws = Button(text=u'pause please')
-                #paws.bind(on_release=self.pause_game)
-                #popupContent.add_widget(paws)
+                # paws = Button(text=u'pause please')
+                # paws.bind(on_release=self.pause_game)
+                # popupContent.add_widget(paws)
 
-                # review stats button should be here
-                review = Button(text=u'review stats')
-                review.bind(on_release=self.review_stats)
-                popupContent.add_widget(review)
+                # review = Button(text=u'review stats')
+                # review.bind(on_release=self.review_stats)
+                # popupContent.add_widget(review)
 
                 self.popup = Popup(title=u'was that goal the game winner?',
                                    content=popupContent,
                                    size_hint=[0.7, 0.7])
                 self.popup.open()
+
             return True
 
     def review_stats(self,*args):
@@ -478,21 +487,19 @@ class SelectActionScreen(Screen):
         self.stats_popup.open()
         return True
 
-    def save_block(self, player, *args):
+    def save_defensive_action(self, player, action, *args):
         sApp = App.get_running_app()
-        blockevent = [player.text,'block',(time.time()-sApp.current_point.time_start)]
+        blockevent = hierarch.Event(event_player=player,
+                                    event_action=action,
+                                    ts_start=time.time()-sApp.current_point.ts_start,
+                                    ts_end=time.time()-sApp.current_point.ts_start)
+                                    # blocks are instantaneous lol
         sApp.current_point.sequence.append(blockevent)
-
-        sApp.current_point.offence = 1-sApp.current_point.offence
+        sApp.current_point.offence = 1 - sApp.current_point.offence
         if self.popup:
             self.popup.dismiss()
-        #print('$$$ switching screen')
         sApp.root.switch_to(SelectActionScreen())
-        #does not appear to work rn
         return True
-
-    #moved save_game to be a function of the App class - so can access it anywhere
-
 
     # def pause_game(self, *args):
         # save the time as some paused time so can return with working timer
@@ -504,25 +511,24 @@ class SelectActionScreen(Screen):
         if self.popup:
             self.popup.dismiss()
         sApp = App.get_running_app()
-        sApp.game.points_list.append(sApp.current_point)
+        sApp.game.game_points.append(sApp.current_point)
         sApp.current_point = None
-
-        sApp.root.switch_to(SelectOffenceScreen())
+        sApp.root.switch_to(SelectPlayersScreen())
         return True
 
     def end_game(self, *args):
         if self.popup:
             self.popup.dismiss()
         sApp = App.get_running_app()
-        sApp.game.points_list.append(sApp.current_point)
-        sApp.game.time_game_end = time.time()
-        #this path
-        savename = sApp.game.tournament.strip() + '_' + sApp.game.team_names[0].strip() + "v" + sApp.game.team_names[1].strip() + ".p"
+        sApp.game.game_points.append(sApp.current_point)
+        #sApp.game.time_game_end = time.time()
+        savename = sApp.game.tournament_name.strip() + '_' + sApp.game.game_teams[0].team_name.strip() + "v" + sApp.game.game_teams[1].team_name.strip() + ".p"
         path = os.path.join(sApp.user_data_dir, savename)
-        print('#end_game#' + path)
+        print('#end_game# ' + path)
         pickle.dump(sApp.game, open(path, 'wb'))
 
         sApp.game = None #should we clear this here??
+        sApp.unordered_teams = []
         sApp.root.switch_to(MenuScreen())
         return True
 
@@ -556,10 +562,10 @@ class ChooseStatsScreen(Screen):
         # this is clearly a workaround - why the None ??
         # - works still -
         #
-        for point in sApp.game.points_list:
+        for point in sApp.game.game_points:
             if point == None:
-                print("Detected a NoneType obj in game.points_list, discarding")
-                sApp.game.points_list.remove(point)
+                print("Detected a NoneType obj in game.game_points, discarding")
+                sApp.game.game_points.remove(point)
 
         sApp.root.switch_to(ReadScreen())
 
@@ -575,7 +581,7 @@ class ReadScreen(Screen):
         if sApp.game:
             self.ids.BigBox.add_widget(Label(text=str(anal.basic_info(sApp.game)), size_hint=[1,0.01]))
 
-            for point in sApp.game.points_list:
+            for point in sApp.game.game_points:
                 print(point)
 
             # TODO: turn this on later
@@ -602,7 +608,7 @@ class ConfigScreen(Screen):
         sApp = App.get_running_app()
         sApp.game = sApp.import_config(sApp.teamfilenames)
         if sApp.game:
-            content = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.points_cap) + str(
+            content = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.point_cap) + str(
                 sApp.game.team_names) + '\n' + str(sApp.game.team_players)
         else:
             content = 'no game found - go to switch config'
@@ -663,13 +669,6 @@ class StatsApp(App):
         # game files aren't currently linked to tournament objects
 
         self.unordered_teams = [] # read in teams, check whos on offence next screen
-        self.last_offence = 1 # carry offence through, default 1 means we'll start with 0 as offence as desired
-
-        # these are used to carry information before we have it all
-        # when we have all the info we dump it into a Point as current_point
-        self.temp_offence = None
-        self.temp_oline = []
-        self.temp_dline = []
 
     def build(self):
         sApp = App.get_running_app()
@@ -678,9 +677,10 @@ class StatsApp(App):
     def save_game(self, *args):
         # popup confirmation is for nerds
         sApp = App.get_running_app()
-        savename = sApp.game.tournament.strip() + u'_' + sApp.game.team_names[0].strip() + "v" + sApp.game.team_names[1].strip() + ".p"
+        savename = sApp.game.tournament_name.strip() + u'_' + sApp.game.game_teams[0].team_name.strip() +\
+                   "v" + sApp.game.game_teams[1].team_name.strip() + ".p"
         path = os.path.join(sApp.user_data_dir, savename)
-        print('#save_game#' + path)
+        print('#save_game# ' + path)
         pickle.dump(sApp.game, open(path, 'wb'))
         return True
 
