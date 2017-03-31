@@ -136,7 +136,8 @@ class ConfirmInputScreen(Screen):
             #                                  point_cap=point_cap,
             #                                  time_cap=time_cap)
 
-            tournament_data = [tournament_name,point_cap,time_cap,timeouts,tournament_divisions]
+            tournament_data = [tournament_name,point_cap,time_cap,timeouts,
+                               tournament_divisions,['tournament_year',2017]]
 
             return tournament_data
         else:
@@ -257,12 +258,12 @@ class SelectPlayersScreen(Screen):
     def __init__(self, **kwargs):
         super(SelectPlayersScreen, self).__init__(**kwargs)
         sApp = App.get_running_app()
-        if len(sApp.game.game_points) == 0: # if this is the first point
+        if len(sApp.game.points) == 0: # if this is the first point
             self.offence = 0
             self.score = [0,0]
         else:
-            self.offence = 1 - sApp.game.game_points[-1].offence # opposite offence to end of last point
-            self.score = sApp.game.game_points[-1].point_score # should be incremented when the goal is scored, hence correct here
+            self.offence = 1 - sApp.game.points[-1].offence # opposite offence to end of last point
+            self.score = sApp.game.points[-1].point_score # should be incremented when the goal is scored, hence correct here
         self.temp_oline = []
         self.temp_dline = []
 
@@ -511,7 +512,7 @@ class SelectActionScreen(Screen):
         if self.popup:
             self.popup.dismiss()
         sApp = App.get_running_app()
-        sApp.game.game_points.append(sApp.current_point)
+        sApp.game.points.append(sApp.current_point)
         sApp.current_point = None
         sApp.root.switch_to(SelectPlayersScreen())
         return True
@@ -520,7 +521,7 @@ class SelectActionScreen(Screen):
         if self.popup:
             self.popup.dismiss()
         sApp = App.get_running_app()
-        sApp.game.game_points.append(sApp.current_point)
+        sApp.game.points.append(sApp.current_point)
         #sApp.game.time_game_end = time.time()
         savename = sApp.game.tournament_name.strip() + '_' + sApp.game.game_teams[0].team_name.strip() + "v" + sApp.game.game_teams[1].team_name.strip() + ".p"
         path = os.path.join(sApp.user_data_dir, savename)
@@ -562,10 +563,10 @@ class ChooseStatsScreen(Screen):
         # this is clearly a workaround - why the None ??
         # - works still -
         #
-        for point in sApp.game.game_points:
+        for point in sApp.game.points:
             if point == None:
-                print("Detected a NoneType obj in game.game_points, discarding")
-                sApp.game.game_points.remove(point)
+                print("Detected a NoneType obj in game.points, discarding")
+                sApp.game.points.remove(point)
 
         sApp.root.switch_to(ReadScreen())
 
@@ -581,7 +582,7 @@ class ReadScreen(Screen):
         if sApp.game:
             self.ids.BigBox.add_widget(Label(text=str(anal.basic_info(sApp.game)), size_hint=[1,0.01]))
 
-            for point in sApp.game.game_points:
+            for point in sApp.game.points:
                 print(point)
 
             # TODO: turn this on later

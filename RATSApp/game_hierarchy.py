@@ -16,9 +16,8 @@ class Root(object):
 
     def __init__(self, **kwargs):
         """Returns an AssertionError if any unexpected kwargs exist on initialisation."""
-
-        print("Root.__init__() called.\nkwargs: {}".format(*kwargs))
-
+        print("Root.__init__() called.\nkwargs: " + str(kwargs))
+        #.format fails if kwargs is empty - which it should always be here
         assert not kwargs
 
 
@@ -101,7 +100,7 @@ class Player(Team):
     def __init__(self, **kwargs):
         """Takes player_name, player_number as mandatory arguments."""
 
-        print("Player.__init__() called.")
+        # print("Player.__init__() called.")
 
         self.player_name = kwargs.pop("player_name")
         self.player_number = kwargs.pop("player_number")
@@ -156,13 +155,13 @@ class Tournament(Root):
         self.point_cap = kwargs.pop("point_cap")
         self.time_cap = kwargs.pop("time_cap")
         self.timeouts = kwargs.pop("timeouts")
-        # self.tournament_divisions = kwargs.pop("tournament_divisions")
+        self.tournament_divisions = kwargs.pop("tournament_divisions")
         # self.tournament_start = None
         # self.tournament_finish = None
         # self.tournament_duration = self.tournament_finish - self.tournament_start
         # self.tournament_format = None  # round-robin, single-elim, etc.
 
-        # if kwargs:  # ANDY - there shouldn't be any, but Root will check this so I don't want the if here
+        #if kwargs:  # ANDY - there shouldn't be any, but Root will check this so I don't want the if here
         super(Tournament, self).__init__(**kwargs)
 
     def __str__(self):
@@ -211,13 +210,7 @@ class Game(Division):
         self.points = []
         self.game_teams = kwargs.pop("game_teams")
         self.game_stage = kwargs.pop("game_stage")
-        self.game_name = "{}{}-{}:{}-{}".format(
-            self.tournament_name,
-            self.tournament_year,
-            self.game_stage,
-            self.game_teams[0].team_name,
-            self.game_teams[1].team_name
-        )
+
         # self.game_start = None
         # self.game_finish = None
         # self.game_pause = None
@@ -227,6 +220,13 @@ class Game(Division):
             super(Game, self).__init__(**kwargs)
 
     def __str__(self):
+        self.game_name = "{}{}-{}:{}-{}".format(
+            self.tournament_name,
+            self.tournament_year,
+            self.game_stage,
+            self.game_teams[0].team_name,
+            self.game_teams[1].team_name
+        )
         return self.game_name
 
 
@@ -297,7 +297,9 @@ class Possession(TimeStamp):
 
         print("Possession.__init__() called.")
 
-        self.possession_team = kwargs.pop("possession_team")
+        #making this optional for the sake of a running program @ div2 nats @ 31/3/17
+        if 'possession_team' in kwargs:
+            self.possession_team = kwargs.pop("possession_team")
 
         if kwargs:
             super(Possession, self).__init__(**kwargs)
@@ -317,10 +319,15 @@ class DiscStatus(Root):
 
         print("DiscStatus.__init__() called.")
 
-        self.disc_start = kwargs.pop("disc_status")
-        self.disc_end = kwargs.pop("disc_end")
 
-        super(DiscStatus, self).__init__(**kwargs)
+        # again more concessions for div2 nats - there is value in something that works
+        if 'disc_status' in kwargs:
+            self.disc_start = kwargs.pop("disc_status")
+        if 'disc_end' in kwargs:
+            self.disc_end = kwargs.pop("disc_end")
+
+        if kwargs:
+            super(DiscStatus, self).__init__(**kwargs)
 
 
 class Pull(Possession, DiscStatus):
