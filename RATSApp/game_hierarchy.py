@@ -10,6 +10,8 @@
 # TODO: Validate inputs, check out https://github.com/alecthomas/voluptuous
 # TODO: make the team order explicitly store offence and defence as categories instead of numbers
 
+# store it once
+
 
 class Root(object):
     """Wrapper class for debugging."""
@@ -17,7 +19,7 @@ class Root(object):
     def __init__(self, **kwargs):
         """Returns an AssertionError if any unexpected kwargs exist on initialisation."""
 
-        print("Root.__init__() called.\nkwargs: {}".format(*kwargs))
+        print("Root.__init__() called.")
 
         assert not kwargs
 
@@ -33,7 +35,7 @@ classification levels for people in a game:
 """
 
 
-# TODO: insert this class
+# TODO: insert this class for a Worlds campaign.
 class Group(Root):
     """Superclass for a group of teams; e.g. Bench Ultimate (Club) or Team Australia (International)."""
 
@@ -44,7 +46,6 @@ class Group(Root):
 
     def __init__(self, **kwargs):
         """Takes group_name as mandatory arguments."""
-        # TODO: it doesn't actually, turned this off until we're on a Worlds campaign.
 
         print("Group.__init__({}) called.".format(kwargs))
 
