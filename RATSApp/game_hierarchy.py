@@ -10,14 +10,17 @@
 # TODO: Validate inputs, check out https://github.com/alecthomas/voluptuous
 # TODO: make the team order explicitly store offence and defence as categories instead of numbers
 
+# store it once
+
 
 class Root(object):
     """Wrapper class for debugging."""
 
     def __init__(self, **kwargs):
         """Returns an AssertionError if any unexpected kwargs exist on initialisation."""
-        print("Root.__init__() called.\nkwargs: " + str(kwargs))
-        #.format fails if kwargs is empty - which it should always be here
+
+        print("Root.__init__() called.")
+
         assert not kwargs
 
 
@@ -32,7 +35,7 @@ classification levels for people in a game:
 """
 
 
-# TODO: insert this class
+# TODO: insert this class for a Worlds campaign.
 class Group(Root):
     """Superclass for a group of teams; e.g. Bench Ultimate (Club) or Team Australia (International)."""
 
@@ -43,7 +46,6 @@ class Group(Root):
 
     def __init__(self, **kwargs):
         """Takes group_name as mandatory arguments."""
-        # TODO: it doesn't actually, turned this off until we're on a Worlds campaign.
 
         print("Group.__init__({}) called.".format(kwargs))
 
@@ -100,7 +102,7 @@ class Player(Team):
     def __init__(self, **kwargs):
         """Takes player_name, player_number as mandatory arguments."""
 
-        # print("Player.__init__() called.")
+        print("Player.__init__() called.")
 
         self.player_name = kwargs.pop("player_name")
         self.player_number = kwargs.pop("player_number")
@@ -161,7 +163,6 @@ class Tournament(Root):
         # self.tournament_duration = self.tournament_finish - self.tournament_start
         # self.tournament_format = None  # round-robin, single-elim, etc.
 
-        #if kwargs:  # ANDY - there shouldn't be any, but Root will check this so I don't want the if here
         super(Tournament, self).__init__(**kwargs)
 
     def __str__(self):
@@ -215,6 +216,9 @@ class Game(Division):
         # self.game_finish = None
         # self.game_pause = None
         # self.game_weather = kwargs.pop("game_weather")
+
+        # TODO: build this to track how many nerds are ruined
+        # self.flips = kwargs.pop("flips")
 
         if kwargs:
             super(Game, self).__init__(**kwargs)
@@ -274,7 +278,7 @@ class Point(TimeStamp):
         # point_difference is a two item list of the relative offensive position at the start of the point:
         # positive numbers = winning, 0 = tied, negative numbers = losing
 
-        self.sequence = []
+        self.sequences = []  # TODO: this changes with the new structure and might break things.
         self.turnovers = [[0, 0]]  # [offence, defence]
         self.possessions = [[1, 0]]  # [offence, defence]
         self.point_outcome = None  # from point_outcomes
@@ -289,7 +293,23 @@ class Point(TimeStamp):
         return self.point_lines[self.line_set]
 
 
-class Possession(TimeStamp):
+class Sequence(TimeStamp):
+    """Sequence is all actions in a point with the same group of players."""
+
+    def __init__(self, **kwargs):
+        """Takes sequence_lines as mandatory arguments."""
+
+        print("Sequence.__init__() called.")
+
+        # TODO: reorganise this so offence and defence are explicit
+        self.sequence_lines = kwargs.pop("sequence_lines")
+        self.possessions = []
+
+        if kwargs:
+            super(Sequence, self).__init__(**kwargs)
+
+
+class Possession(Sequence, TimeStamp):
     """Superclass for Events from players on the same team."""
 
     def __init__(self, **kwargs):
@@ -297,7 +317,7 @@ class Possession(TimeStamp):
 
         print("Possession.__init__() called.")
 
-        #making this optional for the sake of a running program @ div2 nats @ 31/3/17
+        # making this optional for the sake of a running program @ div2 nats @ 31/3/17
         if 'possession_team' in kwargs:
             self.possession_team = kwargs.pop("possession_team")
 
@@ -343,6 +363,8 @@ class Pull(Possession, DiscStatus):
         u"touched",
         u"untouched",
         u"dropped-pull",
+        # The Pottsy Rule
+        u"offside",  # TODO: this is technically a call for storage purposes but might as well put it here
     ]
 
     # in_receptions = all_pulls[0:1]
@@ -363,7 +385,7 @@ class Pull(Possession, DiscStatus):
             super(Pull, self).__init__(**kwargs)
 
 
-class Event(Possession, DiscStatus):
+class DiscEvent(Possession, DiscStatus):
     """"""
 
     # class attributes
@@ -479,7 +501,7 @@ class Event(Possession, DiscStatus):
             self.action_outcome = self.outcomes[0]
 
         if kwargs:
-            super(Event, self).__init__(**kwargs)
+            super(DiscEvent, self).__init__(**kwargs)
 
 
 class Call(TimeStamp, DiscStatus):

@@ -15,8 +15,7 @@ import pickle
 #import scipy.stats as ss
 
 # local project
-import structures
-#import game_structure
+import game_hierarchy
 
 
 def basic_info(game):
@@ -222,19 +221,21 @@ def main():
     # temp_game = open_raw_game(raw_game)
     # print(temp_game)
 
-    swab_invitational = game_structure.Tournament(
-        tournament="SWAB Invitational",
-        point_cap=7,
-        time_cap=60,
-        surface="Beach",
-        ages=("Rookies","Trippers"),
-        genders=("Mixed", "Very Mixed")
-    )
-    print(swab_invitational)
-
-    print(swab_invitational.divisions)
+    # swab_invitational = game_structure.Tournament(
+    #     tournament="SWAB Invitational",
+    #     point_cap=7,
+    #     time_cap=60,
+    #     surface="Beach",
+    #     ages=("Rookies","Trippers"),
+    #     genders=("Mixed", "Very Mixed")
+    # )
+    # print(swab_invitational)
+    #
+    # print(swab_invitational.divisions)
 
     # shrooms = structures.Team(team="Shrooms", age="")
+
+    debugger = game_hierarchy.Root("kwarg", 9, [0, 1])
 
 
 if __name__ == u"__main__":
