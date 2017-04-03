@@ -1,49 +1,31 @@
-# UI bugs:
-- confirm w/o selection in read old stats crashes < needs a back button
-
-## statistic fails:
-
-- totals of team touches blocks etc on that screen
-
-some text oddities
-
-# for some reason there was a nonetype object saved in the list of points
-# have check to protect against this but that's a bandaid
-
+# NoneType objects in game.points - caused by closing early? - protected against in reading games
 
 ## plans
 resuming saved game -> confirm input screen should have button -> popup -> select game to load- > continue
 
-###if you read old stats on a game and then continue to take new stats - it continues on from the previous game
-###
-###
-###
-
-
 DISPLAY STATS AT POINT END
-- smo goals: basic stats for broadcast
-
-
-- same line / set lines
 
 FIX GRAPHICS
 - whole UI needs a restrcture - can lean more on the kv file?
 - can definitely have superclasses of screens to bring consistency
 - can build out screens to be sublcasses of a screeen with whatever shit i want to go scross all of them
 
-Andy
-- differentiate between blocks and interceptions
-
 Super long term
 - have one device viewing stats and one taking stats simultaneously
-
-AFDA Scraping - csv team lists
-
+- location taking
 
 # BUSINESS
 - look at restructuring output into a relational database. Not sure about SQL, want open source.
 
+# PLACEHOLDERS
+- divisions, numbers
+
 TODO LIST:
+
+TO MAKE TAKING STATS EASIER:
+- same line / set lines
+- player numbers
+- resuming saved game
 
 STUFF TO BUILD:
 - the magic number
