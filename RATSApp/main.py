@@ -22,22 +22,12 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.widget import Widget
 
-#google drive
-import httplib2
-from apiclient import discovery
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
-
 #stats
 import analysis as anal
 import game_hierarchy as hierarch
+import storage_operations as stops
 
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
+
 
 class PlayerButton(Button):
     def __init__(self, **kwargs):
@@ -80,7 +70,7 @@ class MenuScreen(Screen):
 
     def goto_switch_config(self):
         sApp = App.get_running_app()
-        sApp.root.switch_to(ConfigScreen())
+        sApp.root.switch_to(ExportScreen())
         return True
 
 
@@ -587,7 +577,7 @@ class ReadScreen(Screen):
 
             # TODO: turn this on later
             # anal.write_csv_files(sApp.game)
-            # anal.gdrive_text(sApp.get_credentials())
+            # anal.gdrive_text(stops.get_credentials())
         else:  # shouldn't happen
             self.ids.BigBox.add_widget(Label(text=u'Could not find a Game object'))
 
@@ -602,12 +592,16 @@ class ReadScreen(Screen):
         return True
 
 
-class ConfigScreen(Screen):
+class ExportScreen(Screen):
     def __init__(self, **kwargs):
-        super(ConfigScreen, self).__init__(**kwargs)
+        super(ExportScreen, self).__init__(**kwargs)
+
+        # here i want to come in and have you choose which game to export
+        # then export the basic stats to a csv file
+        # then upload that to our gdrive
+        #
 
         sApp = App.get_running_app()
-        sApp.game = sApp.import_config(sApp.teamfilenames)
         if sApp.game:
             content = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.point_cap) + str(
                 sApp.game.team_names) + '\n' + str(sApp.game.team_players)
@@ -688,43 +682,6 @@ class StatsApp(App):
     def on_pause(self):
         self.save_game()
         return True
-
-    def get_credentials(self):
-        sApp = App.get_running_app()
-
-        # If modifying these scopes, delete your previously saved credentials
-        # at ~/.credentials/drive-python-quickstart.json
-        SCOPES = 'https://www.googleapis.com/auth/drive'
-        CLIENT_SECRET_FILE = 'client_secret.json'
-        APPLICATION_NAME = 'Drive API Python Quickstart'
-
-        """Gets valid user credentials from storage.
-
-        If nothing has been stored, or if the stored credentials are invalid,
-        the OAuth2 flow is completed to obtain the new credentials.
-
-        Returns:
-            Credentials, the obtained credential.
-        """
-        home_dir = os.path.expanduser('~')
-        credential_dir = os.path.join(sApp.user_data_dir, '.credentials')
-        if not os.path.exists(credential_dir):
-            os.makedirs(credential_dir)
-        credential_path = os.path.join(credential_dir,
-                                       'drive-python-quickstart.json')
-        print(credential_path)
-
-        store = Storage(credential_path)
-        credentials = store.get()
-        if not credentials or credentials.invalid:
-            flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-            flow.user_agent = APPLICATION_NAME
-            if flags:
-                credentials = tools.run_flow(flow, store, flags)
-            else:  # Needed only for compatibility with Python 2.6
-                credentials = tools.run(flow, store)
-            print('Storing credentials to ' + credential_path)
-        return credentials
 
     def on_resume(self):
         pass

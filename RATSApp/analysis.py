@@ -183,6 +183,9 @@ def write_csv_files(game):
 
             csv_file.close()
 
+    return csv_file
+
+
 
 def open_raw_game(raw_game):
     """Open pickle file and return the raw game object."""
