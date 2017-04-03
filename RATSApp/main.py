@@ -232,8 +232,7 @@ class SelectOffenceScreen(Screen):
         else:
             print('invalid team selected for offence') # literally no idea
 
-        # keywords here looks like [[key,value],[key,value]] etc
-        #TODO: check that this kwarg passing shit actually works
+
         keywords = sApp.tournament_data
         keywords.append(['game_teams', teams])
         keywords.append(['game_stage','default_stage'])
@@ -405,7 +404,7 @@ class SelectActionScreen(Screen):
                                        ts_end=self.temp_event[3])
 
             sApp.current_point.sequence.append(copy(event_obj))
-            sApp.save_game()
+            stops.store_game_pickle(sApp.game,sApp.save_path())
             for pb in self.pblist:
                 pb.state = u'normal' # reset the player buttons
             # offensive turnovers
@@ -513,10 +512,8 @@ class SelectActionScreen(Screen):
         sApp = App.get_running_app()
         sApp.game.points.append(sApp.current_point)
         #sApp.game.time_game_end = time.time()
-        savename = sApp.game.tournament_name.strip() + '_' + sApp.game.game_teams[0].team_name.strip() + "v" + sApp.game.game_teams[1].team_name.strip() + ".p"
-        path = os.path.join(sApp.user_data_dir, savename)
-        print('#end_game# ' + path)
-        pickle.dump(sApp.game, open(path, 'wb'))
+        path = os.path.join(sApp.user_data_dir, sApp.save_path())
+        stops.store_game_pickle(sApp.game,path)
 
         sApp.game = None #should we clear this here??
         sApp.unordered_teams = []
@@ -669,22 +666,21 @@ class StatsApp(App):
         sApp = App.get_running_app()
         return Builder.load_file(u'stats.kv')
 
-    def save_game(self, *args):
+    def save_path(self):
         # popup confirmation is for nerds
         sApp = App.get_running_app()
         savename = sApp.game.tournament_name.strip() + u'_' + sApp.game.game_teams[0].team_name.strip() +\
                    "v" + sApp.game.game_teams[1].team_name.strip() + ".p"
         path = os.path.join(sApp.user_data_dir, savename)
-        print('#save_game# ' + path)
-        pickle.dump(sApp.game, open(path, 'wb'))
-        return True
+        return path
 
     def on_pause(self):
-        self.save_game()
+        sApp = App.get_running_app()
+        stops.store_game_pickle(sApp.game,sApp.save_path())
         return True
 
     def on_resume(self):
-        pass
+        return True
 
 
 if __name__ == u'__main__':
