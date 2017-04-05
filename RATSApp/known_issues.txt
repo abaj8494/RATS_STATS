@@ -18,7 +18,7 @@ Super long term
 - look at restructuring output into a relational database. Not sure about SQL, want open source.
 
 # PLACEHOLDERS
-- divisions, numbers
+- divisions, numbers, possessions
 
 TODO LIST:
 

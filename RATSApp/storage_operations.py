@@ -53,18 +53,22 @@ def get_credentials(user_data_dir):
     return credentials
 
 def store_game_pickle(game,path):
-    pass
+    pickle.dump(game, open(path, 'wb'))
+    print('#saving_game# ' + path)
+
 
 def retrieve_game_pickle(path):
-
-    return game
+    pass
+    #return game
 
 def upload_csv(path):
     pass
 
 def read_tournament_config(path):
-    return tournament_data
+    pass
+    #return tournament_data
 
 def read_teamlist(path):
     # soon to be replaced with scrape
-    return teamlist
+    pass
+    #return teamlist
