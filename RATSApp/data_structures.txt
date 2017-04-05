@@ -1,3 +1,7 @@
-# filenames
+# file names
 
+TEAMS
 team lists are text files stored in the format {tournament_abbreviation}-{team_name}.txt with all the whitespace removed
+
+GAMES
+I want game files to save in the format "{tournament}{year}:{team0}-{team1}"
