@@ -67,7 +67,7 @@ class Team(Root):  # change to inherit from Group when that's built
 
         print("Team.__init() called.")
 
-        self.team = kwargs.pop("team")
+        self.team_name = kwargs.pop("team_name")
         self.team_players = kwargs.pop("team_players")
         self.division = kwargs.pop("division")
 
@@ -118,7 +118,7 @@ class Player(Root):
 
         print("Player.__init__() called.")
 
-        self.player = kwargs.pop("player")
+        self.player = kwargs.pop("player_name") # sorry
         self.number = kwargs.pop("number")
         self.gender = kwargs.pop("gender")
         # I really like the length here.
