@@ -350,7 +350,7 @@ class PlayBreakScreen(Screen):
         super(PlayBreakScreen,self).__init__(**kwargs)
 
         # offer choice of timeout or injury (or other/back)
-        
+
 
         pass
 
