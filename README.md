@@ -1,13 +1,15 @@
 # RATS_STATS
-A Fresh Grind - Turn Up the Heat
+A Fresh Grind - Turn Up the Heat - Light It Up
 
-updated @ 27/3/17
+updated @ 11-04-17
 
 # What this is:
 A functional ultimate stat-taking program, that can pipe out data as csv files.
 
-# What it could be:
-National Championships
+# What we're aiming for:
+Brunch - AUC2017
+u24s Selection Camp May 13-14 May
+AUS - JAP Test Matches May 19 & 21
 
 Coaching staff spots
 
@@ -38,3 +40,14 @@ Tournament configuration file (eg, smo.cfg)
 UI Restructure incoming - should be no functional change
 
 Game object hierarchy - going to require careful fixes to match up to stat taking screen flow
+
+# Priorities:
+- Google Drive export (Rob)
+- check Game structure (Andy)
+- write analysis scripts (Andy)
+
+# Live Birthings:
+- Rewind (display previous action)
+- Call
+- Substitution
+
