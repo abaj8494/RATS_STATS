@@ -5,7 +5,7 @@
 from __future__ import absolute_import
 import pickle
 from functools import partial
-from copy import copy
+import copy
 import csv
 from io import open
 import os, time
@@ -348,11 +348,183 @@ class PullingScreen(Screen):
 class PlayBreakScreen(Screen):
     def __init__(self,**kwargs):
         super(PlayBreakScreen,self).__init__(**kwargs)
+        sApp = App.get_running_app()
+
+        self.new_lines = []
+        self.player_off_def = None
+        self.player_off_off = None
+        self.player_on_def = None
+        self.player_on_off = None
 
         # offer choice of timeout or injury (or other/back)
+        self.ids.BigBox.add_widget(Label(text='Break in Play:'))
+
+        toBut = Button(text='Timeout')
+        toBut.bind(on_release=self.do_timeout)
+        self.ids.BigBox.add_widget(toBut)
+
+        injBut = Button(text='Injury')
+        injBut.bind(on_release=self.do_injury)
+        self.ids.BigBox.add_widget(injBut)
+
+        # could probably put the edit button here too
+
+        backBut = Button(text='Back to Build Event')
+        backcallback = partial(sApp.root.switch_to,SelectActionScreen())
+        backBut.bind(on_release=backcallback)
+        self.ids.BigBox.add_widget(backBut)
+
+    def do_injury(self,*args):
+        # 2x popup - who's going off, who's coming on
+        sApp = App.get_running_app()
+        offcontent = BoxLayout(orientation=u'horizontal')
+        offLeftBox = BoxLayout(orientation=u'vertical')
+        offRightBox = BoxLayout(orientation=u'vertical')
+        offcontent.add_widget(offLeftBox)
+        offcontent.add_widget(offRightBox)
+
+        noButoff = Button(text='noone')
+        nocallback = partial(self.set_injured,'none_offence')
+        noButoff.bind(on_release=nocallback)
+        for player in sApp.current_point.current_lines()[sApp.current_point.offence]:
+            pb = Button(text=player.player_name)
+            pbcallback = partial(self.set_injured, player)
+            pb.bind(on_release=pbcallback)
+            offLeftBox.add_widget(pb)
+
+        noButdef = Button(text='noone')
+        nocallback = partial(self.set_injured, 'none_defence')
+        noButdef.bind(on_release=nocallback)
+        for player in sApp.current_point.current_lines()[1 - sApp.current_point.offence]:
+            pb = Button(text=player.player_name)
+            pbcallback = partial(self.set_injured, player)
+            pb.bind(on_release=pbcallback)
+            offRightBox.add_widget(pb)
+
+        confBut = Button(text='Confirm Sub Off')
+        confBut.bind(on_release=self.confirm_off)
+        self.offcontent.add_widget(confBut)
+
+        self.offpopup = Popup(title=u"Who's going off?",
+                           content=offcontent,
+                           size_hint=[0.7, 0.7])
+
+        self.offpopup.open()
+        return True
+
+    def set_injured(self,player,*args):
+        # this has to store two variables for the players on both teams
+        sApp = App.get_running_app()
+        if player in sApp.current_point.get_current_lines()[sApp.current_point.offence]:
+            self.player_off_off = player
+        elif player in sApp.current_point.get_current_lines()[1-sApp.current_point.offence]:
+            self.player_off_def = player
+        elif player == 'none_offence':
+            self.player_off_off = None
+        elif player == 'none_defence:':
+            self.player_off_def = None
+
+        else:
+            print('we fucked it - OFF player not on either team and not expected none_*')
+
+        return True
 
 
-        pass
+
+
+
+        return True
+
+    def confirm_off(self,*args):
+
+        sApp = App.get_running_app()
+        self.new_lines = copy.deepcopy(sApp.current_point.get_current_lines())
+        self.oncontent = BoxLayout(orientation=u'horizontal')
+
+        # lines to show - all the players on the team except those on the line
+        if self.player_off_off:
+            # take the difference of two lists
+            # players_to_show = players_on_team - players_on_line
+            offence_players_to_show = sApp.game.game_teams[sApp.current_point.offence] - self.new_lines[sApp.current_point.offence]
+            onLeftBox = BoxLayout(orientation=u'vertical')
+            for player in offence_players_to_show:
+                pb = Button(text=player.player_name)
+                pbcallback = partial(self.set_substitute, player)
+                pb.bind(on_release=pbcallback)
+                onLeftBox.add_widget(pb)
+            self.new_lines[sApp.current_point.offence].remove(self.player_off_off)
+            self.oncontent.add_widget(onLeftBox)
+
+        if self.player_off_def:
+            defence_players_to_show = sApp.game.game_teams[1-sApp.current_point.offence] - self.new_lines[1-sApp.current_point.offence]
+            onRightBox = BoxLayout(orientation=u'vertical')
+            for player in defence_players_to_show:
+                pb = Button(text=player.player_name)
+                pbcallback = partial(self.set_substitute, player)
+                pb.bind(on_release=pbcallback)
+                onRightBox.add_widget(pb)
+            self.new_lines[1-sApp.current_point.offence].remove(self.player_off_def)
+            self.oncontent.add_widget(onRightBox)
+
+        onBut = Button(text='Confirm Subs')
+        onBut.bind(on_release=self.confirm_on)
+        self.oncontent.add_widget(onBut)
+        self.onpopup = Popup(title=u"Who's coming on?",
+                           content=self.oncontent,
+                           size_hint=[0.7, 0.7])
+
+        self.offpopup.open()
+
+        self.offpopup.close()
+        self.onpopup.open()
+        # remove the players going off
+
+        # hit this after selected players to go off
+        # define the new popup, close the old, open the new
+        # second popup will return you to SelectAction when you're done
+        # ideally only offer player selection for the team if noone went off
+
+        return True
+
+    def set_substitute(self,player,*args):
+        # this has to store two variables for the players on both teams
+        sApp = App.get_running_app()
+        if player in sApp.current_point.get_current_lines()[sApp.current_point.offence]:
+            self.player_on_off = player
+        elif player in sApp.current_point.get_current_lines()[1-sApp.current_point.offence]:
+            self.player_on_def = player
+        # you do have to sub somebody back on
+        else:
+            print('we fucked it - ON player not on either team')
+
+        return True
+
+    def confirm_on(self,*args):
+        sApp = App.get_running_app()
+        if self.player_on_off:
+            self.new_lines[sApp.current_point.offence].append(self.player_on_off)
+        if self.player_on_def:
+            self.new_lines[1-sApp.current_point.offence].append(self.player_on_def)
+        sApp.game.current_point.update_lines(self.new_lines)
+        self.onpopup.close()
+
+        sApp.root.switch_to(SelectActionScreen())
+        return True
+
+
+    def do_timeout(self):
+
+        # popup who called it
+        # have options to select the player - these are in-point timeouts
+        # between point timeouts are inserted at a different time
+        # could call this function from there if it's written well here
+
+        # to_obj = hierarch.TimeOut(to_team='',
+        #                           to_caller='',
+        #                           to_category='live')
+
+        return True
+
 
 class SelectActionScreen(Screen):
     def __init__(self, **kwargs):
@@ -417,7 +589,7 @@ class SelectActionScreen(Screen):
                                        ts_start=self.temp_event[2],
                                        ts_end=self.temp_event[3])
 
-            sApp.current_point.sequence.append(copy(event_obj))
+            sApp.current_point.sequence.append(copy.copy(event_obj))
             stops.store_game_pickle(sApp.game,sApp.save_path())
             for pb in self.pblist:
                 pb.state = u'normal' # reset the player buttons

@@ -308,6 +308,11 @@ class Point(TimeStamp):
     def current_lines(self):
         return self.point_lines[self.line_set]
 
+    def update_lines(self,lines):
+        # takes in [teamA_players, teamB_players]
+        self.point_lines.append(lines)
+        self.line_set+=1
+
 
 class Sequence(TimeStamp):
     """Sequence is all actions in a point with the same group of players."""
