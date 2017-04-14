@@ -511,7 +511,6 @@ class PlayBreakScreen(Screen):
         sApp.root.switch_to(SelectActionScreen())
         return True
 
-
     def do_timeout(self):
         # only offence can call a timeout
         sApp = App.get_running_app()
@@ -548,6 +547,14 @@ class SelectActionScreen(Screen):
         self.pblist = []
         sApp = App.get_running_app()
 
+        # here at the top can add something about showing the last three events (summaries)
+        # then can have an undo button that pops the last icon
+        seq_content = []
+        for event in sApp.current_point.sequence[-3:]: # last three events
+            seq_content.append(str(event.player)+':'+str(event.action))
+        sequence_display = Label(text=str(seq_content))
+
+
         for player in sApp.current_point.current_lines()[sApp.current_point.offence]:
             pb = ToggleButton(text=player.player_name, group=u'players')
             pickcallback = partial(self.set_player, player)
@@ -579,8 +586,19 @@ class SelectActionScreen(Screen):
         playBreakButton = Button(text='Break in play')
         breakcallback = partial(sApp.root.switch_to,PlayBreakScreen())
         playBreakButton.bind(on_release=breakcallback)
-
         self.ids.RightBox.add_widget(playBreakButton)
+
+        undoButton = Button(text='Undo Event')
+        # undocallback = partial(self.undo_action)
+        undoButton.bind(on_release=self.undo_action)
+
+    def undo_action(self,*args):
+        sApp = App.get_running_app()
+        ditched = sApp.current_point.sequence.pop()
+        print('## undo ##' + str(ditched))
+        sApp.root.switch_to(SelectActionScreen())
+
+        return True
 
     def set_player(self, player, *args):
         sApp = App.get_running_app()
