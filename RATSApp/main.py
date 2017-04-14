@@ -513,18 +513,31 @@ class PlayBreakScreen(Screen):
 
 
     def do_timeout(self):
+        # only offence can call a timeout
+        sApp = App.get_running_app()
+        to_content = BoxLayout(orientation=u'vertical')
+        for player in sApp.current_point.current_lines()[sApp.current_point.offence]:
+            pb = Button(text=player.player_name)
+            pbcallback = partial(self.choose_to_caller, player)
+            pb.bind(on_release=pbcallback)
+            to_content.add_widget(pb)
 
-        # popup who called it
-        # have options to select the player - these are in-point timeouts
-        # between point timeouts are inserted at a different time
-        # could call this function from there if it's written well here
-
-        # to_obj = hierarch.TimeOut(to_team='',
-        #                           to_caller='',
-        #                           to_category='live')
-
+        self.to_popup = Popup(title='Who called the timeout?',
+                         content=to_content,
+                         size_hint=[0.7,0.7])
+        self.to_popup.open()
         return True
 
+    def choose_to_caller(self,player,*args):
+        sApp = App.get_running_app()
+        to_obj = hierarch.TimeOut(to_team=sApp.game.game_teams[sApp.current_point.offence],
+                                  to_caller=player,
+                                  to_category='live')
+
+        sApp.current_point.sequence.append(to_obj)
+        self.to_popup.close()
+        sApp.root.switch_to(SelectActionScreen())
+        return True
 
 class SelectActionScreen(Screen):
     def __init__(self, **kwargs):
