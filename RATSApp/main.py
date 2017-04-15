@@ -191,12 +191,13 @@ class TeamSelectScreen(Screen):
                     for player in team:
                         player = player.strip() # trailing newline on last player
                         player_obj = hierarch.Player(player_name=player,
-                                                     player_number=420)
+                                                     number=420,
+                                                     gender='unspecified')
                         players.append(player_obj)
 
             team = hierarch.Team(team_name=team_name,
                                  team_players=players,
-                                 team_division='womens is better')
+                                 division='womens is better')
 
             file.close()
             sApp.unordered_teams.append(team)
@@ -344,6 +345,14 @@ class PullingScreen(Screen):
 
         return True
 
+class PlayBreakScreen(Screen):
+    def __init__(self,**kwargs):
+        super(PlayBreakScreen,self).__init__(**kwargs)
+
+        # offer choice of timeout or injury (or other/back)
+
+
+        pass
 
 class SelectActionScreen(Screen):
     def __init__(self, **kwargs):
@@ -382,6 +391,11 @@ class SelectActionScreen(Screen):
             select.bind(on_release=selectcallback)
             self.ids.RightBox.add_widget(select)
 
+        playBreakButton = Button(text='Break in play')
+        breakcallback = partial(sApp.root.switch_to,PlayBreakScreen())
+        playBreakButton.bind(on_release=breakcallback)
+
+        self.ids.RightBox.add_widget(playBreakButton)
 
     def set_player(self, player, *args):
         sApp = App.get_running_app()
