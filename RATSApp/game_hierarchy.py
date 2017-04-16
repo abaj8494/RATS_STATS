@@ -8,19 +8,20 @@
 # I need to tweak the data storage for some actions/events/calls at runtime
 
 # TODO: Validate inputs, check out https://github.com/alecthomas/voluptuous
-# TODO: make the team order explicitly store offence and defence as categories instead of numbers
+# TODO: I want offence and defence explicitly stored, but for now 0 is offence and 1 is defence.
+# TODO: this is actually a number of structures (Peoples, Tournaments, Games), split it out after Nationals.
 
-# store it once
-# Imports
-# Standard Library
-import re
+
+# surgical.
 
 
 class Root(object):
     """Wrapper class for debugging."""
 
     def __init__(self, **kwargs):
-        """Returns an AssertionError if any unexpected kwargs exist on initialisation."""
+        """
+        Returns an AssertionError if any extraneous variables exist upon an __init__() call.
+        """
 
         print("Root.__init__() called.")
 
@@ -39,89 +40,91 @@ classification levels for people in a game:
 
 
 # TODO: insert this class for a Worlds campaign.
-class Group(Root):
-    """Superclass for a group of teams; e.g. Bench Ultimate (Club) or Team Australia (International)."""
+# class Group(Root):
+#     """Superclass for a group of teams; e.g. Bench Ultimate (Club) or Team Australia (International)."""
+#
+#     group_types = [
+#         u"Club",
+#         u"International",
+#     ]
+#
+#     def __init__(self, **kwargs):
+#         """Takes group, group_type as mandatory arguments."""
+#
+#         print("Group.__init__({}) called.".format(kwargs))
+#
+#         self.group = kwargs.pop("group")
+#         self.group_type = kwargs.pop("group_type")
+#         self.group_teams = []  # list of pointers to Team Objects
+#
+#         super(Group, self).__init__(**kwargs)
 
-    group_types = [
-        u"Club",
-        u"International",
-    ]
+
+class Team(Root):  # TODO: inherit from Group
+    """A team is a made up of players and coaches."""
 
     def __init__(self, **kwargs):
-        """Takes group_name, group_type as mandatory arguments."""
-
-        print("Group.__init__({}) called.".format(kwargs))
-
-        self.group_name = kwargs.pop("group_name")
-        self.group_type = kwargs.pop("group_type")
-        # self.group_teams = []  # list of pointers to Team Objects
-
-        super(Group, self).__init__(**kwargs)
-
-
-class Team(Root):  # change to inherit from Group when that's built
-    """Data object for a team season; e.g. a Club Nationals or Worlds campaign."""
-
-    def __init__(self, **kwargs):
-        """Takes team, [team_players], team_division as mandatory arguments."""
+        """Takes team, people, as mandatory arguments."""
 
         print("Team.__init() called.")
 
-        self.team_name = kwargs.pop("team_name")
-        self.team_players = kwargs.pop("team_players")
-        self.division = kwargs.pop("division")
+        self.team = kwargs.pop("team")
+
+        # TODO: expand people to have a role attribute. For now it should just be a list of players.
+        self.people = kwargs.pop("people")
+
+        # self.division = kwargs.pop("division")
 
         # TODO: build a regex to extract gender and age from division
         # self.team_gender = kwargs.pop("team_gender")
         # self.team_age = kwargs.pop("team_age")
-
-        age_strings = [
-            'Junior/u20',
-            'u24',
-            'unrestricted',
-            'masters',
-            'grand masters',
-            'great grand masters'
-        ]
-        gender_strings = [
-            'open',
-            'women',
-            'mixed',
-        ]
-
-        self.games = []  # ANDY: this is just a place for me to play with team scrapes from worlds
+        # age_strings = [
+        #     'Junior/u20',
+        #     'u24',
+        #     'unrestricted',
+        #     'masters',
+        #     'grand masters',
+        #     'great grand masters'
+        # ]
+        # gender_strings = [
+        #     'open',
+        #     'women',
+        #     'mixed',
+        # ]
+        #
+        # self.team_games = []  # ANDY: this is just a place for me to play with team scrapes from worlds
         # self.team_tournaments = None  # TODO: work out database for storing games
 
         super(Team, self).__init__(**kwargs)
 
-    def append_game(self, game):
-        """Appends a game object to self.games"""
-
-        # ANDY: this is for me to muck around with scraping
-
-        print(self.games)
-        print(game)
-
-        self.games.append(game)
-
-        print("Game appended to self.games.")
+    # def append_team_game(self, team_game):
+    #     """Appends a game object to self.games"""
+    #
+    #     # ANDY: this is for me to muck around with scraping/storage
+    #
+    #     print(self.team_games)
+    #     print(team_game)
+    #
+    #     self.team_games.append(team_game)
+    #
+    #     print("Game appended to self.team_games.")
 
     def __str__(self):
         return self.team
 
 
 class Player(Root):
-    """"""
+    """A player is a person who takes part in a game."""
 
     def __init__(self, **kwargs):
         """Takes player, number, gender as mandatory arguments."""
 
         print("Player.__init__() called.")
 
-        self.player = kwargs.pop("player_name") # sorry
+        self.player = kwargs.pop("player")
         self.number = kwargs.pop("number")
         self.gender = kwargs.pop("gender")
-        # I really like the length here.
+        # the length of this block is joy.
 
         # TODO: analysis attributes go here
 
@@ -142,40 +145,43 @@ classification levels for games:
 
 
 class Tournament(Root):
-    """Superclass for Game, provides scoring and field information."""
+    """Superclass for Game, provides superstructure information."""
 
-    # class attributes
-    surfaces = [
-        u"grass",
-        u"beach",
-        u"indoor",
-    ]
-    # field_size = if grass, elif beach, elif indoor, else raise ValueError; conditional on surface
-    levels = [
-        u"club",
-        u"international",
-        u"league",
-        u"hat",
-        u"pickup",
-    ]
+    # # class attributes
+    # surfaces = [
+    #     u"grass",
+    #     u"beach",
+    #     u"indoor",
+    # ]
+    # # field_size = if grass, elif beach, elif indoor, else raise ValueError; conditional on surface
+    # levels = [
+    #     u"club",
+    #     u"international",
+    #     u"league",
+    #     u"hat",
+    #     u"pickup",
+    # ]
     # formats = [u"round-robin", u"Swiss-elimination", "etc."]
 
     def __init__(self, **kwargs):
-        """Takes tournament, year, point_cap, time_cap, timeouts, divisions as mandatory 
-        arguments."""
+        """Takes tournament, year, location, surface, point_cap, time_cap, timeouts as mandatory arguments."""
 
         print("Tournament.__init__() called.")
 
         self.tournament = kwargs.pop("tournament")
         self.year = kwargs.pop("year")  # TODO: turn this into a regex
-        # self.location = kwargs.pop("location")
-        # self.surface = kwargs.pop("surface")
+        self.location = kwargs.pop("location")
+        self.surface = kwargs.pop("surface")
         self.point_cap = kwargs.pop("point_cap")
         self.time_cap = kwargs.pop("time_cap")
         self.timeouts = kwargs.pop("timeouts")
-        self.divisions = kwargs.pop("divisions")
-        # self.dates = None
-        # self.format = None  # round-robin, single-elim, etc.
+        self.advisers = kwargs.pop("advisers")
+        self.draw = None  # round-robin, single-elimination, etc.
+
+        # save as DateTime objects
+        self.start = kwargs.pop("start")
+        self.end = kwargs.pop("end")
+        self.duration = self.end - self.start  # number of days of actual play (ignore opening ceremony)
 
         super(Tournament, self).__init__(**kwargs)
 
@@ -185,17 +191,18 @@ class Tournament(Root):
 # TODO: define an abstract field class for heat maps; [x, y, z] with [0, 0, 0] as back left cone of defending end zone.
 
 
-# TODO: work out database
 class Division(Root):
-    """Takes division_name and division_teams as mandatory arguments."""
+    """{division symbol}"""
 
     def __index__(self, **kwargs):
         """Takes division, division_teams as mandatory arguments."""
 
         print("Division.__init__() called.")
 
-        self.division = kwargs.get("division")
-        self.division_teams = kwargs.get("division_teams")
+        self.division = kwargs.pop("division")
+
+        # self.gender = None
+        # self.age = None
 
         super(Division, self).__init__(**kwargs)
 
@@ -216,7 +223,7 @@ classification levels for live game sequences:
 
 class TimeStamp(Root):
     """
-    TimeStamps are datetime objects referring to the start and end of an Event.
+    TimeStamp properties are datetime objects referring to the start and end of an Event.
     """
 
     def __init__(self, **kwargs):
@@ -230,25 +237,49 @@ class TimeStamp(Root):
         super(TimeStamp, self).__init__(**kwargs)
 
 
-class Game(Tournament, TimeStamp):  # doesn't inherit from Division because it doesn't need division_teams
-    """Data object for a game of Ultimate."""
+class Game(Division, TimeStamp):
+    """
+    Data object for a Game of Ultimate.
+    """
+
+    # TODO: this should probably be a property of point but I don't want to do that much button pushing.
+    winds = [  # relative to starting offence
+        u"downwind",  # the jackpot, this is winning the flip and winning the flip
+        u"still",
+        u"upwind",
+    ]
+
+    # TODO: for now, this is just for AUC
+    stages = [
+        u"pool play",
+        u"power pool play",
+        u"pre-quarter final",
+        u"quarter final",
+        u"semi final",
+        u"final"
+    ]
 
     def __init__(self, **kwargs):
         """
-        Takes a list of game_teams, game_stage, division as mandatory inputs. 
+        Takes offence, defence, stage, division, wind, as mandatory inputs. 
         """
-        # TODO: work out how this input should happen
 
         print("Game.__init__() called.")
 
-        self.game_score = [[0, 0]]  # double nesting, want to just append the score here after each point
+        self.teams = kwargs.pop("teams")  # two item list: 0 = offence, 1 = defence
+        self.score = [[0, 0]]  # double nesting, want to just append the score here after each point
         self.points = []
-        self.game_teams = kwargs.pop("game_teams")
-        self.game_stage = kwargs.pop("game_stage")
+        self.stage = kwargs.pop("stage")  # choose from stages
+        self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
+        self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
 
-        self.division = kwargs.pop("division")
-
-        # self.game_weather = kwargs.pop("game_weather")
+        self.game = "{}{}_{}_{}_{}".format(
+            kwargs.get("tournament"),
+            kwargs.get("year"),
+            self.stage,
+            self.teams[0],  # offence
+            self.teams[0].team,  # defence
+        )
 
         # TODO: build this to track how many nerds are ruined
         # self.flips = kwargs.pop("flips")
@@ -256,54 +287,31 @@ class Game(Tournament, TimeStamp):  # doesn't inherit from Division because it d
         super(Game, self).__init__(**kwargs)
 
     def __str__(self):
-        self.game = "{}{}-{}:{}-{}".format(
-            self.tournament,
-            self.year,
-            self.game_stage,
-            self.game_teams[0].team,
-            self.game_teams[1].team,
-        )
+
         return self.game
 
 
 class Point(TimeStamp):
-    """"""
+    """Point is a length of sequences between goals."""
 
     # class attributes
-    point_outcomes = [
+    services = [
         u"break",
         u"hold"
     ]
-    # TODO: want to consider upwind/downwind at some point here too
+    # TODO: want to consider upwind/downwind at some point here too, for now it's just set at the start of game.
 
     def __init__(self, **kwargs):
-        """Takes point_teams, point_lines, point_score as a mandatory arguments."""
+        """Takes no mandatory arguments."""
 
         print("Point.__init__() called.")
 
-        self.point_teams = kwargs.pop("point_teams")  # [offence, defence]
-
-        temp_lines = kwargs.pop("point_lines")  # [[offence_players], [defence_players]]
-        self.point_lines = [temp_lines]  # nesting for subs
-        self.line_set = 0  # pair of lines is a set - after sub, new set, increment
-        # use current_lines()
-
-        self.point_score = kwargs.pop("point_score")
-        self.point_number = self.point_score[0] + self.point_score[1] + 1
-        self.point_difference = [self.point_score[0] - self.point_score[1], None]
-        # point_difference is a two item list of the relative offensive position at the start of the point:
-        # positive numbers = winning, 0 = tied, negative numbers = losing
-
-        self.sequences = []  # TODO: this changes with the new structure and might break things.
-        self.turnovers = [[0, 0]]  # [offence, defence]
-        self.possessions = [[1, 0]]  # [offence, defence]
-        self.point_outcome = None  # from point_outcomes
+        self.sequences = []  # line information moved here
+        self.service = None  # from point_outcomes, should set automatically.
 
         self.offence = 0  # starting offence is zero, this is to be able to track offence changes
 
-        if kwargs:
-            print(kwargs)
-            super(Point, self).__init__(**kwargs)
+        super(Point, self).__init__(**kwargs)
 
     def current_lines(self):
         return self.point_lines[self.line_set]
@@ -323,27 +331,22 @@ class Sequence(TimeStamp):
         print("Sequence.__init__() called.")
 
         # TODO: reorganise this so offence and defence are explicit
-        self.sequence_lines = kwargs.pop("sequence_lines")
+        self.lines = kwargs.pop("lines")  # 0 = offence, 1 = defence
         self.possessions = []
 
-        if kwargs:
-            super(Sequence, self).__init__(**kwargs)
+        super(Sequence, self).__init__(**kwargs)
 
 
-class Possession(Sequence, TimeStamp):
-    """Superclass for Events from players on the same team."""
+class Possession(TimeStamp):
+    """Superclass for DiscEvents from players on the same team."""
 
     def __init__(self, **kwargs):
         """Takes possession_team, as mandatory arguments."""
 
         print("Possession.__init__() called.")
+        self.possession = kwargs.pop("possession")  # team with the disc
 
-        # making this optional for the sake of a running program @ div2 nats @ 31/3/17
-        if 'possession_team' in kwargs:
-            self.possession_team = kwargs.pop("possession_team")
-
-        if kwargs:
-            super(Possession, self).__init__(**kwargs)
+        super(Possession, self).__init__(**kwargs)
 
 
 class DiscStatus(Root):
@@ -366,24 +369,24 @@ class DiscStatus(Root):
         super(DiscStatus, self).__init__(**kwargs)
 
 
-class Pull(Possession, DiscStatus):
-    """"""
-
-    # TODO: think about possession of the pull, I don't think it counts as the defensive team ever having possession.
-    # might not need to inherit possession, if it's separate
+class Pull(DiscStatus):
+    """
+    The original gift of possession.
+    It's a separate class because it's a throw that's not a turnover, but still affects possession.
+    """
 
     pull_buttons = [
         # out-of-bounds
-        u"brick",
-        u"sideline",  # TODO: build locations to store this
+        u"brick",  # stop the clap
+        u"sideline",
         # in
         u"caught",
         u"landed",
         u"touched",
         u"untouched",
         u"dropped-pull",
-        # The Pottsy Rule
-        u"offside",  # TODO: this is technically a call for storage purposes but might as well put it here
+        # call
+        u"offside",
     ]
 
     # in_receptions = all_pulls[0:1]
@@ -395,9 +398,9 @@ class Pull(Possession, DiscStatus):
         print("Pull.__init__() called.")
 
         self.puller = kwargs.pop("puller")
-        self.pull_action = kwargs.pop("pull_action")  # this is taken from all_pulls
-        self.pull_location = None  # Set this off pull_action
-        self.pull_reception = None  # as above
+        # self.pull_action = kwargs.pop("pull_action")  # this is taken from all_pulls
+        # self.pull_location = None  # Set this off pull_action
+        self.pull_reception = None  # from pull_buttons
         # self.type = kwargs.pop("pull_type")
 
         super(Pull, self).__init__(**kwargs)
