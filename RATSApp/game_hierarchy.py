@@ -306,8 +306,9 @@ class Point(TimeStamp):
 
         print("Point.__init__() called.")
 
+        self.pull = None  # want this outside of the sequence to make parsing easier
         self.sequences = []  # line information moved here
-        self.service = None  # from point_outcomes, should set automatically.
+        self.service = None  # hold or break
 
         self.offence = 0  # starting offence is zero, this is to be able to track offence changes
 
