@@ -15,8 +15,8 @@ class Root(object):
 
     def __init__(self, **kwargs):
         # Returns an AssertionError if any extraneous variables exist upon an __init__() call.
-        print("Root.__init__() called.")
         if kwargs:
+            print("Root.__init__() called.")
             print(kwargs)
         assert not kwargs
 
@@ -57,6 +57,10 @@ class Game(Root):
         self.tournament = kwargs.pop("tournament")
         self.year = kwargs.pop("year")
 
+        self.point_cap = kwargs.pop("point_cap")
+        self.time_cap = kwargs.pop("time_cap")
+        self.timeouts = kwargs.pop("timeouts")
+
         # self.stage = kwargs.pop("stage")  # choose from stages
         # self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
         # self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
@@ -65,6 +69,9 @@ class Game(Root):
         # self.flips = kwargs.pop("flips")
 
         super(Game, self).__init__(**kwargs)
+
+    def get_current_scores(self):
+        return self.scores[-1]
 
     def __str__(self):
         string = "{}{}_{}_{}".format(
@@ -97,6 +104,9 @@ class Point(Root):
         # will still need to remember offence as it changes
         self.starting_offence = kwargs.pop("starting_offence")
         self.offence = self.starting_offence
+
+        # starting offence is [0]
+        self.final_score = [0,0]
 
         super(Point, self).__init__(**kwargs)
 
@@ -135,7 +145,7 @@ class Player(Root):
     def __init__(self, **kwargs):
         # print("Player.__init__() called.")
 
-        self.player = kwargs.pop("name")
+        self.name = kwargs.pop("name")
         self.number = kwargs.pop("number")
         self.gender = kwargs.pop("gender")
 
