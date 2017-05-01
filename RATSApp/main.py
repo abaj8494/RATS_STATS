@@ -24,7 +24,9 @@ from kivy.uix.widget import Widget
 
 #stats
 import analysis as anal
-import game_hierarchy as hierarch
+import raw_game_hierarchy as hierarch
+
+#the app needs to run on android better hence:
 import storage_operations as stops
 
 
@@ -186,18 +188,18 @@ class TeamSelectScreen(Screen):
                 key, value = line.split(u':')
                 if key == u'name':
                     team_name = value
-                elif key == u'players':
+                elif key == u'male':
                     team = value.split(u',')
                     for player in team:
-                        player = player.strip() # trailing newline on last player
-                        player_obj = hierarch.Player(player_name=player,
-                                                     number=420,
-                                                     gender='unspecified')
+                        number, gender, name = player.split(u'|')
+                        player_obj = hierarch.Player(name=name.strip(),
+                                                     number=number,
+                                                     gender=gender)
                         players.append(player_obj)
 
-            team = hierarch.Team(team_name=team_name,
-                                 team_players=players,
-                                 division='womens is better')
+
+            team = hierarch.Team(name=team_name,
+                                 layers=players)  # division='very mixed')
 
             file.close()
             sApp.unordered_teams.append(team)

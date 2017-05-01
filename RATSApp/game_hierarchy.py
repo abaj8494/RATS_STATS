@@ -439,7 +439,7 @@ class DiscEvent(Possession, DiscStatus):
         u"out-of-bounds",
         # receptions
         # completions
-        u"catch",
+         u"catch",
         u"goal",
         # turnovers
         u"drop"
