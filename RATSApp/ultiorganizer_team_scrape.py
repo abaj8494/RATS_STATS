@@ -75,13 +75,12 @@ def scrape_game():
     soup = make_soup("http://scores.wugc2016.com/?view=gameplay&game=223")
     # print(soup.prettify())
 
-    # TODO: game headers are reversed because some idiot put the starting offence as the last item in the line
     game_headers = [
                        header.get_text()
                        for header
                        in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
                    ]
-    print(game_headers)
+    # print(game_headers)
 
     game_scores = [
                       row.find_all("td")
@@ -95,16 +94,32 @@ def scrape_game():
 
     for score in game_scores:
 
-        # TODO: needs a length check, for half
+        if len(score) == 6:  # point
 
-        if score[-1].string is not None:
-            # print(score[-1])
-            game_progression.append(score[-1])
+            # find Game Events (starting offence, timeouts) and make them separate entries into the progression
+            if score[-1].string is not None:
+                # print(score[-1])
+                game_progression.append(score[-1])
+                # TODO: find the div["class"] attribute
 
-        # print(score[:-1])
-        game_progression.append(score[:-1])
+            # append the rest of the row to the game progression
+            # print(score[:-1])
+            game_progression.append(score[:-1])
+
+        elif len(score) == 1:  # halftime
+            game_progression.append(score)
+
+        else:  # shouldn't get here
+            raise ValueError
+
+    starting_offence = game_progression.pop(0)
+    print(starting_offence.div["class"][0])
+
+    print("")
 
     [print(progression) for progression in game_progression]
+
+    # TODO: turn this into a gh.Game object
 
 
 def main():
