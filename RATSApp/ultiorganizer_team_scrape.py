@@ -80,70 +80,31 @@ def scrape_game():
                        header.get_text()
                        for header
                        in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
-                   ][::-1]
-    # print(game_headers)
+                   ]
+    print(game_headers)
 
+    game_scores = [
+                      row.find_all("td")
+                      for row
+                      in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
+                  ][1:]  # slice removes headers
 
-    # TODO: trying to just get out the div classes
+    # [print(score) for score in game_scores]
 
-    # game_progression = [
-    #     row
-    #     for row
-    #     in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
-    #     ]  # no headers
+    game_progression = []
 
-    game_progression = [row.find_all("td")[::-1]
-                        for row
-                        in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")][1:]
-    # print(len(game_progression))
-    # print(type(game_progression))
+    for score in game_scores:
 
-    starting_offence = game_progression[0][0].div["class"]
-    print(starting_offence)
+        # TODO: needs a length check, for half
 
-    for score in game_progression:
+        if score[-1].string is not None:
+            # print(score[-1])
+            game_progression.append(score[-1])
 
-        # print("\n{}".format(score))
-        # print(len(score))
+        # print(score[:-1])
+        game_progression.append(score[:-1])
 
-        for cell in score:
-            # print(cell)
-            pass
-
-            # TODO:
-            # for row in game_progression[1:]:
-            #     cells = row.find_all("td")[::-1]
-            #     print("\n")
-            #     print(cells)
-            #
-            #     for cell in cells:
-            #         print(cell)
-
-            # print(cells)
-            # temp_cells = [cell.string for cell in cells]
-            # temp_cells = [cell for cell in cells]
-            # cell["class"]
-            # print(temp_cells)
-
-            # if cells[0].string is not None:
-            #     print(cells[0].string)
-            #     print(cells[0]["class   "])
-
-
-
-    # print(len(game_progression))
-    # print(game_progression)
-
-    # for row in game_progression:
-    #     print(row)
-    # TODO: work out how to show scores backwards
-
-    # TODO: find tds, classes of tds if there is a value in the "first" cell
-
-    # starting_offence = game_progression[1].find_all("td")[-1]
-    # print(starting_offence)
-
-    pass
+    [print(progression) for progression in game_progression]
 
 
 def main():
