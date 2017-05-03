@@ -15,8 +15,8 @@ class Root(object):
 
     def __init__(self, **kwargs):
         # Returns an AssertionError if any extraneous variables exist upon an __init__() call.
-        print("Root.__init__() called.")
         if kwargs:
+            print("Root.__init__() called.")
             print(kwargs)
         assert not kwargs
 
@@ -51,11 +51,20 @@ class Game(Root):
         # print("Game.__init__() called.")
 
         self.teams = kwargs.pop("teams")  # two item list: 0 = offence, 1 = defence
-        self.scores = [[0, 0]]  # double nesting, want to just append the score here after each point
+        #self.scores = [[0, 0]]  # double nesting, want to just append the score here after each point
+        # this is dumb, just read over the points and look at it from there.
+
         self.points = []
 
         self.tournament = kwargs.pop("tournament")
         self.year = kwargs.pop("year")
+
+        self.point_cap = kwargs.pop("point_cap")
+        self.time_cap = kwargs.pop("time_cap")
+        self.timeouts = kwargs.pop("timeouts")
+
+        # same index / offence system - to track through stat taking
+        self.timeout_status = [0,0]
 
         # self.stage = kwargs.pop("stage")  # choose from stages
         # self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
@@ -66,7 +75,10 @@ class Game(Root):
 
         super(Game, self).__init__(**kwargs)
 
-    def __str__(self):
+    # def get_current_scores(self):
+    #     return self.scores[-1]
+
+    def get_filename(self):
         string = "{}{}_{}_{}".format(
             self.tournament,
             self.year,
@@ -76,6 +88,7 @@ class Game(Root):
 
         return string
 
+    __str__ = get_filename
 
 class Point(Root):
     """Point is a length of sequences between goals."""
@@ -86,17 +99,25 @@ class Point(Root):
         # print("Point.__init__() called.")
 
         # double nesting allows us to append new lines / a new sequence after an injury
-        self.lines = [[kwargs.pop("lines")]]
+        self.lines = [kwargs.pop("lines")] # lines is already coming in as a list [[line 1], [line 2]]
         self.sequences = [[]]
 
         # lines and sequence are index matched - this should be useable for both to get the 'current' item
         self.set_index = 0
 
-        # starting offence for every game = 0
-        # starting offence for a point could be 1 or 0
-        # will still need to remember offence as it changes
-        self.starting_offence = kwargs.pop("starting_offence")
-        self.offence = self.starting_offence
+        # starting offence is always 0 - this number will track it during stat taking
+        # need to be able to tell it who's on offence to carry results from previous points
+        if "offence" in kwargs:
+            self.offence = kwargs.pop("offence")
+        else:
+            self.offence = 0
+
+        # starting offence is score[0]
+        # you can pass the score in when starting the next point if you want
+        if "score" in kwargs:
+            self.score = kwargs.pop("score")
+        else:
+            self.score = [0,0]
 
         super(Point, self).__init__(**kwargs)
 
@@ -135,14 +156,45 @@ class Player(Root):
     def __init__(self, **kwargs):
         # print("Player.__init__() called.")
 
-        self.player = kwargs.pop("name")
+        self.name = kwargs.pop("name")
         self.number = kwargs.pop("number")
         self.gender = kwargs.pop("gender")
 
         super(Player, self).__init__(**kwargs)
 
     def __str__(self):
-        return self.player
+        return self.name
+
+
+class Pull(Root):
+
+    all_pulls = [
+        # out-of-bounds
+        u"brick",  # stop the clap
+        u"sideline",
+        # in
+        u"caught",
+        u"landed",
+        u"touched",
+        u"untouched",
+        u"dropped-pull",
+        # call
+        # u"offside",
+    ]
+
+    # in_receptions = all_pulls[0:1]
+    # ob_receptions = all_pulls[2:]
+
+    def __init__(self, **kwargs):
+        # print("Pull.__init__() called.")
+
+        self.puller = kwargs.pop("puller")
+        self.pull_reception = kwargs.pop("pull_reception")  # from all_pull
+
+        super(Pull, self).__init__(**kwargs)
+
+    def __str__(self):
+        return self.puller +' : ' + self.pull_reception
 
 
 class Event(Root):
@@ -217,6 +269,12 @@ class Event(Root):
         # u'Callahan',
     ]
 
+    call_actions = [
+        u'timeout',
+        u'injury'
+    ]
+
+
     def __init__(self, **kwargs):
 
         # print("Event.__init__() called.")
@@ -227,3 +285,6 @@ class Event(Root):
         # self.location = None
 
         super(Event, self).__init__(**kwargs)
+
+    def __str__(self):
+        return self.player + " : " + self.acion

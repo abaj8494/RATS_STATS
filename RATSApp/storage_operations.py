@@ -17,6 +17,7 @@ try:
 except ImportError:
     flags = None
 
+
 def get_credentials(user_data_dir):
     # If modifying these scopes, delete your previously saved credentials
     # at ~/.credentials/drive-python-quickstart.json
@@ -52,23 +53,59 @@ def get_credentials(user_data_dir):
         print('Storing credentials to ' + credential_path)
     return credentials
 
+
+def import_config(path):
+    if path is not None:
+        file = open(path, u'rb')
+        for line in file.readlines():
+            key, value = line.split(u':')
+            value = value.strip()
+            if key == u'tournament':
+                tournament = [key, value]
+            elif key == u'time_cap':
+                time_cap = [key, value]
+            elif key == u'point_cap':
+                point_cap = [key, value]
+            elif key == u'timeouts':
+                timeouts = [key, value]
+            # elif key == u'divisions':
+            #    divisions = value.split(u'|')
+            #    tournament_divisions = ['tournament_divisions',divisions]
+            else:
+                pass
+                # print(key,value)
+        file.close()
+
+        # tournament = hierarch.Tournament(tournament=tournament,
+        #                                  point_cap=point_cap,
+        #                                  time_cap=time_cap)
+
+        tournament_data = [tournament, point_cap, time_cap, timeouts, ['year', 2017]]
+
+        return tournament_data
+    else:
+        return None
+
 def store_game_pickle(game,path):
     pickle.dump(game, open(path, 'wb'))
-    print('#saving_game# ' + path)
+    #print('#saving_game# ' + path)
 
 
 def retrieve_game_pickle(path):
     pass
-    #return game
+    # return game
+
 
 def upload_csv(path):
     pass
 
+
 def read_tournament_config(path):
     pass
-    #return tournament_data
+    # return tournament_data
+
 
 def read_teamlist(path):
     # soon to be replaced with scrape
     pass
-    #return teamlist
+    # return teamlist
