@@ -75,28 +75,67 @@ def scrape_game():
     soup = make_soup("http://scores.wugc2016.com/?view=gameplay&game=223")
     # print(soup.prettify())
 
-    # TODO: find home/away
-    # TODO: get team lists
-
-    # game headers are reversed because some idiot put the starting offence as the last item in the line
+    # TODO: game headers are reversed because some idiot put the starting offence as the last item in the line
     game_headers = [
                        header.get_text()
                        for header
                        in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
                    ][::-1]
-    print(game_headers)
+    # print(game_headers)
 
-    game_progression = [
-        row
-        for row
-        in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
-        ][1:-1]  # no headers
+
+    # TODO: trying to just get out the div classes
+
+    # game_progression = [
+    #     row
+    #     for row
+    #     in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
+    #     ]  # no headers
+
+    game_progression = [row.find_all("td")[::-1]
+                        for row
+                        in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")][1:]
+    # print(len(game_progression))
+    # print(type(game_progression))
+
+    starting_offence = game_progression[0][0].div["class"]
+    print(starting_offence)
+
+    for score in game_progression:
+
+        # print("\n{}".format(score))
+        # print(len(score))
+
+        for cell in score:
+            # print(cell)
+            pass
+
+            # TODO:
+            # for row in game_progression[1:]:
+            #     cells = row.find_all("td")[::-1]
+            #     print("\n")
+            #     print(cells)
+            #
+            #     for cell in cells:
+            #         print(cell)
+
+            # print(cells)
+            # temp_cells = [cell.string for cell in cells]
+            # temp_cells = [cell for cell in cells]
+            # cell["class"]
+            # print(temp_cells)
+
+            # if cells[0].string is not None:
+            #     print(cells[0].string)
+            #     print(cells[0]["class   "])
+
+
 
     # print(len(game_progression))
     # print(game_progression)
 
-    for row in game_progression:
-        print(row)
+    # for row in game_progression:
+    #     print(row)
     # TODO: work out how to show scores backwards
 
     # TODO: find tds, classes of tds if there is a value in the "first" cell
