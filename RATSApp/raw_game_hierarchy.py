@@ -63,6 +63,9 @@ class Game(Root):
         self.time_cap = kwargs.pop("time_cap")
         self.timeouts = kwargs.pop("timeouts")
 
+        # same index / offence system - to track through stat taking
+        self.timeout_status = [0,0]
+
         # self.stage = kwargs.pop("stage")  # choose from stages
         # self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
         # self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
@@ -72,8 +75,8 @@ class Game(Root):
 
         super(Game, self).__init__(**kwargs)
 
-    def get_current_scores(self):
-        return self.scores[-1]
+    # def get_current_scores(self):
+    #     return self.scores[-1]
 
     def get_filename(self):
         string = "{}{}_{}_{}".format(
@@ -265,6 +268,12 @@ class Event(Root):
         u'intercept',
         # u'Callahan',
     ]
+
+    call_actions = [
+        u'timeout',
+        u'injury'
+    ]
+
 
     def __init__(self, **kwargs):
 
