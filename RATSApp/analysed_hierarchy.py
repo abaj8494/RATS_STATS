@@ -46,3 +46,35 @@ class Player(Root):
         }}
 
         super(Player, self).__init__(**kwargs)
+
+
+
+class TestMatchPlayer(Root): #working title
+    def __init__(self,**kwargs):
+
+        self.thrown_connections = {
+            # a key for every other player on their team
+            # a value that is how many times this player threw to them
+        }
+
+        self.received_connections = {
+            # a key for every other player on their team
+            # a value that is how many times this playere received from them
+        }
+
+        self.thrown_assists = {
+            # as above, but assists only
+        }
+
+        self.received_goals = {
+            # as above, but goals only
+        }
+
+        super(TestMatchPlayer, self).__init__(**kwargs)
+
+
+    def connection_strength(self,other_player):
+        return self.thrown_connections[other_player] + self.received_connections[other_player]
+
+    def connection_quality(self,other_player):
+        return self.thrown_assists[other_player] + self.received_goals[other_player]
