@@ -17,6 +17,27 @@ class Root(object):
         assert not kwargs
 
 
+# TODO: insert this class for a Worlds campaign.
+# class Group(Root):
+#     """Superclass for a group of teams; e.g. Bench Ultimate (Club) or Team Australia (International)."""
+#
+#     group_types = [
+#         u"Club",
+#         u"International",
+#     ]
+#
+#     def __init__(self, **kwargs):
+#         """Takes group, group_type as mandatory arguments."""
+#
+#         print("Group.__init__({}) called.".format(kwargs))
+#
+#         self.group = kwargs.pop("group")
+#         self.group_type = kwargs.pop("group_type")
+#         self.group_teams = []  # list of pointers to Team Objects
+#
+#         super(Group, self).__init__(**kwargs)
+
+
 class Team(Root):
     """Team data for a Game of Ultimate."""
 

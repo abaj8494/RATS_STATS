@@ -14,6 +14,32 @@
 
 # surgical.
 
+"""
+PEOPLE
+
+classification levels for people in a game:
+    - INDIVIDUAL: each player on each team
+    - TEAM: each team considered as a whole
+    - GAME: everyone in the game considered as a whole
+    - TOURNAMENT: all players on all teams in all games considered as a whole
+
+GAME STRUCTURE
+
+classification levels for games:
+    - INDIVIDUAL: a single game
+    - DIVISION: a game as part of all games in a division
+    - TOURNAMENT: a game as part of all games at a tournament
+
+SEQUENCE
+
+classification levels for live game sequences:
+    - INDIVIDUAL: a single item within a game
+    - POSSESSION: all items from players on the same team for a possession
+    - POINT: all items from all players for a point
+    - GAME: all items from all players for all points in a game
+
+"""
+
 
 class Root(object):
     """Wrapper class for debugging."""
@@ -26,38 +52,6 @@ class Root(object):
         print("Root.__init__() called.")
 
         assert not kwargs
-
-
-"""
-PEOPLE
-
-classification levels for people in a game:
-    - INDIVIDUAL: each player on each team
-    - TEAM: each team considered as a whole
-    - GAME: everyone in the game considered as a whole
-    - TOURNAMENT: all players on all teams in all games considered as a whole
-"""
-
-
-# TODO: insert this class for a Worlds campaign.
-# class Group(Root):
-#     """Superclass for a group of teams; e.g. Bench Ultimate (Club) or Team Australia (International)."""
-#
-#     group_types = [
-#         u"Club",
-#         u"International",
-#     ]
-#
-#     def __init__(self, **kwargs):
-#         """Takes group, group_type as mandatory arguments."""
-#
-#         print("Group.__init__({}) called.".format(kwargs))
-#
-#         self.group = kwargs.pop("group")
-#         self.group_type = kwargs.pop("group_type")
-#         self.group_teams = []  # list of pointers to Team Objects
-#
-#         super(Group, self).__init__(**kwargs)
 
 
 class Team(Root):  # TODO: inherit from Group
@@ -134,16 +128,6 @@ class Player(Root):
         return self.player
 
 
-"""
-GAME STRUCTURE
-
-classification levels for games:
-    - INDIVIDUAL: a single game
-    - DIVISION: a game as part of all games in a division
-    - TOURNAMENT: a game as part of all games at a tournament
-"""
-
-
 class Tournament(Root):
     """Superclass for Game, provides superstructure information."""
 
@@ -188,6 +172,7 @@ class Tournament(Root):
     def __str__(self):
         return self.tournament
 
+
 # TODO: define an abstract field class for heat maps; [x, y, z] with [0, 0, 0] as back left cone of defending end zone.
 
 
@@ -208,17 +193,6 @@ class Division(Root):
 
     def __str__(self):
         return self.division
-
-
-"""
-SEQUENCE
-
-classification levels for live game sequences:
-    - INDIVIDUAL: a single item within a game
-    - POSSESSION: all items from players on the same team for a possession
-    - POINT: all items from all players for a point
-    - GAME: all items from all players for all points in a game
-"""
 
 
 class TimeStamp(Root):
@@ -306,11 +280,9 @@ class Point(TimeStamp):
 
         print("Point.__init__() called.")
 
+        self.offence = 0  # starting offence is zero, this is to be able to track offence changes
         self.pull = None  # want this outside of the sequence to make parsing easier
         self.sequences = []  # line information moved here
-        self.service = None  # hold or break
-
-        self.offence = 0  # starting offence is zero, this is to be able to track offence changes
 
         super(Point, self).__init__(**kwargs)
 
@@ -326,14 +298,17 @@ class Point(TimeStamp):
 class Sequence(TimeStamp):
     """Sequence is all actions in a point with the same group of players."""
 
+    terminations = [u"goal", u"timeout", u"injury"]
+
     def __init__(self, **kwargs):
         """Takes sequence_lines as mandatory arguments."""
 
         print("Sequence.__init__() called.")
 
         # TODO: reorganise this so offence and defence are explicit
-        self.lines = kwargs.pop("lines")  # 0 = offence, 1 = defence
+        self.lines = kwargs.pop("lines")  # 0 = offence, 1 = defence; regression variables
         self.possessions = []
+        self.termination = None  # goal, injury, timeout
 
         super(Sequence, self).__init__(**kwargs)
 
@@ -352,12 +327,11 @@ class Possession(TimeStamp):
 
 class DiscStatus(Root):
     """
-    Object for WFDF rule 8. Status of the Disc. 
+    Object for WFDF Rule 8. Status of the Disc. 
     Used for the effect of calls and time outs on possession.
     """
 
-    # class attribute - possible states for the disc
-    status = [u"dead", u"live"]
+    statuses = [u"dead", u"live"]  # class attribute - possible states for the disc
 
     def __init__(self, **kwargs):
         """Takes disc_status, as mandatory inputs."""
@@ -366,6 +340,7 @@ class DiscStatus(Root):
 
         self.disc_start = kwargs.pop("disc_status")
         self.disc_end = kwargs.pop("disc_end")
+        self.status = kwargs.pop("status")
 
         super(DiscStatus, self).__init__(**kwargs)
 

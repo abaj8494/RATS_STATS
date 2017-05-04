@@ -73,59 +73,37 @@ def find_divisions(soup):
 
 def scrape_game():
 
+    # TODO: these should be set at a higher level.
+    point_cap = 15
+    half_at = 8
+    offences = [u"home", u"guest"]
+
     soup = make_soup("http://scores.wugc2016.com/?view=gameplay&game=223")
     # print(soup.prettify())
 
-    game_headers = [
-                       header.get_text()
-                       for header
-                       in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
-                   ]
-    # print(game_headers)
+    # game_headers = [
+    #                    header.get_text()
+    #                    for header
+    #                    in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
+    #                ]
+    # # print(game_headers)
 
     game_scores = [
-                      row.find_all("td")
+                      row.find_all("td")[::-1]
                       for row
                       in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
                   ][1:]  # slice removes headers
 
     # [print(score) for score in game_scores]
 
-    game_progression = []
+    # find starting and half offences - these are stored as colours in the table for idiotic reasons.
+    # TODO: work out who to ask for the actual data from Worlds - Rich?
+    starting_offence = game_scores[0][0].div["class"][0]
+    offences.remove(starting_offence)
+    half_offence = offences[0]
 
-    for score in game_scores:
-
-        if len(score) == 6:  # point
-
-            # find Game Events (starting offence, timeouts) and make them separate entries into the progression
-            if score[-1].string is not None:
-                # print(score[-1])
-                game_progression.append(score[-1])
-                # TODO: find the div["class"] attribute
-
-            # append the rest of the row to the game progression
-            # print(score[:-1])
-
-            print(score[0]["class"])
-            print(score[0].string.strip())
-
-            home_regex = "^(\d+)\s"
-
-            game_progression.append(score[:-1])
-
-        elif len(score) == 1:  # halftime
-            game_progression.append(score)
-
-        else:  # shouldn't get here
-            raise ValueError
-
-    game_list = []
-    game_list.append(["starting offence", game_progression.pop(0).div["class"][0], [0, 0]])
-
-    print("")
-    print(game_list)
-
-    # TODO: turn this into a gh.Game object
+    print("starting offence: {}\n"
+          "half offence:     {}".format(starting_offence, half_offence))
 
 
 def main():
