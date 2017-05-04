@@ -90,6 +90,7 @@ class Game(Root):
 
     __str__ = get_filename
 
+
 class Point(Root):
     """Point is a length of sequences between goals."""
 
@@ -98,19 +99,16 @@ class Point(Root):
     def __init__(self, **kwargs):
         # print("Point.__init__() called.")
 
-        # double nesting allows us to append new lines / a new sequence after an injury
-        self.lines = [kwargs.pop("lines")] # lines is already coming in as a list [[line 1], [line 2]]
-        self.sequences = [[]]
-
-        # lines and sequence are index matched - this should be useable for both to get the 'current' item
-        self.set_index = 0
+        self.sequences = []  # list of sequence objects
+        self.seq_index = None  # which sequence we are currently taking stats on
 
         # starting offence is always 0 - this number will track it during stat taking
         # need to be able to tell it who's on offence to carry results from previous points
-        if "offence" in kwargs:
-            self.offence = kwargs.pop("offence")
+        # sequences will have offence to track in there
+        if "starting_offence" in kwargs:
+            self.starting_offence = kwargs.pop("starting_offence")
         else:
-            self.offence = 0
+            self.starting_offence = 0
 
         # starting offence is score[0]
         # you can pass the score in when starting the next point if you want
@@ -121,19 +119,17 @@ class Point(Root):
 
         super(Point, self).__init__(**kwargs)
 
-    def current_lines(self):
-        return self.lines[self.set_index]
-
     def current_sequence(self):
-        return self.sequences[self.set_index]
+        return self.sequences[self.seq_index]
 
-    def update_seq_lin(self,lines):
-        # takes in [teamA_players, teamB_players]
-        # adds a new empty sequence so that the index matching works
-        # and when you then work with set_index, it'll first refer to the new empty sequence
-        self.lines.append(lines)
-        self.sequences.append([])
-        self.set_index += 1
+    def create_sequence(self,lines,offence):
+        self.sequences.append(Sequence(lines=lines,
+                                       offence=offence))
+
+        if self.seq_index == None:
+            self.seq_index = 0
+        else:
+            self.seq_index += 1
 
 
 class Team(Root):
@@ -150,6 +146,18 @@ class Team(Root):
 
     def __str__(self):
         return self.name
+
+
+class Sequence(Root):
+    def __init__(self, **kwargs):
+
+        # list of events - ends on timeout, injury or goal (goal ends the point also)
+
+        self.offence = kwargs.pop('offence')
+        self.lines = kwargs.pop('lines')
+        self.events = []
+
+        super(Sequence,self).__init__(**kwargs)
 
 
 class Player(Root):
