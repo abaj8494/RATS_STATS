@@ -9,6 +9,7 @@ import os
 import sys
 import codecs
 import urllib2
+import re
 
 # third party
 from bs4 import BeautifulSoup
@@ -104,6 +105,12 @@ def scrape_game():
 
             # append the rest of the row to the game progression
             # print(score[:-1])
+
+            print(score[0]["class"])
+            print(score[0].string.strip())
+
+            home_regex = "^(\d+)\s"
+
             game_progression.append(score[:-1])
 
         elif len(score) == 1:  # halftime
@@ -112,12 +119,11 @@ def scrape_game():
         else:  # shouldn't get here
             raise ValueError
 
-    starting_offence = game_progression.pop(0)
-    print(starting_offence.div["class"][0])
+    game_list = []
+    game_list.append(["starting offence", game_progression.pop(0).div["class"][0], [0, 0]])
 
     print("")
-
-    [print(progression) for progression in game_progression]
+    print(game_list)
 
     # TODO: turn this into a gh.Game object
 
