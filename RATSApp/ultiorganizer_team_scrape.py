@@ -9,6 +9,7 @@ import os
 import sys
 import codecs
 import urllib2
+import re
 
 # third party
 from bs4 import BeautifulSoup
@@ -72,39 +73,37 @@ def find_divisions(soup):
 
 def scrape_game():
 
+    # TODO: these should be set at a higher level.
+    point_cap = 15
+    half_at = 8
+    offences = [u"home", u"guest"]
+
     soup = make_soup("http://scores.wugc2016.com/?view=gameplay&game=223")
     # print(soup.prettify())
 
-    # TODO: find home/away
-    # TODO: get team lists
+    # game_headers = [
+    #                    header.get_text()
+    #                    for header
+    #                    in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
+    #                ]
+    # # print(game_headers)
 
-    # game headers are reversed because some idiot put the starting offence as the last item in the line
-    game_headers = [
-                       header.get_text()
-                       for header
-                       in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
-                   ][::-1]
-    print(game_headers)
+    game_scores = [
+                      row.find_all("td")[::-1]
+                      for row
+                      in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
+                  ][1:]  # slice removes headers
 
-    game_progression = [
-        row
-        for row
-        in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
-        ][1:-1]  # no headers
+    # [print(score) for score in game_scores]
 
-    # print(len(game_progression))
-    # print(game_progression)
+    # find starting and half offences - these are stored as colours in the table for idiotic reasons.
+    # TODO: work out who to ask for the actual data from Worlds - Rich?
+    starting_offence = game_scores[0][0].div["class"][0]
+    offences.remove(starting_offence)
+    half_offence = offences[0]
 
-    for row in game_progression:
-        print(row)
-    # TODO: work out how to show scores backwards
-
-    # TODO: find tds, classes of tds if there is a value in the "first" cell
-
-    # starting_offence = game_progression[1].find_all("td")[-1]
-    # print(starting_offence)
-
-    pass
+    print("starting offence: {}\n"
+          "half offence:     {}".format(starting_offence, half_offence))
 
 
 def main():
