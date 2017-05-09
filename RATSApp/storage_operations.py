@@ -92,8 +92,8 @@ def store_game_pickle(game,path):
 
 
 def retrieve_game_pickle(path):
-    pass
-    # return game
+    game = pickle.load(open(path, 'rb'))
+    return game
 
 
 def upload_csv(path):

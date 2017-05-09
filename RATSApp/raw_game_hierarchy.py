@@ -51,6 +51,7 @@ class Game(Root):
         # print("Game.__init__() called.")
 
         self.teams = kwargs.pop("teams")  # two item list: 0 = offence, 1 = defence
+
         #self.scores = [[0, 0]]  # double nesting, want to just append the score here after each point
         # this is dumb, just read over the points and look at it from there.
 
@@ -78,14 +79,17 @@ class Game(Root):
     # def get_current_scores(self):
     #     return self.scores[-1]
 
-    def get_filename(self):
+    def get_filename(self,special=None):
         string = "{}{}_{}_{}".format(
             self.tournament,
             self.year,
             self.teams[0].name,  # offence
             self.teams[1].name,  # defence
         )
+        if special is not None:
+            string = string+str(special)
 
+        string = string + '.p'
         return string
 
     __str__ = get_filename

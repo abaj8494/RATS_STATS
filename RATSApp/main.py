@@ -54,25 +54,18 @@ class MenuScreen(Screen):
 
     def goto_confirm_input(self):
         sApp = App.get_running_app()
-
-        #this is where we need to check if there is a saved game and ask if they want to continue taking stats on that
-        # check for all pickle files in the folder
-        # if there are any, offer file browser like config with confirm+cancel buttons
-        # cancel dismisses popup
-        # confirm loads game, goes to confirm input screen
-
-
         sApp.root.switch_to(ConfirmInputScreen())
         return True
+
+    def goto_continue_stats(self):
+        sApp = App.get_running_app()
+        sApp.root.switch_to(ChooseStatsScreen())
+        return True
+
 
     # deactivate this so you can't accidentally fuck it all up
 
     def goto_read_stats(self):
-        #sApp = App.get_running_app()
-        #sApp.root.switch_to(ChooseStatsScreen())
-        return True
-
-    def goto_switch_config(self):
         #sApp = App.get_running_app()
         #sApp.root.switch_to(ExportScreen())
         return True
@@ -218,13 +211,17 @@ class SelectPlayersScreen(Screen):
         super(SelectPlayersScreen, self).__init__(**kwargs)
         sApp = App.get_running_app()
         if len(sApp.game.points) == 0: # if this is the first point
-            print('# this is the first point')
+            #print('# this is the first point')
             self.offence = 0
             self.score = [0,0]
+        elif sApp.current_point == 'HALF_REACHED': # if this is the first point after half
+            self.offence = 1
+            self.score = sApp.game.points[-1].score
+            sApp.current_point = None
         else:
             self.offence = 1 - sApp.game.points[-1].current_sequence().offence # opposite offence to end of last point
-            print('new offence: '+str(self.offence))
-            self.score = sApp.game.points[-1].score # should be incremented when the goal is scored, hence correct here
+            #print('new offence: '+str(self.offence))
+            self.score = sApp.game.points[-1].score
         self.temp_oline = []
         self.temp_dline = []
 
@@ -634,7 +631,7 @@ class SelectActionScreen(Screen):
                                        #ts_end=self.temp_event[3])
 
             sApp.current_point.current_sequence().events.append(copy.copy(event_obj)) # if you fuck with event_obj from here, doesn't touch sequence
-            stops.store_game_pickle(sApp.game,sApp.save_path())
+            stops.store_game_pickle(sApp.game,sApp.save_path(special='_auto'))
             for pb in self.pblist:
                 pb.state = u'normal' # reset the player buttons
             # offensive turnovers
@@ -670,6 +667,10 @@ class SelectActionScreen(Screen):
                 yes = Button(text=u'yes')
                 yes.bind(on_release=self.end_game)
                 popupContent.add_widget(yes)
+
+                half = Button(text=u"that's half")
+                half.bind(on_release=self.end_half)
+                popupContent.add_widget(half)
 
                 no = Button(text=u'no')
                 no.bind(on_release=self.end_point)
@@ -738,14 +739,25 @@ class SelectActionScreen(Screen):
         sApp.root.switch_to(SelectPlayersScreen())
         return True
 
+    def end_half(self, *args):
+        if self.popup:
+            self.popup.dismiss()
+        sApp = App.get_running_app()
+        sApp.game.points.append(sApp.current_point)
+        sApp.current_point = 'HALF_REACHED'
+        # how dodgy is this - its only for literally this one function pass
+        # fuck you
+
+        sApp.root.switch_to(SelectPlayersScreen())
+        return True
+
     def end_game(self, *args):
         if self.popup:
             self.popup.dismiss()
         sApp = App.get_running_app()
         sApp.game.points.append(sApp.current_point)
         #sApp.game.time_game_end = time.time()
-        path = os.path.join(sApp.user_data_dir, sApp.save_path())
-        stops.store_game_pickle(sApp.game,path)
+        stops.store_game_pickle(sApp.game,sApp.save_path(special='_final'))
 
         sApp.game = None #should we clear this here??
         sApp.unordered_teams = []
@@ -755,8 +767,7 @@ class SelectActionScreen(Screen):
 
 # these are important but not part of the live stat taking - consider breaking up screen definitions
 
-# strictly experimental - don't go here
-
+# this is where you can select a game file and continue on from the end
 class ChooseStatsScreen(Screen):
     def __init__(self,**kwargs):
         super(ChooseStatsScreen, self).__init__(**kwargs)
@@ -777,10 +788,13 @@ class ChooseStatsScreen(Screen):
         sApp = App.get_running_app()
         #print(self.filechA.selection)
         self.path = self.filechA.selection[0]
-        sApp.game = pickle.load(open(self.path, 'rb'))
+        sApp.game = stops.retreive_game_pickle(self.path)
         #
         # for some reason in the SMO ellipsis v rogue game there was a None object saved in the pointslist, crashing it
         # this is clearly a workaround - why the None ??
+        # ^ when is current_point == None (sometimes)
+        # ^ how would it get stored during those times - on_pause probably
+        #
         # - works still -
         #
         for point in sApp.game.points:
@@ -788,8 +802,10 @@ class ChooseStatsScreen(Screen):
                 print("Detected a NoneType obj in game.points, discarding")
                 sApp.game.points.remove(point)
 
-        sApp.root.switch_to(ReadScreen())
+        sApp.root.switch_to(SelectPlayersScreen())
 
+
+# strictly experimental - don't go here
 
 class ReadScreen(Screen):
     def __init__(self, **kwargs):
@@ -900,10 +916,10 @@ class StatsApp(App):
         sApp = App.get_running_app()
         return Builder.load_file(u'stats.kv')
 
-    def save_path(self):
+    def save_path(self,special=None):
         # popup confirmation is for nerds
         sApp = App.get_running_app()
-        savename = sApp.game.get_filename()
+        savename = sApp.game.get_filename(special=special)
         path = os.path.join(sApp.user_data_dir, savename)
         return path
 
