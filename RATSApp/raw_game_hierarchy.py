@@ -172,10 +172,14 @@ class Player(Root):
         self.number = kwargs.pop("number")
         self.gender = kwargs.pop("gender")
 
+        self.display_name = str(self.name)+' | '+str(self.number)+' | '+str(self.gender)
+
         super(Player, self).__init__(**kwargs)
 
     def __str__(self):
-        return self.name
+        return self.name+"#"+self.number
+
+    __repr__ = __str__
 
 
 class Pull(Root):
