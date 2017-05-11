@@ -565,17 +565,9 @@ class SelectActionScreen(Screen):
         self.pblist = []
         sApp = App.get_running_app()
 
-        # here at the top can add something about showing the last three events (summaries)
-        # then can have an undo button that pops the last icon
-        # TODO: this is commented out because it causes double text in the title of select_action
-        # fix that
-        # seq_content = []
-        # for event in sApp.current_point.current_sequence().events[-3:]: # last three events
-        #     seq_content.append('Last Three Events: '+str(event.player)+':'+str(event.action))
-        # sequence_display = Label(text=str(seq_content),
-        #                          pos_hint={'top':1})
-        #
-        # self.ids.BiggerBox.add_widget(sequence_display)
+        # sequence_display = Label(text=str(seq_content),pos_hint={'top':1})
+        # not sure pos_hint works very well - possibly bc i never use it and hence am mixing
+        # this is the shit to fix with the UI restructure hey
 
         for player in sApp.current_point.current_sequence().lines[sApp.current_point.current_sequence().offence]:
             pb = ToggleButton(text=player.display_name, group=u'players')
@@ -644,6 +636,16 @@ class SelectActionScreen(Screen):
                                        #ts_end=self.temp_event[3])
 
             sApp.current_point.current_sequence().events.append(copy.copy(event_obj)) # if you fuck with event_obj from here, doesn't touch sequence
+
+            # having the seq display here means that it updates every time you select action - good
+            # this means that it is not displayed until the first action is picked
+            # could manually update this at other points ?
+
+            seq_content = [] # there is already a title on this shit
+            for event in sApp.current_point.current_sequence().events[-3:]:  # last three events
+                seq_content.append(str(event.player.display_name) + ' : ' + str(event.action))
+            self.ids.SequenceLabel.text = str(seq_content)
+
             stops.store_game_pickle(sApp.game,sApp.save_path(special='_auto'))
             for pb in self.pblist:
                 pb.state = u'normal' # reset the player buttons
@@ -801,7 +803,7 @@ class ChooseStatsScreen(Screen):
         sApp = App.get_running_app()
         #print(self.filechA.selection)
         self.path = self.filechA.selection[0]
-        sApp.game = stops.retreive_game_pickle(self.path)
+        sApp.game = stops.retrieve_game_pickle(self.path)
         #
         # for some reason in the SMO ellipsis v rogue game there was a None object saved in the pointslist, crashing it
         # this is clearly a workaround - why the None ??
@@ -934,6 +936,8 @@ class StatsApp(App):
         sApp = App.get_running_app()
         savename = sApp.game.get_filename(special=special)
         path = os.path.join(sApp.user_data_dir, savename)
+        if special != '_auto':
+            print('## saving special ##'+str(path))
         return path
 
     def on_pause(self):
