@@ -73,6 +73,9 @@ class Player(Root):
 class TestMatchPlayer(Root): #working title
     def __init__(self,**kwargs):
 
+        # tbh because these are all likely to be zero'd on instatiation
+        # can probably just loop over the teamlist once and deepcopy() the results
+
         self.thrown_connections = {
             # a key for every other player on their team
             # a value that is how many times this player threw to them

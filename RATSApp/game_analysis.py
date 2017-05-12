@@ -23,7 +23,7 @@ def main():
     # open pickle file
 
     for point in gh.Game.points:
-        for sequence in point.sequences:  # not sure about this, Point is a separate object
+        for sequence in point.sequences:
             for event in sequence:
                 pass  # analyse the sequence
 

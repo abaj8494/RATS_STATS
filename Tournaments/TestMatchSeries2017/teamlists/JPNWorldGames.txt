@@ -1,0 +1,2 @@
+name:Japan
+players:6|m|Shunji Kurono,7|m|Inomata Yuta,9|m|Komori Takaharu,10|m|Masahiro Matsuno,24|m|Arakawa Sun,77|m|Yuta Shimura,85|m|Kunieda Andy,97|m|Shiba Keiichiro,5|f|Kanabi Kanabi,8|f|Ayumi Fujioka,15|f|Saori Inoue,16|f|Tomomura Yui,17|f|Shimada Lisa,31|f|Yutiko Sato,39|f|Tomoko Inamura,91|f|Ogawa Shiori

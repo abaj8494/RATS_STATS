@@ -1,0 +1,2 @@
+name:Australia
+players:1|m|Brendan Ashcroft,15|m|Calan Spielman,35|f|Catherine Phillips,9|m|Lochlan Wise,14|m|Mark Evans,32|f|Michelle Phillips,7|f|Mikhaila Dignam,88|m|Peter Blakeley,17|f|Rebecca Brereton,60|m|Rob Andrews,29|f|Rosie Dawson,37|f|Sarah Wentworth,28|m|Sebastian Barr,70|f|Vivian Stettner,90|f|Adeliade Dennis,91|m|Alex Ladomatos,92|f|Alex Prentice,93|f|Kim Spragg,94|m|Mark Isherwood,95|m|Tom Tulett
