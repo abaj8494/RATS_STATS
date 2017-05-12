@@ -88,12 +88,12 @@ def scrape_game():
     #                ]
     # # print(game_headers)
 
+    # this is the main table I'm interested in
     game_scores = [
                       row.find_all("td")[::-1]
                       for row
                       in soup.find("table", border="1", cellpadding="2", width="100%").find_all("tr")
                   ][1:]  # slice removes headers
-
     # [print(score) for score in game_scores]
 
     # find starting and half offences - these are stored as colours in the table for idiotic reasons.
@@ -101,9 +101,63 @@ def scrape_game():
     starting_offence = game_scores[0][0].div["class"][0]
     offences.remove(starting_offence)
     half_offence = offences[0]
-
     print("starting offence: {}\n"
-          "half offence:     {}".format(starting_offence, half_offence))
+          "half offence:     {}\n".format(starting_offence, half_offence))
+
+    game_progression = [[starting_offence, 0.00, 0.00]]
+
+    for row in game_scores:
+
+        if len(row) == 1:  # halftime
+            pass
+
+        elif len(row) == 6:  # an actual row
+            # print("\n{}".format(row))
+
+            # timeout check
+            if row[0].string is not None:
+                # print(row[0])
+
+                if row[5]:
+                    # print(row[5])
+                    pass
+            else:
+                # print(row)
+                pass
+
+        else:
+            raise ValueError
+
+    # pull is up at 0.00
+    # zero index is who scored
+    # first index is the point duration
+    # second index is the game time
+
+    for row in game_scores:
+
+        if len(row) == 1:
+            game_progression.append(["Halftime", game_progression[-1][-1]])
+
+        elif len(row) == 6:
+            print(row)
+            game_progression.append(
+                [
+                row[5].string,
+                float(row[1].string),
+                float(row[2].string)
+                ]
+            )  # home or guest
+
+        else:
+            raise ValueError
+
+    for time_line in game_progression:
+        print(time_line)
+
+    for time in game_progression:
+        print(time[-1])
+
+
 
 
 def main():
