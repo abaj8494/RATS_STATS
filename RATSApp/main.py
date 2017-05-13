@@ -8,7 +8,7 @@ from functools import partial
 import copy
 import csv
 from io import open
-import os #, time
+import os, time
 
 #kivy
 from kivy.app import App
@@ -224,6 +224,12 @@ class SelectPlayersScreen(Screen):
             self.score = sApp.game.points[-1].score
         self.temp_oline = []
         self.temp_dline = []
+        self.defence_timeouts_flagged = []
+        self.offence_timeouts_flagged = []
+
+        self.offenceTObutton = Button(text='Take Timeout - '+str(sApp.game.timeout_status[self.offence])+' taken so far')
+        self.offenceTObutton.bind(on_release=partial(self.start_point_timeout,self.offence))
+        self.ids.LeftBox.add_widget(self.offenceTObutton)
 
         teamLabel = Label(text=sApp.game.teams[self.offence].name)
         self.ids.LeftBox.add_widget(teamLabel)
@@ -232,12 +238,43 @@ class SelectPlayersScreen(Screen):
             pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.LeftBox.add_widget(pb)
 
+        self.defenceTObutton = Button(text='Take Timeout - ' + str(sApp.game.timeout_status[1-self.offence]) + ' taken so far')
+        self.defenceTObutton.bind(on_release=partial(self.start_point_timeout,1-self.offence))
+        self.ids.RightBox.add_widget(self.defenceTObutton)
+
         teamLabel = Label(text=sApp.game.teams[1 - self.offence].name)
         self.ids.RightBox.add_widget(teamLabel)
         for player in sApp.game.teams[1 - self.offence].players:
             pb = ToggleButton(text=player.display_name)
             pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.RightBox.add_widget(pb)
+
+    def start_point_timeout(self,offence_source,*args):
+        sApp = App.get_running_app()
+        if offence_source == self.offence: # offence called the TO
+            sApp.game.timeout_status[self.offence] = sApp.game.timeout_status[self.offence] + 1
+            self.offenceTObutton.text = 'Take Timeout - '+str(sApp.game.timeout_status[self.offence])+' taken so far'
+            # create the event and timestamp it here, append to this list and chuck it on the sequence later
+            fakePlayer = hierarch.Player(name=sApp.game.teams[self.offence].name,
+                                         number=-1,
+                                         gender='T')
+            self.offence_timeouts_flagged.append(hierarch.Event(player=fakePlayer,
+                                                                action='timeout',
+                                                                ts_start=time.time(),
+                                                                ts_end=time.time()+75))
+
+        elif offence_source == 1-self.offence: # defence gets to call them here too
+            sApp.game.timeout_status[1-self.offence] = sApp.game.timeout_status[1-self.offence] + 1
+            self.defenceTObutton.text = 'Take Timeout - '+str(sApp.game.timeout_status[1-self.offence])+' taken so far'
+            fakePlayer = hierarch.Player(name=sApp.game.teams[1-self.offence].name,
+                                         number=-1,
+                                         gender='T')
+            self.defence_timeouts_flagged.append(hierarch.Event(player=fakePlayer,
+                                                                action='timeout',
+                                                                ts_start=time.time(),
+                                                                ts_end=time.time()+75))
+
+        return True
 
     def swap_state(self,pb,player,*args):
         #this is the NEW state - normal button pressed will trigger the if 'down' branch of this
@@ -258,10 +295,10 @@ class SelectPlayersScreen(Screen):
         self.ids.subtitle.text = 'Offence: '+str(len(self.temp_oline))+' | Defence: '+str(len(self.temp_dline))
         return True
 
-
     def store_players(self):
         sApp = App.get_running_app()
         # gender ratio?
+        # beach ultimate?
         if len(self.temp_dline) == 7 and len(self.temp_oline) == 7:
             # if self.offence = 0, starting offence is on offence now
             # if self.offence = 1, the other team is on offence
@@ -275,8 +312,6 @@ class SelectPlayersScreen(Screen):
 
             # self.offence still matches the correct team in self.game.teams
             # and it reflects the reality of this point - the parameters have changed since the goal
-            # why does this feel sketchy? is it because i'm high?
-
 
             if len(sApp.game.points) != 0:
                 self.score = sApp.game.points[-1].score
@@ -288,6 +323,12 @@ class SelectPlayersScreen(Screen):
 
             sApp.current_point.create_sequence(lines=lines,
                                                offence=self.offence)
+
+            for event in self.offence_timeouts_flagged:
+                sApp.current_point.current_sequence().events.append(event)
+            for event in self.defence_timeouts_flagged:
+                sApp.current_point.current_sequence().events.append(event)
+
             sApp.root.switch_to(PullingScreen())
         else:
             pass
@@ -361,6 +402,7 @@ class PlayBreakScreen(Screen):
         self.ids.BigBox.add_widget(injBut)
 
         # could probably put the edit button here too
+        # edit or undo who knows
 
         backBut = Button(text='Back to Build Event')
         backBut.bind(on_release=self.go_back)
@@ -550,7 +592,9 @@ class PlayBreakScreen(Screen):
         sApp = App.get_running_app()
         sApp.game.timeout_status[sApp.current_point.current_sequence().offence] = sApp.game.timeout_status[sApp.current_point.current_sequence().offence] + 1
         to_obj = hierarch.Event(player=player,
-                                action='timeout')
+                                action='timeout',
+                                ts_start=time.time(),
+                                ts_end=time.time()+75)
         sApp.current_point.current_sequence().events.append(to_obj)
         self.to_popup.dismiss()
         sApp.root.switch_to(SelectActionScreen())
@@ -561,13 +605,14 @@ class SelectActionScreen(Screen):
         super(SelectActionScreen, self).__init__(**kwargs)
 
         self.popup = None
-        self.temp_event = [hierarch.Player, None] #, None, None]  # [player, action, player_ts, action_ts]
+        self.temp_event = [hierarch.Player, None, None, None]  # [player, action, ts_start, ts_end]
         self.pblist = []
         sApp = App.get_running_app()
 
         # sequence_display = Label(text=str(seq_content),pos_hint={'top':1})
         # not sure pos_hint works very well - possibly bc i never use it and hence am mixing
         # this is the shit to fix with the UI restructure hey
+        self.update_sequence()
 
         for player in sApp.current_point.current_sequence().lines[sApp.current_point.current_sequence().offence]:
             pb = ToggleButton(text=player.display_name, group=u'players')
@@ -604,6 +649,7 @@ class SelectActionScreen(Screen):
         undoButton = Button(text='Undo Event')
         # undocallback = partial(self.undo_action)
         undoButton.bind(on_release=self.undo_action)
+        self.ids.RightBox.add_widget(undoButton)
 
     def playbreak_switch(self,*args):
         sApp = App.get_running_app()
@@ -611,17 +657,34 @@ class SelectActionScreen(Screen):
         return True
 
     def undo_action(self,*args):
+
+        # works fine for regular actions
+        # does not revert the offence if you undo a turnover
+        # can't undo goals
+
         sApp = App.get_running_app()
         ditched = sApp.current_point.current_sequence().events.pop()
-        print('## undo ##' + str(ditched))
+        if ditched.action in hierarch.Event.turnover_actions:
+            sApp.current_point.current_sequence().offence = 1-sApp.current_point.current_sequence().offence
+        print('## undo ## ' + str(ditched))
         sApp.root.switch_to(SelectActionScreen())
-
         return True
 
     def set_player(self, player, *args):
         sApp = App.get_running_app()
         self.temp_event[0] = player
+        self.temp_event[2] = time.time()
         return True
+
+    def update_sequence(self): # only need *args+return True if calling this from a button press
+        # seems to be working well
+        sApp = App.get_running_app()
+        # this is the only dynamic text on this screen i think
+        seq_content = []  # there is already a title on this shit
+        for event in sApp.current_point.current_sequence().events[-3:]:  # last three events
+            seq_content.append(str(event.player.display_name) + ' : ' + str(event.action))
+        self.ids.SequenceLabel.text = str(seq_content)
+        # return True
 
     def set_action(self, action, *args):
         # store the event
@@ -629,22 +692,18 @@ class SelectActionScreen(Screen):
         if self.temp_event[0] != 'player_not_set':
             #button does nothing if haven't picked a player
             self.temp_event[1] = action
+            self.temp_event[3] = time.time()
 
             event_obj = hierarch.Event(player=self.temp_event[0],
-                                       action=self.temp_event[1]
-                                       )#ts_start=self.temp_event[2],
-                                       #ts_end=self.temp_event[3])
+                                       action=self.temp_event[1],
+                                       ts_start=self.temp_event[2],
+                                       ts_end=self.temp_event[3])
 
             sApp.current_point.current_sequence().events.append(copy.copy(event_obj)) # if you fuck with event_obj from here, doesn't touch sequence
 
             # having the seq display here means that it updates every time you select action - good
-            # this means that it is not displayed until the first action is picked
-            # could manually update this at other points ?
-
-            seq_content = [] # there is already a title on this shit
-            for event in sApp.current_point.current_sequence().events[-3:]:  # last three events
-                seq_content.append(str(event.player.display_name) + ' : ' + str(event.action))
-            self.ids.SequenceLabel.text = str(seq_content)
+            # needs to update all the time - on entry to the screen as well as any action button
+            self.update_sequence()
 
             stops.store_game_pickle(sApp.game,sApp.save_path(special='_auto'))
             for pb in self.pblist:
@@ -729,8 +788,8 @@ class SelectActionScreen(Screen):
     def save_defensive_action(self, player, action, *args):
         sApp = App.get_running_app()
         blockevent = hierarch.Event(player=player,
-                                    action=action
-                                    )
+                                    action=action,
+                                    ts_start=time.time())
                                     
         sApp.current_point.current_sequence().events.append(blockevent)
         sApp.current_point.current_sequence().offence = 1 - sApp.current_point.current_sequence().offence
@@ -818,7 +877,6 @@ class ChooseStatsScreen(Screen):
                 sApp.game.points.remove(point)
 
         sApp.root.switch_to(SelectPlayersScreen())
-
 
 # strictly experimental - don't go here
 
