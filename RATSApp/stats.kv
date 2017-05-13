@@ -211,15 +211,18 @@ RatsScreenManager:
         orientation:'vertical'
         spacing:0
         Label:
-            text:'Select Player, then Action'
+            text:'Select Player, then Action. Event will be stored when you select Action'
             font_size:20
             size_hint:[1,1]
-        #this isn't centred like i'd imagine
-        #whatever
         Label:
-            text:'Event will be stored when you select action'
+            text:'Last Three Events:'
             font_size:15
             size_hint:[0.5,0.5]
+        Label:
+            id:SequenceLabel
+            # text:'No Sequence Loaded'
+            font_size:15
+            # size_hint:[1,0.5]
 
         BoxLayout:
             size_hint:[1,10]

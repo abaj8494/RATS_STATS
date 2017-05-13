@@ -21,18 +21,15 @@ class Root(object):
         assert not kwargs
 
 
-# For test matches:
-# nothing inherits from timestamp because we won't use it
-# make the appropriate objects inherit from timestamp when we want it
+class TimeStamp(Root):
+    def __init__(self, **kwargs):
 
-# class TimeStamp(Root):
-#     def __init__(self, **kwargs):
-#
-#         self.ts_start = kwargs.pop("ts_start")
-#         self.ts_end = kwargs.pop("ts_end")
-#         self.ts_duration = self.ts_end - self.ts_start
-#
-#         super(TimeStamp, self).__init__(**kwargs)
+        self.ts_start = kwargs.pop("ts_start")
+        if "ts_end" in kwargs:
+            self.ts_end = kwargs.pop("ts_end")
+            self.ts_duration = self.ts_end - self.ts_start
+
+        super(TimeStamp, self).__init__(**kwargs)
 
 
 class Game(Root):
@@ -213,7 +210,7 @@ class Pull(Root):
         return self.puller +' : ' + self.pull_reception
 
 
-class Event(Root):
+class Event(TimeStamp): # TimeStamp inherits root, don't need it listed here
     # class attributes
 
     all_actions = [
@@ -303,4 +300,6 @@ class Event(Root):
         super(Event, self).__init__(**kwargs)
 
     def __str__(self):
-        return self.player + " : " + self.acion
+        return str(self.player) + " : " + self.action
+
+    __repr__ = __str__
