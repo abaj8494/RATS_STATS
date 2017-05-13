@@ -13,21 +13,38 @@ import sys
 import pickle
 
 
-# local project
-import game_hierarchy as gh
+def load_game():
+    """Opens a live game pickle file"""
+
+    pass
+
+
+def point_progressions():
+    """Points in the Game."""
+
+    pass
+
+
+def sequence_progressions():
+    """Sequences in a Point"""
+
+    pass
+
+
+def possession_progression():
+    """TeamPossessions in a Sequence."""
+
+    pass
+
+
+def discs_progression():
+    """PlayerDiscs in a TeamPossession"""
 
 
 def main():
     """"""
 
-    # open pickle file
-
-    for point in gh.Game.points:
-        for sequence in point.sequences:
-            for event in sequence:
-                pass  # analyse the sequence
-
-    return None
+    pass
 
 
 if __name__ == '__main__':
