@@ -4,7 +4,11 @@
 # open a game file
 # read through points
 # read through sequences
+# read through possessions
+# read through discs
+
 # spit out numbers for both teams and each player in each team.
+# TAG'd
 
 
 # imports
@@ -14,7 +18,7 @@ import pickle
 
 
 def load_game():
-    """Opens a live game pickle file"""
+    """Open a Game pickle file"""
 
     pass
 
