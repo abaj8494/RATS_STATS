@@ -34,15 +34,20 @@ class Team(Root):
     def __init__(self, **kwargs):
         """Takes name, players, opponent, as mandatory arguments."""
 
-        self.name = kwargs.pop("name")
-        self.players = kwargs.pop("players")
-        self.opponent = kwargs.pop("opponent")
+        self.name = kwargs.pop("name")  # string
+        self.coaches = kwargs.pop("coaches")  # list of Coach objects
+        self.players = kwargs.pop("players")  # list of Player objects
+        self.opponent = kwargs.pop("opponent")  # string
 
         # Points
-        self.points_played = 0
-        self.offensive_points = 0
-        self.defensive_points = 05
+        self.points_played = 0  # count
+        self.offensive_points = 0  # count
+        self.defensive_points = 0  # count
         # TODO: offensive_points + defensive_points == points_played
+
+        # Possessions
+        self.offensive_possessions = 0  # count
+        self.defensive_possessions = 0  # count
 
         # Touches
         self.discs = 0
@@ -51,11 +56,31 @@ class Team(Root):
         # TODO: completions + incompletions == discs
         self.completion_rate = 0.00
 
+        # retention == passes completed per pass attempted  # TODO: individual player stats, different for shot takers
+        # efficiency == goals scored per possession  # TODO: where is the win line? above what percentage?
+        # conversions == goals scored per point played  # TODO: what lines are most efficient at conversions
+
+        self.offensive_holds = []  # count
+        self.offensive_breaks = []  # count
+        self.offensive_retention = 0.00  # percentage
+        self.offensive_efficiency = 0.00
+
+        self.defensive_holds = []  # count
+        self.defensive_breaks = []  # count
+        self.offensive_conversions = 0.00  # percentage
+        self.defensive_efficiency = 0.00
+
+
+
         # Goals
-        self.goals = []
-        self.assists = []
-        self.defensive_breaks = []
-        self.holds = []
+        self.goals = []  # list of players
+
+        # Assists
+        self.assists = []  # list of players
+
+        # Defences
+        self.defences = []  # list of players
+
         # TODO:
 
 
