@@ -225,12 +225,6 @@ class Game(Division, TimeStamp):
 
     # TODO: for now, this is just for AUC
     stages = [
-        u"pool play",
-        u"power pool play",
-        u"pre-quarter final",
-        u"quarter final",
-        u"semi final",
-        u"final"
     ]
 
     def __init__(self, **kwargs):
