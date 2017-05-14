@@ -621,6 +621,15 @@ class SelectActionScreen(Screen):
             self.pblist.append(pb)
             self.ids.LeftBox.add_widget(pb)
 
+        fakePlayer = hierarch.Player(name=sApp.game.teams[sApp.current_point.current_sequence().offence].name,
+                                     number=-1,
+                                     gender='G')
+        pb = ToggleButton(text=fakePlayer.display_name, group=u'players')
+        pickcallback = partial(self.set_player,fakePlayer)
+        pb.bind(on_release=pickcallback)
+        self.pblist.append(pb)
+        self.ids.LeftBox.add_widget(pb)
+
         for action in hierarch.Event.primary_actions:
             select = Button(text=action)
             selectcallback = partial(self.set_action, action)
@@ -994,8 +1003,10 @@ class StatsApp(App):
         sApp = App.get_running_app()
         savename = sApp.game.get_filename(special=special)
         path = os.path.join(sApp.user_data_dir, savename)
-        if special != '_auto':
-            print('## saving special ##'+str(path))
+
+        #if special != '_auto':
+        print('## saving special ##'+str(path))
+
         return path
 
     def on_pause(self):
