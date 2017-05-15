@@ -16,6 +16,7 @@
 # standard library
 import sys
 import pickle
+import raw_game_hierarchy as hierarch
 
 
 class Root():
@@ -35,10 +36,15 @@ class Team(Root):
         """Takes name, players, opponent, as mandatory arguments."""
 
         # Game
+<<<<<<< HEAD
         self.team_name = kwargs.pop("name")  # string
         self.coaches = kwargs.pop("coaches")  # list of Coach objects
+=======
+        self.name = kwargs.pop("name")  # string
+        # self.coaches = kwargs.pop("coaches")  # list of Coach objects
+>>>>>>> 61b527df5d3e2c0287ee3be18d820f94c4e27174
         self.players = kwargs.pop("players")  # list of Player objects
-        self.opponent = kwargs.pop("opponent")  # string
+        self.opponent = kwargs.pop("opponent")  # string - matches team.name
         # self.tournament = kwargs.pop("tournament")
         # self.year = kwargs.pop("year")
         # self.surface = kwargs.pop("surface")
@@ -54,15 +60,15 @@ class Team(Root):
         # self.spirit_grades = kwargs.pop("spirit_grades")
 
         # TODO: these need to be datetime objects
-        self.start = kwargs.pop("start")
-        self.pause = kwargs.pop("pause")
-        self.finish = kwargs.pop("finish")
+        # self.start = kwargs.pop("start")
+        # self.pause = kwargs.pop("pause")
+        # self.finish = kwargs.pop("finish")
 
         # mid-Game analyses
-        if self.pause is not None:
-            self.duration = self.start - self.pause
-        else:
-            self.duration = self.start - self.finish
+        # if self.pause is not None:
+        #     self.duration = self.start - self.pause
+        # else:
+        #     self.duration = self.start - self.finish
 
         # Points
         self.points_played = 0  # count
@@ -108,7 +114,59 @@ class Team(Root):
 
         super.__init__(self, **kwargs)
 
+class Player(Root):
+    def __init__(self, **kwargs):
+        # descriptors
+        self.name = kwargs.pop("name")
+        self.number = kwargs.pop("number")
+        self.gender = kwargs.pop("gender")
 
+        # stats
+        self.goals = 0
+        self.assists = 0
+        self.blocks = 0
+
+        self.points_played = 0
+        self.touches = 0
+        self.completions = 0
+        self.incompletions = 0
+        self.completion_rate = 0.00
+
+def run_player_analysis(player,game):
+
+    stats_player = Player(name=player.name,
+                          number=player.number,
+                          gender=player.gender)
+
+    for point in game.points:
+        for sequence in point.sequences:
+            if player not in sequence.lines[0] and player not in sequence.lines[1]: # will this object comparsion work ?
+                continue # they're not on this sequence, go to the next one
+
+            stats_player.points_played+=1
+            for i in range(0,len(sequence.events)):
+                event = sequence.events[i]
+                if event.player == player:
+                    # single-check events
+                    stats_player.touches+=1
+                    if event.action == 'goal':
+                        stats_player.goals+=1
+                    if i < len(sequence.events)-1: # dont go past the end - better safe than sorry
+                        # print(str(i)+'#'+str(len(sequence.events)))
+                        if sequence.events[i+1].action == 'goal':
+                            stats_player.assists+=1
+                    if event.action == 'block':
+                        stats_player.blocks+=1
+                    if event.action in hierarch.Event.turnover_actions:
+                        stats_player.incompletions+=1
+
+            # calculated stats - these numbers to be run after reading over the whole game (for a player)
+            if stats_player.touches != 0:
+                stats_player.completion_rate = stats_player.incompletions / stats_player.touches
+            else:
+                stats_player.completion_rate = 1.00
+
+    return stats_player
 
 def load_game(path):
     """Open a Game pickle file"""
@@ -140,9 +198,19 @@ def discs_progression():
 
 def main():
     """"""
-    game_to_analyse = load_game('Test Match Series2017_Australia_Japan_final.p')
+    game_to_analyse = load_game('Test Match Series2017_Melbourne Juggernaut_Brunch Smashed_final.p')
+    for team in game_to_analyse.teams:
 
-    pass
+        for player in team.players:
+            this_player = run_player_analysis(player,game_to_analyse)
+            print('Name: ' + str(this_player.name))
+            print('Touches: ' + str(this_player.touches))
+            print('Goals: ' + str(this_player.goals))
+            print('Assists: ' + str(this_player.assists))
+            print('Blocks: ' + str(this_player.blocks))
+            print('Points Played: ' + str(this_player.points_played))
+            print('__________________________________________')
+
 
 
 if __name__ == '__main__':
