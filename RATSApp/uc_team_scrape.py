@@ -17,7 +17,7 @@ import urllib2
 from bs4 import BeautifulSoup
 
 # TODO: Division names are saved as user inputs because there is no Goddess. Need to build a regex to handle that.
-
+# TODO: entry form is now number|gender|name
 
 def get_divisions(soup):
     """Returns a list of all tournament divisions."""

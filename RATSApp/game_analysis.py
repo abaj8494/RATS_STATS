@@ -39,19 +39,19 @@ class Team(Root):
         self.coaches = kwargs.pop("coaches")  # list of Coach objects
         self.players = kwargs.pop("players")  # list of Player objects
         self.opponent = kwargs.pop("opponent")  # string
-        self.tournament = kwargs.pop("tournament")
-        self.year = kwargs.pop("year")
-        self.surface = kwargs.pop("surface")
-        self.gender = kwargs.pop("gender")
-        self.time_cap = kwargs.pop("time_cap")
-        self.point_cap = kwargs.pop("point_cap")
-        self.wind = kwargs.pop("wind")  # relative to the first offensive point
-        self.temperature = kwargs.pop("temperature")
-        self.rain = kwargs.pop("rain")  # TODO: start of game only
-        self.draw = kwargs.pop("draw")  # TODO: this is a list of stages
-        self.stage = kwargs.pop("stage") # TODO: this is the stage
-        self.officiating = kwargs.pop("officiating")
-        self.spirit_grades = kwargs.pop("spirit_grades")
+        # self.tournament = kwargs.pop("tournament")
+        # self.year = kwargs.pop("year")
+        # self.surface = kwargs.pop("surface")
+        # self.gender = kwargs.pop("gender")
+        # self.time_cap = kwargs.pop("time_cap")
+        # self.point_cap = kwargs.pop("point_cap")
+        # self.wind = kwargs.pop("wind")  # relative to the first offensive point
+        # self.temperature = kwargs.pop("temperature")
+        # self.rain = kwargs.pop("rain")  # TODO: start of game only
+        # self.draw = kwargs.pop("draw")  # TODO: this is a list of stages
+        # self.stage = kwargs.pop("stage") # TODO: this is the stage
+        # self.officiating = kwargs.pop("officiating")
+        # self.spirit_grades = kwargs.pop("spirit_grades")
 
         # TODO: these need to be datetime objects
         self.start = kwargs.pop("start")
