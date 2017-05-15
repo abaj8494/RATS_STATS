@@ -97,8 +97,6 @@ class Team(Root):
         self.offensive_conversions = 0.00  # percentage
         self.defensive_efficiency = 0.00
 
-
-
         # Goals
         self.goals = []  # list of players
 
@@ -108,7 +106,7 @@ class Team(Root):
         # Defences
         self.defences = []  # list of players
 
-        # TODO:
+        super.__init__(self, **kwargs)
 
 
 
