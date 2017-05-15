@@ -128,7 +128,7 @@ class Player(Root):
         self.points_played = 0
         self.touches = 0
         self.completions = 0
-        self.incompletions = 0
+        self.turnovers = 0
         self.completion_rate = 0.00
 
 def run_player_analysis(player,game):
@@ -167,9 +167,11 @@ def run_player_analysis(player,game):
 
     return stats_player
 
-def load_game(path):
+
+def load_game(file_path):
     """Open a Game pickle file"""
-    game = pickle.load(open(path, 'rb'))
+
+    game = pickle.load(open(file_path, 'rb'))
     return game
 
 
@@ -197,18 +199,30 @@ def discs_progression():
 
 def main():
     """"""
-    game_to_analyse = load_game('Test Match Series2017_Melbourne Juggernaut_Brunch Smashed_final.p')
-    for team in game_to_analyse.teams:
+    analysed_game = load_game('Test Match Series2017_Melbourne Juggernaut_Brunch Smashed_final.p')
 
-        for player in team.players:
-            this_player = run_player_analysis(player,game_to_analyse)
-            print('Name: ' + str(this_player.name))
-            print('Touches: ' + str(this_player.touches))
-            print('Goals: ' + str(this_player.goals))
-            print('Assists: ' + str(this_player.assists))
-            print('Blocks: ' + str(this_player.blocks))
-            print('Points Played: ' + str(this_player.points_played))
-            print('__________________________________________')
+    print(type(analysed_game))
+    print(analysed_game.points)
+
+    for point in analysed_game.points:
+        # print(point)
+
+        for sequence in point.sequences:
+            # print(sequence)
+
+            for event in sequence.events:
+                print(event)
+    # for team in game_to_analyse.teams:
+    #
+    #     for player in team.players:
+    #         this_player = run_player_analysis(player,game_to_analyse)
+    #         print('Name: ' + str(this_player.name))
+    #         print('Touches: ' + str(this_player.touches))
+    #         print('Goals: ' + str(this_player.goals))
+    #         print('Assists: ' + str(this_player.assists))
+    #         print('Blocks: ' + str(this_player.blocks))
+    #         print('Points Played: ' + str(this_player.points_played))
+    #         print('__________________________________________')
 
 
 
