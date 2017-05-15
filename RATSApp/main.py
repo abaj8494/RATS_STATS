@@ -796,6 +796,7 @@ class SelectActionScreen(Screen):
 
     def save_defensive_action(self, player, action, *args):
         sApp = App.get_running_app()
+        print('##defensive action - '+str(action))
         blockevent = hierarch.Event(player=player,
                                     action=action,
                                     ts_start=time.time())

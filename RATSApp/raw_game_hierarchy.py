@@ -28,7 +28,8 @@ class TimeStamp(Root):
         if "ts_end" in kwargs:
             self.ts_end = kwargs.pop("ts_end")
             if self.ts_end: # default value is None
-                print('WARNING - None passed to TimeStamp')
+                # print('WARNING - None passed to TimeStamp')
+                # TODO: fix the program so this doesn't get here
                 self.ts_duration = self.ts_end - self.ts_start
 
         super(TimeStamp, self).__init__(**kwargs)
@@ -157,7 +158,8 @@ class Sequence(Root):
         # list of events - ends on timeout, injury or goal (goal ends the point also)
 
         self.offence = kwargs.pop('offence')
-        self.lines = kwargs.pop('lines')
+        self.lines = kwargs.pop('lines') # two item list, each item a list of 7 players    game_to_analyse = load_game('Test Match Series2017_Australia_Japan_final.p')
+
         self.events = []
 
         super(Sequence,self).__init__(**kwargs)
