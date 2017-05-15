@@ -830,6 +830,7 @@ class SelectActionScreen(Screen):
         sApp.current_point = 'HALF_REACHED'
         # how dodgy is this - its only for literally this one function pass
         # fuck you
+        stops.store_game_pickle(sApp.game,sApp.save_path(special='_half'))
 
         sApp.root.switch_to(SelectPlayersScreen())
         return True
@@ -969,8 +970,6 @@ class ExportScreen(Screen):
         pass
 
 
-
-
 class RatsScreenManager(ScreenManager):
     def go_back(self):
         # GO BACK TO THE PREVIOUS SCREEN
@@ -978,8 +977,6 @@ class RatsScreenManager(ScreenManager):
         # or some shit who knows
         #
         pass
-
-    #timer might also sit here?
 
 
 class StatsApp(App):
@@ -1004,8 +1001,8 @@ class StatsApp(App):
         savename = sApp.game.get_filename(special=special)
         path = os.path.join(sApp.user_data_dir, savename)
 
-        #if special != '_auto':
-        print('## saving special ##'+str(path))
+        if special != '_auto':
+            print('## saving special ##'+str(path))
 
         return path
 

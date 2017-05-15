@@ -110,10 +110,10 @@ class Team(Root):
 
 
 
-def load_game():
+def load_game(path):
     """Open a Game pickle file"""
-
-    pass
+    game = pickle.load(open(path, 'rb'))
+    return game
 
 
 def point_progressions():
@@ -140,6 +140,7 @@ def discs_progression():
 
 def main():
     """"""
+    game_to_analyse = load_game('Test Match Series2017_Australia_Japan_final.p')
 
     pass
 
