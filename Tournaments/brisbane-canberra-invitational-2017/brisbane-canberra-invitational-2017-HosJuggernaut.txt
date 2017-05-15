@@ -1,0 +1,2 @@
+team:Hos Juggernaut
+players:Thomas Deller, Chris Mulcahy, Elliot Trotter, Mark Isherwood, Christopher Kaliviotis, Lachlan Mcdonald, Jimmy Tan, Geoffrey Grundy, Joshua Pereira, Patrick Thorpe, Jasjit Singh, Daniel Cullen, Tony Castrignano, Ewan Wymer
