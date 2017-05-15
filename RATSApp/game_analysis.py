@@ -36,13 +36,12 @@ class Team(Root):
         """Takes name, players, opponent, as mandatory arguments."""
 
         # Game
-<<<<<<< HEAD
+
         self.team_name = kwargs.pop("name")  # string
         self.coaches = kwargs.pop("coaches")  # list of Coach objects
-=======
+
         self.name = kwargs.pop("name")  # string
         # self.coaches = kwargs.pop("coaches")  # list of Coach objects
->>>>>>> 61b527df5d3e2c0287ee3be18d820f94c4e27174
         self.players = kwargs.pop("players")  # list of Player objects
         self.opponent = kwargs.pop("opponent")  # string - matches team.name
         # self.tournament = kwargs.pop("tournament")
