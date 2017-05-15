@@ -27,7 +27,9 @@ class TimeStamp(Root):
         self.ts_start = kwargs.pop("ts_start")
         if "ts_end" in kwargs:
             self.ts_end = kwargs.pop("ts_end")
-            self.ts_duration = self.ts_end - self.ts_start
+            if self.ts_end: # default value is None
+                print('WARNING - None passed to TimeStamp')
+                self.ts_duration = self.ts_end - self.ts_start
 
         super(TimeStamp, self).__init__(**kwargs)
 
@@ -174,7 +176,7 @@ class Player(Root):
         super(Player, self).__init__(**kwargs)
 
     def __str__(self):
-        return self.name+"#"+self.number
+        return self.name+"#"+str(self.number)
 
     __repr__ = __str__
 
