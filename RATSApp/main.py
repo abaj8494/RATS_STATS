@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#builtin
+# Standard library
 from __future__ import absolute_import
 import pickle
 from functools import partial
@@ -10,7 +10,7 @@ import csv
 from io import open
 import os, time
 
-#kivy
+# kivy
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -277,7 +277,7 @@ class SelectPlayersScreen(Screen):
         return True
 
     def swap_state(self,pb,player,*args):
-        #this is the NEW state - normal button pressed will trigger the if 'down' branch of this
+        # this is the NEW state - normal button pressed will trigger the if 'down' branch of this
         # offence here is just for checking which team the call is coming from and hence which list to edit
         sApp = App.get_running_app()
         if pb.state == 'normal':

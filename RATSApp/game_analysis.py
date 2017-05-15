@@ -218,7 +218,7 @@ def main():
     print(type(analysed_game))
     print(analysed_game.points)
 
-    possessions = []
+    possessions = [[]]
 
     for point in analysed_game.points:
         # print(point)
@@ -227,12 +227,14 @@ def main():
         for sequence in point.sequences:
             print("starting offence: {}".format(sequence.offence))
 
-            print("sequence lengath: {}".format(len(sequence.events)))
+            print("sequence length: {}".format(len(sequence.events)))
             for event in sequence.events:
                 print(event)
 
-                if event.action in turnover_actions:
-                    print("POSSESSION CHANGES")
+                if event.action != u"goal":
+
+                    if event.action not in turnover_actions:
+                        possessions[0].append(event)
 
     # for team in game_to_analyse.teams:
     #
