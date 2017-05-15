@@ -35,7 +35,7 @@ class Team(Root):
         """Takes name, players, opponent, as mandatory arguments."""
 
         # Game
-        self.name = kwargs.pop("name")  # string
+        self.team_name = kwargs.pop("name")  # string
         self.coaches = kwargs.pop("coaches")  # list of Coach objects
         self.players = kwargs.pop("players")  # list of Player objects
         self.opponent = kwargs.pop("opponent")  # string
