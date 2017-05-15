@@ -11,14 +11,50 @@
 
 
 class Root(object):
-    # Wrapper class for debugging.
+    """
+    Wrapper class for debugging.
+    """
 
     def __init__(self, **kwargs):
-        # Returns an AssertionError if any extraneous variables exist upon an __init__() call.
+        """
+        Returns an AssertionError if any extraneous variables exist upon an __init__() call.
+        """
         if kwargs:
             print("Root.__init__() called.")
             print(kwargs)
+
         assert not kwargs
+
+
+# class TimeStart(Root):
+#     """
+#     Start time for game events.
+#     """
+#
+#     def __init__(self, **kwargs):
+#         """
+#         Takes ts_start as a mandatory argument.
+#         """
+#
+#         self.ts_start = kwargs.pop("ts_start")
+#
+#         super(TimeStart, self).__init__(**kwargs)
+#
+#
+# class TimeEnd(Root, TimeStart):
+#     """
+#     End time for game events.
+#     """
+#
+#     def __init__(self, **kwargs):
+#         """
+#         Takes ts_end as a mandatory argument.
+#         """
+#
+#         self.ts_end = kwargs.pop("ts_end")
+#
+#         if self.ts_start:
+#             self.ts_duration = self.ts_end - self.ts_end
 
 
 class TimeStamp(Root):
@@ -96,11 +132,16 @@ class Game(Root):
 
 
 class Point(Root):
-    """Point is a length of sequences between goals."""
+    """
+    Point is a length of sequences between goals.
+    """
 
     # TODO: want to consider upwind/downwind at some point here too, for now it's just set at the start of game.
 
     def __init__(self, **kwargs):
+        """
+         
+        """
         # print("Point.__init__() called.")
 
         self.sequences = []  # list of sequence objects
@@ -163,6 +204,14 @@ class Sequence(Root):
         self.events = []
 
         super(Sequence,self).__init__(**kwargs)
+
+
+# class TeamPossession(Root, ):
+#     """
+#     TeamPossession level statistics for a sequence of Disc Events
+#     """
+#
+#     def __init__(self, **kwargs):
 
 
 class Player(Root):
