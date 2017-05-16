@@ -54,43 +54,77 @@ class AnalysedTeam(Root):
              as mandatory arguments.
         """
 
-        """
-        LIVE RATS: statistics to pull out during a game
-        """
-
         # Game Descriptors
         self.team_name = kwargs.pop("team_name")  # string
         self.team_coaches = kwargs.pop("team_coaches")  # list of Coach objects
         self.team_players = kwargs.pop("team_players")  # list of Player objects
         self.team_opponent = kwargs.pop("team_opponent")  # string - matches team.name
 
+        """
+        Conversions: Goals Scored Per Point Played
+        """
+
         # Points
         self.team_points = 0  # count
+
         self.team_offences = 0  # count of points on offence
+        self.team_offences_without_turnover = 0
+        self.team_offences_held = 0
+        self.team_offences_with_turnover = 0
+        self.team_offences_broken = 0
+        self.team_offensive_conversion_rate = 0.00  # goals scored per offensive point played
+
         self.team_defences = 0  # count of points on defence
+        self.team_defences_without_turnover = 0
+        self.team_defences_held = 0
+        self.team_defences_with_turnover = 0
+        self.team_defences_broken = 0
+        self.team_defensive_conversion_rate = 0.00  # goals scored per offensive point played
 
-        # Possessions
-        self.team_offensive_possessions = 0  # count
-        self.team_defensive_possessions = 0  # count
+        # TODO: could do a sum check on the conversion rates, if it's over 100% you win the game
 
-        # Touches
-        self.team_discs = 0
-        self.team_completions = 0
-        self.team_turnovers = 0
-        # TODO: check that completions + turnovers == discs
-        self.completion_rate = 0.00
+        """
+        Efficiency: Goals Scored Per Possession
+        """
+
+        self.team_possessions = 0
+        self.team_possessions_goal = 0
+        self.team_possessions_turnover = 0
+        self.team_efficiency = 0.00
 
         # Offence
-        self.team_offensive_holds = []  # count
-        self.team_offensive_breaks = []  # count
-        self.team_offensive_retention = 0.00  # percentage
-        self.team_offensive_efficiency = 0.00
+        self.team_offensive_possessions = 0  # count
+        self.team_offensive_possessions_goal = 0
+        self.team_offensive_possessions_turnover = 0
+        self.team_offensive_efficiency = 0.00  # goals scored per offensive possession
 
         # Defence
-        self.team_defensive_holds = []  # count
-        self.team_defensive_breaks = []  # count
-        self.team_offensive_conversions = 0.00  # percentage
-        self.team_defensive_efficiency = 0.00
+        self.team_defensive_possessions = 0  # count
+        self.team_defensive_possessions_goal = 0
+        self.team_defensive_possessions_turnover = 0
+        self.team_defensive_efficiency = 0.00  # goals scored per defensive possession
+
+        """
+        Retention: Passes Completed Per Pass Attemped
+        """
+
+        # Touches
+        self.team_discs = 0  # any time someone established possession of the disc
+        self.team_completions = 0  # any successful transfer of possession to another player on the same team
+        self.team_turnovers = 0  # unsuccessful transfer attempt
+        self.team_retention_rate = 0.00  #
+
+        # Offence
+        self.team_offensive_discs = 0
+        self.team_offensive_completions = 0
+        self.team_offensive_turnovers = 0
+        self.team_offensive_retention_rate = 0.00  # percentage
+
+        # Defence
+        self.team_defensive_discs = 0
+        self.team_defensive_completions = 0
+        self.team_defensive_turnovers = 0
+        self.team_defensive_retention_rate = 0.00
 
         # Goals
         self.team_goals = []  # list of player pairs, can count len() for the score
@@ -123,19 +157,49 @@ class AnalysedPlayer(Root):
              as mandatory inputs.
         """
 
-        # Game Descriptors
+        # Descriptors
         self.player_name = kwargs.pop("player_name")
         self.player_number = kwargs.pop("player_number")
         self.player_gender = kwargs.pop("player_gender")
 
+        """
+        Player Valuations: On/Off Numbers
+        """
+
         # Points
         self.player_points = 0
-        self.player_offences = 0
-        self.player_defences = 0
 
-        # Possessions - these get compared to TeamPossessions
+        # Offence
+        self.player_offences = 0  # offensive points
+        self.player_offences_without_turnover = 0
+        self.player_offences_held = 0
+        self.player_offences_with_turnover = 0
+        self.player_offences_broken = 0
+
+        # Defence
+        self.player_defences = 0  # defensive points
+        self.player_defences_without_turnover = 0
+        self.player_defences_held = 0
+        self.player_defences_with_turnover = 0
+        self.player_defences_breaks = 0
+
+
+        """
+        Possession Statistics On Offence: Probably a Team level analysis? Connections should go here.
+        """
+
         self.player_offensive_possessions = 0  # TeamPossessions which include the player, want a percentage eventually
+        self.player_offensive_possessions_goal = 0
+        self.player_offensive_possessions_turnover = 0
+
+        # defensive possessions only occur after a turnover, so not giving it back is very important
         self.player_defensive_possessions = 0  # TeamPossessions which include the player, want a percentage eventually
+        self.player_defensive_possessions_goal = 0
+        self.player_defensive_possessions_turnover = 0
+
+        """
+        Player Statistics: Who's Playing Well
+        """
 
         # PlayerDiscs
         # Offence
