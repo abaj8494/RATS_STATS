@@ -36,13 +36,13 @@ class Root():
         """
 
         if kwargs:
-            [print(keyword_argument) for keyword_argument in kwargs]  # Andy - if these exist we need to work out why
+            print(kwargs)  # Andy - if these exist we need to work out why
             print("Root.__init__() called.")
 
         assert not kwargs
 
 
-class Team(Root):
+class AnalysedTeam(Root):
     """storage unit for Team level statistics for a Game object."""
 
     def __init__(self, **kwargs):
@@ -106,9 +106,10 @@ class Team(Root):
 
         # TODO: on/off numbers, player valuations
 
-        super(Team, self).__init__(**kwargs)
+        super(AnalysedTeam, self).__init__(**kwargs)
 
-class Player(Root):
+
+class AnalysedPlayer(Root):
     """
     storage unit for Player level statistics for a Game object.
     """
@@ -147,6 +148,17 @@ class Player(Root):
         self.player_defences = 0
         # TODO: completion_rate = completions / touches
 
+        super(AnalysedPlayer, self).__init__(**kwargs)
+
+
+def load_game(file_path):
+    """
+    Open a Game pickle file.
+    """
+
+    game = pickle.load(open(file_path, 'rb'))
+    return game
+
 
 def run_player_analysis(player, game):
 
@@ -155,6 +167,14 @@ def run_player_analysis(player, game):
         number=player.player_number,
         gender=player.player_gender,
     )
+
+    # TODO: this is broken because of how RGH is structured so I'm gonna have to change something there
+
+    # player_statistics = AnalysedPlayer(
+    #     name=player.name,
+    #     number=player.number,
+    #     gender=player.gender,
+    # )
 
     for point in game.points:  # loop over points
 
@@ -201,59 +221,20 @@ def run_player_analysis(player, game):
     return player_statistics
 
 
-def load_game(file_path):
-    """
-    Open a Game pickle file.
-    """
-
-    game = pickle.load(open(file_path, 'rb'))
-    return game
-
-
-def point_progressions():
+def point_progressions(game):
     """Points in the Game."""
 
-    pass
+    return [point for point in game.points]
 
 
-def sequence_progressions():
+def sequence_progressions(game):
     """Sequences in a Point"""
 
-    pass
+    return [[sequence for sequence in point.sequences] for point in game.points]
 
 
-def possession_progression():
+def possession_progression(analysed_game):
     """TeamPossessions in a Sequence."""
-
-    pass
-
-
-def discs_progression():
-    """PlayerDiscs in a TeamPossession"""
-
-
-def main():
-    """"""
-
-    # TODO: this all needs to move to a different function
-    # TODO: I can import this from rgh.something
-    turnover_actions = [
-        u'double-touch',
-        u'down',
-        u'hand-over',
-        u'out-of-bounds',
-        u'drop',
-        u'foot-block',
-        u'hand-block',
-        u'stall-out',
-        u'block',
-        u'intercept',
-    ]
-
-    analysed_game = load_game('Test Match Series2017_Melbourne Juggernaut_Brunch Smashed_final.p')
-
-    print(type(analysed_game))
-    print(analysed_game.points)
 
     starting_offence_possessions = [[]]
     starting_defence_possessions = [[]]
@@ -272,7 +253,7 @@ def main():
                 # TODO: Andy - this needs to check Australia or Japan
                 if event.action != u"goal":
 
-                    if event.action not in turnover_actions:
+                    if event.action not in rgh.Event.turnover_actions:
 
                         if event.player in analysed_game.teams[0]:  # starting offence
                             starting_offence_possessions[0].append(event)
@@ -281,17 +262,32 @@ def main():
                         else:
                             raise ValueError  # something has gone wrong with the team check
 
-    # for team in game_to_analyse.teams:
-    #
-    #     for player in team.players:
-    #         this_player = run_player_analysis(player,game_to_analyse)
-    #         print('Name: ' + str(this_player.name))
-    #         print('Touches: ' + str(this_player.touches))
-    #         print('Goals: ' + str(this_player.goals))
-    #         print('Assists: ' + str(this_player.assists))
-    #         print('Blocks: ' + str(this_player.blocks))
-    #         print('Points Played: ' + str(this_player.points_played))
-    #         print('__________________________________________')
+
+def discs_progression():
+    """PlayerDiscs in a TeamPossession"""
+
+
+def main():
+    """"""
+
+    analysed_game = load_game('Test Match Series2017_Melbourne Juggernaut_Brunch Smashed_final.p')
+
+    # print(type(analysed_game))
+    # print(analysed_game.points)
+
+    for team in analysed_game.teams:
+
+        for player in team.players:
+            this_player = run_player_analysis(player,analysed_game)
+            print('Name: ' + str(this_player.name))
+            print('Touches: ' + str(this_player.touches))
+            print('Goals: ' + str(this_player.goals))
+            print('Assists: ' + str(this_player.assists))
+            print('Blocks: ' + str(this_player.blocks))
+            print('Points Played: ' + str(this_player.points_played))
+            print('__________________________________________')
+
+    possession_progression(analysed_game)
 
 
 if __name__ == '__main__':
