@@ -49,7 +49,9 @@ class Root(object):
         Returns an AssertionError if any extraneous variables exist upon an __init__() call.
         """
 
-        print("Root.__init__() called.")
+        if kwargs:  # for debug purposes
+            print("Root.__init__() called.")
+            print(kwargs)
 
         assert not kwargs
 
@@ -204,12 +206,18 @@ class TimeStamp(Root):
         """Takes ts_start, ts_end as mandatory arguments."""
 
         self.ts_start = kwargs.pop("ts_start")
-        self.ts_end = kwargs.pop("ts_end")
-        self.ts_duration = self.ts_end - self.ts_start
 
-        # if kwargs:  # ANDY - again Root will check this
+        # this is optional because we often don't know the end stamp when we make the object
+        if 'ts_end' in kwargs:
+            self.ts_end = kwargs.pop("ts_end")
+        else:
+            self.ts_end = 0
+
         super(TimeStamp, self).__init__(**kwargs)
 
+    # having the calculation here means it will be up-to-date, not fixed at init
+    def get_duration(self):
+        return self.ts_end - self.ts_start
 
 class Game(Division, TimeStamp):
     """
@@ -238,8 +246,9 @@ class Game(Division, TimeStamp):
         self.score = [[0, 0]]  # double nesting, want to just append the score here after each point
         self.points = []
         self.stage = kwargs.pop("stage")  # choose from stages
-        self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
-        self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
+        # TODO: rob - implement these - probably just popup with options after offence select
+        # self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
+        # self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
 
         self.game = "{}{}_{}_{}_{}".format(
             kwargs.get("tournament"),
@@ -470,7 +479,7 @@ class DiscEvent(Possession, DiscStatus):
     def __init__(self, **kwargs):
         """Takes event_player, event_action as mandatory arguments."""
 
-        print("Event.__init__() called.")
+        # print("Event.__init__() called.")
 
         self.event_player = kwargs.pop("event_player")  # pointer to player object
         self.event_action = kwargs.pop("event_action")
