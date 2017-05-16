@@ -11,165 +11,200 @@
 # TAG'd
 # MON'd
 
+# retention == passes completed per pass attempted  # TODO: individual player stats, different for shot takers
+# efficiency == goals scored per possession  # TODO: where is the win line? above what percentage?
+# conversions == goals scored per point played  # TODO: what lines are most efficient at conversions
 
 # imports
+
 # standard library
 import sys
 import pickle
-import raw_game_hierarchy as hierarch
+
+# local project
+import raw_game_hierarchy as rgh
 
 
 class Root():
-    """Wrapper class for debugging."""
+    """
+    Wrapper class for debugging.
+    """
 
     def __init__(self, **kwargs):
-        """Raises an assertion error if any unexpected kwargs exist on initialisation."""
+        """
+        Raises an assertion error if any unexpected kwargs exist on initialisation.
+        """
 
-        print("Root.__init__() called.")
+        if kwargs:
+            [print(keyword_argument) for keyword_argument in kwargs]  # Andy - if these exist we need to work out why
+            print("Root.__init__() called.")
+
         assert not kwargs
 
-#
-# class Team(Root):
-#     """storage unit for Team level statistics for a Game object."""
-#
-#     def __init__(self, **kwargs):
-#         """Takes name, players, opponent, as mandatory arguments."""
-#
-#         # Game
-#
-#         self.team_name = kwargs.pop("name")  # string
-#         self.coaches = kwargs.pop("coaches")  # list of Coach objects
-#
-#         self.name = kwargs.pop("name")  # string
-#         # self.coaches = kwargs.pop("coaches")  # list of Coach objects
-#         self.players = kwargs.pop("players")  # list of Player objects
-#         self.opponent = kwargs.pop("opponent")  # string - matches team.name
-#         # self.tournament = kwargs.pop("tournament")
-#         # self.year = kwargs.pop("year")
-#         # self.surface = kwargs.pop("surface")
-#         # self.gender = kwargs.pop("gender")
-#         # self.time_cap = kwargs.pop("time_cap")
-#         # self.point_cap = kwargs.pop("point_cap")
-#         # self.wind = kwargs.pop("wind")  # relative to the first offensive point
-#         # self.temperature = kwargs.pop("temperature")
-#         # self.rain = kwargs.pop("rain")  # TODO: start of game only
-#         # self.draw = kwargs.pop("draw")  # TODO: this is a list of stages
-#         # self.stage = kwargs.pop("stage") # TODO: this is the stage
-#         # self.officiating = kwargs.pop("officiating")
-#         # self.spirit_grades = kwargs.pop("spirit_grades")
-#
-#         # TODO: these need to be datetime objects
-#         # self.start = kwargs.pop("start")
-#         # self.pause = kwargs.pop("pause")
-#         # self.finish = kwargs.pop("finish")
-#
-#         # mid-Game analyses
-#         # if self.pause is not None:
-#         #     self.duration = self.start - self.pause
-#         # else:
-#         #     self.duration = self.start - self.finish
-#
-#         # Points
-#         self.points_played = 0  # count
-#         self.offensive_points = 0  # count
-#         self.offensive_structures = []  # TODO: list of initial play calls, done after the Game
-#         self.defensive_points = 0  # count
-#         self.defensive_structure = []  # TODO: list of defensive calls, done after the Game
-#         # TODO: offensive_points + defensive_points == points_played
-#
-#         # Possessions
-#         self.offensive_possessions = 0  # count
-#         self.defensive_possessions = 0  # count
-#
-#         # Touches
-#         self.discs = 0
-#         self.completions = 0
-#         self.turnovers = 0
-#         # TODO: completions + turnovers == discs
-#         self.completion_rate = 0.00
-#
-#         # retention == passes completed per pass attempted  # TODO: individual player stats, different for shot takers
-#         # efficiency == goals scored per possession  # TODO: where is the win line? above what percentage?
-#         # conversions == goals scored per point played  # TODO: what lines are most efficient at conversions
-#
-#         self.offensive_holds = []  # count
-#         self.offensive_breaks = []  # count
-#         self.offensive_retention = 0.00  # percentage
-#         self.offensive_efficiency = 0.00
-#
-#         self.defensive_holds = []  # count
-#         self.defensive_breaks = []  # count
-#         self.offensive_conversions = 0.00  # percentage
-#         self.defensive_efficiency = 0.00
-#
-#         # Goals
-#         self.goals = []  # list of players
-#
-#         # Assists
-#         self.assists = []  # list of players
-#
-#         # Defences
-#         self.defences = []  # list of players
-#
-#         super.__init__(self, **kwargs)
-#
-# class Player(Root):
-#     def __init__(self, **kwargs):
-#         # descriptors
-#         self.name = kwargs.pop("name")
-#         self.number = kwargs.pop("number")
-#         self.gender = kwargs.pop("gender")
-#
-#         # stats
-#         self.goals = 0
-#         self.assists = 0
-#         self.blocks = 0
-#
-#         self.points_played = 0
-#         self.touches = 0
-#         self.completions = 0
-#         self.turnovers = 0
-#         self.completion_rate = 0.00
 
-def run_player_analysis(player,game):
+class Team(Root):
+    """storage unit for Team level statistics for a Game object."""
 
-    stats_player = Player(name=player.name,
-                          number=player.number,
-                          gender=player.gender)
+    def __init__(self, **kwargs):
+        """
+        Parameters:
+             team_name, team_coaches, team_players, team_opponent, 
+             as mandatory arguments.
+        """
 
-    for point in game.points:
-        for sequence in point.sequences:
-            if player not in sequence.lines[0] and player not in sequence.lines[1]: # will this object comparsion work ?
-                continue # they're not on this sequence, go to the next one
+        """
+        LIVE RATS: statistics to pull out during a game
+        """
 
-            stats_player.points_played+=1
-            for i in range(0,len(sequence.events)):
+        # Game Descriptors
+        self.team_name = kwargs.pop("team_name")  # string
+        self.team_coaches = kwargs.pop("team_coaches")  # list of Coach objects
+        self.team_players = kwargs.pop("team_players")  # list of Player objects
+        self.team_opponent = kwargs.pop("team_opponent")  # string - matches team.name
+
+        # Points
+        self.team_points = 0  # count
+        self.team_offences = 0  # count of points on offence
+        self.team_defences = 0  # count of points on defence
+
+        # Possessions
+        self.team_offensive_possessions = 0  # count
+        self.team_defensive_possessions = 0  # count
+
+        # Touches
+        self.team_discs = 0
+        self.team_completions = 0
+        self.team_turnovers = 0
+        # TODO: check that completions + turnovers == discs
+        self.completion_rate = 0.00
+
+        # Offence
+        self.team_offensive_holds = []  # count
+        self.team_offensive_breaks = []  # count
+        self.team_offensive_retention = 0.00  # percentage
+        self.team_offensive_efficiency = 0.00
+
+        # Defence
+        self.team_defensive_holds = []  # count
+        self.team_defensive_breaks = []  # count
+        self.team_offensive_conversions = 0.00  # percentage
+        self.team_defensive_efficiency = 0.00
+
+        # Goals
+        self.team_goals = []  # list of player pairs, can count len() for the score
+
+        # Defences
+        self.team_defences = []  # list of players who created turnovers, should include the point index
+
+        """
+        DEAD RATS: statistics to pull out after a game
+        """
+
+        # self.team_offensive_structures = []  # TODO: list of initial play calls, done after the Game
+        # self.team_defensive_structures = []  # TODO: list of defensive calls, done after the Game
+        # TODO: offensive_points + defensive_points == points_played
+
+        # TODO: on/off numbers, player valuations
+
+        super(Team, self).__init__(**kwargs)
+
+class Player(Root):
+    """
+    storage unit for Player level statistics for a Game object.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Parameters:
+             takes player_name, player_number, player_gender
+             as mandatory inputs.
+        """
+
+        # Game Descriptors
+        self.player_name = kwargs.pop("player_name")
+        self.player_number = kwargs.pop("player_number")
+        self.player_gender = kwargs.pop("player_gender")
+
+        # Points
+        self.player_points = 0
+        self.player_offences = 0
+        self.player_defences = 0
+
+        # Possessions - these get compared to TeamPossessions
+        self.player_offensive_possessions = 0  # TeamPossessions which include the player, want a percentage eventually
+        self.player_defensive_possessions = 0  # TeamPossessions which include the player, want a percentage eventually
+
+        # PlayerDiscs
+        # Offence
+        self.player_touches = 0
+        self.player_completions = 0
+        self.player_turnovers = 0
+        self.player_assists = 0
+        self.player_goals = 0
+        self.player_completion_rate = 0.00
+
+        # Defence
+        self.player_defences = 0
+        # TODO: completion_rate = completions / touches
+
+
+def run_player_analysis(player, game):
+
+    player_statistics = Player(
+        name=player.player_name,
+        number=player.player_number,
+        gender=player.player_gender,
+    )
+
+    for point in game.points:  # loop over points
+
+        for sequence in point.sequences:  # loop over sequences
+
+            # if the player is not in this sequence
+            if player not in sequence.lines[0] and player not in sequence.lines[1]:  # will this object comparison work
+                # TODO: Andy - it should
+                continue  # go to the next one
+
+            player_statistics.player_points += 1
+
+            for i in range(0, len(sequence.events)):
+
                 event = sequence.events[i]
+
                 if event.player == player:
+
                     # single-check events
-                    stats_player.touches+=1
+                    player_statistics.player_touches+=1
+
                     if event.action == 'goal':
-                        stats_player.goals+=1
+                        player_statistics.player_goals += 1
+
                     if i < len(sequence.events)-1: # dont go past the end - better safe than sorry
                         # print(str(i)+'#'+str(len(sequence.events)))
+
                         if sequence.events[i+1].action == 'goal':
-                            stats_player.assists+=1
+                            player_statistics.player_assists += 1
+
                     if event.action == 'block':
-                        stats_player.blocks+=1
-                    if event.action in hierarch.Event.turnover_actions:
-                        stats_player.incompletions+=1
+                        player_statistics.player_defences += 1
+
+                    if event.action in rgh.Event.turnover_actions:
+                        player_statistics.player_turnovers += 1
 
             # calculated stats - these numbers to be run after reading over the whole game (for a player)
-            if stats_player.touches != 0:
-                stats_player.completion_rate = stats_player.incompletions / stats_player.touches
-            else:
-                stats_player.completion_rate = 1.00
+            if player_statistics.player_touches != 0:
+                player_statistics.completion_rate = player_statistics.player_turnovers / player_statistics.player_touches
 
-    return stats_player
+            else:
+                player_statistics.completion_rate = 1.00
+
+    return player_statistics
 
 
 def load_game(file_path):
-    """Open a Game pickle file"""
+    """
+    Open a Game pickle file.
+    """
 
     game = pickle.load(open(file_path, 'rb'))
     return game
@@ -200,6 +235,8 @@ def discs_progression():
 def main():
     """"""
 
+    # TODO: this all needs to move to a different function
+    # TODO: I can import this from rgh.something
     turnover_actions = [
         u'double-touch',
         u'down',
@@ -218,7 +255,8 @@ def main():
     print(type(analysed_game))
     print(analysed_game.points)
 
-    possessions = [[]]
+    starting_offence_possessions = [[]]
+    starting_defence_possessions = [[]]
 
     for point in analysed_game.points:
         # print(point)
@@ -231,10 +269,17 @@ def main():
             for event in sequence.events:
                 print(event)
 
+                # TODO: Andy - this needs to check Australia or Japan
                 if event.action != u"goal":
 
                     if event.action not in turnover_actions:
-                        possessions[0].append(event)
+
+                        if event.player in analysed_game.teams[0]:  # starting offence
+                            starting_offence_possessions[0].append(event)
+                        elif event.player in analysed_game.teams[1]:
+                            starting_defence_possessions[0].append(event)
+                        else:
+                            raise ValueError  # something has gone wrong with the team check
 
     # for team in game_to_analyse.teams:
     #
@@ -247,7 +292,6 @@ def main():
     #         print('Blocks: ' + str(this_player.blocks))
     #         print('Points Played: ' + str(this_player.points_played))
     #         print('__________________________________________')
-
 
 
 if __name__ == '__main__':
