@@ -24,6 +24,8 @@ import pickle
 # local project
 import raw_game_hierarchy as rgh
 
+# TODO: work out how to extend classes in RGH
+
 
 class Root():
     """

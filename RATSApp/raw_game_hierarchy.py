@@ -19,6 +19,7 @@ class Root(object):
         """
         Returns an AssertionError if any extraneous variables exist upon an __init__() call.
         """
+
         if kwargs:
             print("Root.__init__() called.")
             print(kwargs)
@@ -41,7 +42,7 @@ class Root(object):
 #         super(TimeStart, self).__init__(**kwargs)
 #
 #
-# class TimeEnd(Root, TimeStart):
+# class TimeEnd(Root):
 #     """
 #     End time for game events.
 #     """
@@ -58,11 +59,20 @@ class Root(object):
 
 
 class TimeStamp(Root):
+    """
+    TimeStamp is a datetime object referring to the timing of an event. It should do more than it currently does
+    """
+
     def __init__(self, **kwargs):
+        """
+        Takes ts_start as a mandatory argument and should probably take other things. See other options above.
+        """
 
         self.ts_start = kwargs.pop("ts_start")
+
         if "ts_end" in kwargs:
             self.ts_end = kwargs.pop("ts_end")
+
             if self.ts_end: # default value is None
                 # print('WARNING - None passed to TimeStamp')
                 # TODO: fix the program so this doesn't get here
@@ -71,36 +81,76 @@ class TimeStamp(Root):
         super(TimeStamp, self).__init__(**kwargs)
 
 
-class Game(Root):
-    # Data object for a Game of Ultimate.
-
-    # # TODO: this should probably be a property of point but I don't want to do that much button pushing.
-    # winds = [  # relative to starting offence
-    #     u"downwind",  # the jackpot, this is winning the flip and winning the flip
-    #     u"still",
-    #     u"upwind",
-    # ]
+class Team(Root):
+    """
+    Data object for a Team in a Game.
+    """
 
     def __init__(self, **kwargs):
-        # Takes offence, defence, stage, division, wind, as mandatory inputs.
+        """
+        Takes team_name, team_players, team_coaches as mandatory arguments.
+        """
+
+        # print("Team.__init() called.")
+
+        self.team_name = kwargs.pop("team_name")
+        self.team_players = kwargs.pop("team_players")
+
+        # TODO: Andy - added coaches as an empy property for analysis but it should just be in the .cfg file.
+        self.team_coaches = kwargs.pop("team_coaches")
+
+        super(Team, self).__init__(**kwargs)
+
+    def __str__(self):
+        return self.team_name
+
+
+class Player(Root):
+    """Data object for a Player on a Team in a Game."""
+
+    def __init__(self, **kwargs):
+        """
+        Takes player_name, player_number, player_gender, as mandatory arguments. 
+        """
+        # print("Player.__init__() called.")
+
+        self.player_name = kwargs.pop("player_name")
+        self.player_number = kwargs.pop("player_number")
+        self.player_gender = kwargs.pop("player_gender")
+
+        self.display_name = str(self.player_name)+' | '+str(self.player_number)+' | '+str(self.player_gender)
+
+        super(Player, self).__init__(**kwargs)
+
+    def __str__(self):
+        return self.player_name + "#" + str(self.player_number)
+
+    __repr__ = __str__
+
+
+class Game(Root):
+    """
+    Data object for a Game of Ultimate.
+    """
+
+    # TODO: Game should have a timestamp.
+
+    def __init__(self, **kwargs):
+        """
+        Takes teams, tournament, year, point_cap, time_cap, timeouts as mandatory inputs.
+        """
 
         # print("Game.__init__() called.")
 
         self.teams = kwargs.pop("teams")  # two item list: 0 = offence, 1 = defence
-
-        #self.scores = [[0, 0]]  # double nesting, want to just append the score here after each point
-        # this is dumb, just read over the points and look at it from there.
-
-        self.points = []
-
         self.tournament = kwargs.pop("tournament")
         self.year = kwargs.pop("year")
-
         self.point_cap = kwargs.pop("point_cap")
         self.time_cap = kwargs.pop("time_cap")
         self.timeouts = kwargs.pop("timeouts")
 
         # same index / offence system - to track through stat taking
+        self.points = []
         self.timeout_status = [0,0]
 
         # self.stage = kwargs.pop("stage")  # choose from stages
@@ -115,17 +165,25 @@ class Game(Root):
     # def get_current_scores(self):
     #     return self.scores[-1]
 
-    def get_filename(self,special=None):
+    def get_filename(self, special=None):
+        """
+        :param special: 
+        :return: 
+        """
+        # TODO: Rob why do you hate docstrings and readability whitespace.
+
         string = "{}{}_{}_{}".format(
             self.tournament,
             self.year,
-            self.teams[0].name,  # offence
-            self.teams[1].name,  # defence
+            self.teams[0].team_name,  # offence
+            self.teams[1].team_name,  # defence
         )
+
         if special is not None:
-            string = string+str(special)
+            string = string + str(special)
 
         string = string + '.p'
+
         return string
 
     __str__ = get_filename
@@ -136,16 +194,20 @@ class Point(Root):
     Point is a length of sequences between goals.
     """
 
+    # TODO: Andy - this should also have a TimeStamp
     # TODO: want to consider upwind/downwind at some point here too, for now it's just set at the start of game.
 
     def __init__(self, **kwargs):
         """
-         
+        Should take starting offence as amandatory argument but idk what this junk does.
         """
+
+        # TODO: Andy - this needs fixing.
+
         # print("Point.__init__() called.")
 
         self.sequences = []  # list of sequence objects
-        self.seq_index = None  # which sequence we are currently taking stats on
+        self.sequence_index = None  # which sequence we are currently taking stats on
 
         # starting offence is always 0 - this number will track it during stat taking
         # need to be able to tell it who's on offence to carry results from previous points
@@ -165,39 +227,28 @@ class Point(Root):
         super(Point, self).__init__(**kwargs)
 
     def current_sequence(self):
+
         return self.sequences[self.seq_index]
 
-    def create_sequence(self,lines,offence):
+    def create_sequence(self, lines, offence):
+
         self.sequences.append(Sequence(lines=lines,
                                        offence=offence))
 
-        if self.seq_index == None:
-            self.seq_index = 0
+        if self.sequence_index is not None:
+            self.sequence_index = 0
         else:
-            self.seq_index += 1
-
-
-class Team(Root):
-    def __init__(self, **kwargs):
-        # print("Team.__init() called.")
-
-        self.name = kwargs.pop("name")
-        self.players = kwargs.pop("players")
-
-        # self.staff = kwargs.pop("staff")
-        # self.division = kwargs.pop("division")
-
-        super(Team, self).__init__(**kwargs)
-
-    def __str__(self):
-        return self.name
+            self.sequence_index += 1
 
 
 class Sequence(Root):
+    """
+    Sequence is a level below Point, and includes all actions with the same group of players. It changes after a Goal,
+    Time Out, or Injury call.
+    """
     def __init__(self, **kwargs):
 
         # list of events - ends on timeout, injury or goal (goal ends the point also)
-
         self.offence = kwargs.pop('offence')
         self.lines = kwargs.pop('lines') # two item list, each item a list of 7 players    game_to_analyse = load_game('Test Match Series2017_Australia_Japan_final.p')
 
@@ -214,25 +265,12 @@ class Sequence(Root):
 #     def __init__(self, **kwargs):
 
 
-class Player(Root):
-    def __init__(self, **kwargs):
-        # print("Player.__init__() called.")
-
-        self.name = kwargs.pop("name")
-        self.number = kwargs.pop("number")
-        self.gender = kwargs.pop("gender")
-
-        self.display_name = str(self.name)+' | '+str(self.number)+' | '+str(self.gender)
-
-        super(Player, self).__init__(**kwargs)
-
-    def __str__(self):
-        return self.name+"#"+str(self.number)
-
-    __repr__ = __str__
-
-
 class Pull(Root):
+    """
+    Data object for the pull.
+    """
+
+    # TODO: Andy - this should have a TimeStamp
 
     all_pulls = [
         # out-of-bounds
@@ -248,10 +286,28 @@ class Pull(Root):
         # u"offside",
     ]
 
-    # in_receptions = all_pulls[0:1]
-    # ob_receptions = all_pulls[2:]
+    ob_pulls = [
+        u"brick",
+        u"sideline",
+    ]
+
+    in_pulls = [
+        u"caught",
+        u"landed",
+        u"touched",
+        u"untouched",
+        u"dropped-pull",
+    ]
+
+    re_pulls = [
+        u"offside",
+    ]
 
     def __init__(self, **kwargs):
+        """
+        Takes puller, pull_reception as mandatory arguments.
+        """
+
         # print("Pull.__init__() called.")
 
         self.puller = kwargs.pop("puller")
@@ -263,7 +319,10 @@ class Pull(Root):
         return self.puller +' : ' + self.pull_reception
 
 
-class Event(TimeStamp): # TimeStamp inherits root, don't need it listed here
+class Event(TimeStamp):
+    """
+    Event is any action which affects the status of the disc.
+    """
     # class attributes
 
     all_actions = [
@@ -340,19 +399,19 @@ class Event(TimeStamp): # TimeStamp inherits root, don't need it listed here
         u'injury'
     ]
 
-
     def __init__(self, **kwargs):
-
+        """Takes """
         # print("Event.__init__() called.")
 
-        self.player = kwargs.pop("player")  # will be a Player object
-        self.action = kwargs.pop("action")
+        self.event_player = kwargs.pop("event_player")  # will be a Player object
+        self.event_action = kwargs.pop("event_action")
 
-        # self.location = None
+        # TODO: Andy - should be a way to input this roughly while watching the footage back so I uncommented it
+        self.location = None
 
         super(Event, self).__init__(**kwargs)
 
     def __str__(self):
-        return str(self.player) + " : " + self.action
+        return str(self.event_player) + " : " + self.event_action
 
     __repr__ = __str__
