@@ -1,2 +1,2 @@
 name:Japan
-players:6|m|Shunji Kurono,7|m|Inomata Yuta,9|m|Komori Takaharu,10|m|Masahiro Matsuno,24|m|Arakawa Sun,77|m|Yuta Shimura,85|m|Kunieda Andy,97|m|Shiba Keiichiro,5|f|Kanabi Kanabi,8|f|Ayumi Fujioka,15|f|Saori Inoue,16|f|Tomomura Yui,17|f|Shimada Lisa,31|f|Yutiko Sato,39|f|Tomoko Inamura,91|f|Ogawa Shiori
+players:5|f|Kana KOBAYASHI,91|f|Shiori OGAWA,16|f|Tomoe TAMURA,39|f|Tomoko INAMURA,8|f|Ayumi FUJIOKA,15|f|Saori INOUE,31|f|Yuko SATO,17|f|Risa SHIMADA,9|m|Takaharu KOMORI,77|m|Yuta SHIMURA*,85|m|Tatsunari KUNIEDA,22|m|Taku HONNA,19|m|Masashi KOIKE,1|m|Harito HASHIGUCHI,11|m|Takayuki YAMAGUCHI,26|m|Yuki HIRAI,25|m|Kenjiro KAWASE
