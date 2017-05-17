@@ -73,9 +73,11 @@ class TimeStamp(Root):
         if "ts_end" in kwargs:
             self.ts_end = kwargs.pop("ts_end")
 
-            if self.ts_end: # default value is None
+            if self.ts_end and self.ts_start:  # default value is None
+                # this is janky af - fix it when we have time
                 # print('WARNING - None passed to TimeStamp')
                 # TODO: fix the program so this doesn't get here
+
                 self.ts_duration = self.ts_end - self.ts_start
 
         super(TimeStamp, self).__init__(**kwargs)
@@ -96,8 +98,12 @@ class Team(Root):
         self.team_name = kwargs.pop("team_name")
         self.team_players = kwargs.pop("team_players")
 
-        # TODO: Andy - added coaches as an empy property for analysis but it should just be in the .cfg file.
-        self.team_coaches = kwargs.pop("team_coaches")
+        # TODO: Andy - added coaches as an empty property for analysis but it should just be in the .cfg file.
+        # Rob - optional means the analysis won't fail - but also neither will the import
+        if "team_coaches" in kwargs:
+            self.team_coaches = kwargs.pop("team_coaches")
+        else:
+            self.team_coaches = []
 
         super(Team, self).__init__(**kwargs)
 
@@ -228,14 +234,14 @@ class Point(Root):
 
     def current_sequence(self):
 
-        return self.sequences[self.seq_index]
+        return self.sequences[self.sequence_index]
 
     def create_sequence(self, lines, offence):
 
         self.sequences.append(Sequence(lines=lines,
                                        offence=offence))
 
-        if self.sequence_index is not None:
+        if self.sequence_index is None:
             self.sequence_index = 0
         else:
             self.sequence_index += 1
@@ -243,14 +249,14 @@ class Point(Root):
 
 class Sequence(Root):
     """
-    Sequence is a level below Point, and includes all actions with the same group of players. It changes after a Goal,
-    Time Out, or Injury call.
+    Sequence is a level below Point, and includes all actions with the same group of players.
+    It changes after a Goal or Injury call.
     """
     def __init__(self, **kwargs):
 
         # list of events - ends on timeout, injury or goal (goal ends the point also)
         self.offence = kwargs.pop('offence')
-        self.lines = kwargs.pop('lines') # two item list, each item a list of 7 players    game_to_analyse = load_game('Test Match Series2017_Australia_Japan_final.p')
+        self.lines = kwargs.pop('lines')  # two item list, each item a list of 7 players
 
         self.events = []
 
