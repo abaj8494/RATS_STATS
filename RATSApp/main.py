@@ -829,6 +829,7 @@ class SelectActionScreen(Screen):
             self.popup.dismiss()
         sApp = App.get_running_app()
         sApp.game.points.append(sApp.current_point)
+        stops.store_game_pickle(sApp.game, sApp.save_path(special='_pointend'))
         sApp.current_point = None
         sApp.root.switch_to(SelectPlayersScreen())
         return True
@@ -915,9 +916,6 @@ class ReadScreen(Screen):
             for point in sApp.game.points:
                 print(point)
 
-            # TODO: turn this on later
-            # anal.write_csv_files(sApp.game)
-            # anal.gdrive_text(stops.get_credentials())
         else:  # shouldn't happen
             self.ids.BigBox.add_widget(Label(text=u'Could not find a Game object'))
 

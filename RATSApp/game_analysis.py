@@ -23,6 +23,7 @@ import pickle
 
 # local project
 import raw_game_hierarchy as rgh
+import storage_operations as stops
 
 # TODO: work out how to extend classes in RGH
 
@@ -217,15 +218,6 @@ class AnalysedPlayer(Root):
         super(AnalysedPlayer, self).__init__(**kwargs)
 
 
-def load_game(file_path):
-    """
-    Open a Game pickle file.
-    """
-
-    game = pickle.load(open(file_path, 'rb'))
-    return game
-
-
 def run_player_analysis(player, game):
 
     player_statistics = AnalysedPlayer(
@@ -336,24 +328,27 @@ def discs_progression():
 def main():
     """"""
 
-    analysed_game = load_game('Test Match Series2017_ACT_M_NSW_M_final.p')
+    analysed_game = stops.retrieve_game_pickle('Test Match Series2017_ACT_M_NSW_M_final.p')
 
-    # print(type(analysed_game))
-    # print(analysed_game.points)
+    data = []
 
     for team in analysed_game.teams:
-
         for player in team.team_players:
             this_player = run_player_analysis(player,analysed_game)
-            print('Name: ' + str(this_player.player_name))
-            print('Touches: ' + str(this_player.player_touches))
-            print('Goals: ' + str(this_player.player_goals))
-            print('Assists: ' + str(this_player.player_assists))
-            print('Blocks: ' + str(this_player.player_defences))
-            print('Points Played: ' + str(this_player.player_points))
-            print('__________________________________________')
+            if this_player.player_name == 'Dan Petrov':
+                print('Name: ' + str(this_player.player_name))
+                print('Touches: ' + str(this_player.player_touches))
+                print('Goals: ' + str(this_player.player_goals))
+                print('Assists: ' + str(this_player.player_assists))
+                print('Blocks: ' + str(this_player.player_defences))
+                print('Points Played: ' + str(this_player.player_points))
+                print('__________________________________________')
+            data.append([str(this_player.player_name), this_player.player_points, this_player.player_touches,
+                         this_player.player_goals, this_player.player_assists, this_player.player_defences])
 
-    possession_progression(analysed_game)
+        stops.update_player_sheet(team.team_name,data)
+
+    # possession_progression(analysed_game)
 
 
 if __name__ == '__main__':
