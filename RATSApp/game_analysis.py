@@ -27,7 +27,7 @@ import raw_game_hierarchy as rgh
 # TODO: work out how to extend classes in RGH
 
 
-class Root():
+class Root(object):
     """
     Wrapper class for debugging.
     """
@@ -228,10 +228,10 @@ def load_game(file_path):
 
 def run_player_analysis(player, game):
 
-    player_statistics = Player(
-        name=player.player_name,
-        number=player.player_number,
-        gender=player.player_gender,
+    player_statistics = AnalysedPlayer(
+        player_name=player.player_name,
+        player_number=player.player_number,
+        player_gender=player.player_gender,
     )
 
     # TODO: this is broken because of how RGH is structured so I'm gonna have to change something there
@@ -257,24 +257,24 @@ def run_player_analysis(player, game):
 
                 event = sequence.events[i]
 
-                if event.player == player:
+                if event.event_player == player:
 
                     # single-check events
                     player_statistics.player_touches+=1
 
-                    if event.action == 'goal':
+                    if event.event_action == 'goal':
                         player_statistics.player_goals += 1
 
                     if i < len(sequence.events)-1: # dont go past the end - better safe than sorry
                         # print(str(i)+'#'+str(len(sequence.events)))
 
-                        if sequence.events[i+1].action == 'goal':
+                        if sequence.events[i+1].event_action == 'goal':
                             player_statistics.player_assists += 1
 
-                    if event.action == 'block':
+                    if event.event_action == 'block' or event.event_action == 'intercept':
                         player_statistics.player_defences += 1
 
-                    if event.action in rgh.Event.turnover_actions:
+                    if event.event_action in rgh.Event.turnover_actions:
                         player_statistics.player_turnovers += 1
 
             # calculated stats - these numbers to be run after reading over the whole game (for a player)
@@ -317,13 +317,13 @@ def possession_progression(analysed_game):
                 print(event)
 
                 # TODO: Andy - this needs to check Australia or Japan
-                if event.action != u"goal":
+                if event.event_action != u"goal":
 
-                    if event.action not in rgh.Event.turnover_actions:
+                    if event.event_action not in rgh.Event.turnover_actions:
 
-                        if event.player in analysed_game.teams[0]:  # starting offence
+                        if event.event_player in analysed_game.teams[0].team_players:  # starting offence
                             starting_offence_possessions[0].append(event)
-                        elif event.player in analysed_game.teams[1]:
+                        elif event.event_player in analysed_game.teams[1].team_players:
                             starting_defence_possessions[0].append(event)
                         else:
                             raise ValueError  # something has gone wrong with the team check
@@ -336,21 +336,21 @@ def discs_progression():
 def main():
     """"""
 
-    analysed_game = load_game('Test Match Series2017_Melbourne Juggernaut_Brunch Smashed_final.p')
+    analysed_game = load_game('Test Match Series2017_ACT_M_NSW_M_final.p')
 
     # print(type(analysed_game))
     # print(analysed_game.points)
 
     for team in analysed_game.teams:
 
-        for player in team.players:
+        for player in team.team_players:
             this_player = run_player_analysis(player,analysed_game)
-            print('Name: ' + str(this_player.name))
-            print('Touches: ' + str(this_player.touches))
-            print('Goals: ' + str(this_player.goals))
-            print('Assists: ' + str(this_player.assists))
-            print('Blocks: ' + str(this_player.blocks))
-            print('Points Played: ' + str(this_player.points_played))
+            print('Name: ' + str(this_player.player_name))
+            print('Touches: ' + str(this_player.player_touches))
+            print('Goals: ' + str(this_player.player_goals))
+            print('Assists: ' + str(this_player.player_assists))
+            print('Blocks: ' + str(this_player.player_defences))
+            print('Points Played: ' + str(this_player.player_points))
             print('__________________________________________')
 
     possession_progression(analysed_game)

@@ -154,8 +154,10 @@ class TeamSelectScreen(Screen):
                         try:
                             number, gender, name = player.split(u'|')
                         except:
-                            print(player.split('|'))
-                            raise ValueError
+                            name = player
+                            number = 0
+                            gender = 'u'
+
                         player_obj = hierarch.Player(player_name=name.strip(),
                                                      player_number=number,
                                                      player_gender=gender)
