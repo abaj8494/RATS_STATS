@@ -343,7 +343,9 @@ def main():
                          this_player.player_goals, this_player.player_assists, this_player.player_defences,
                          this_player.player_turnovers])
 
-        stops.update_player_sheet(team.team_name, data)
+        spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2012 Semifinal AUSvJPN
+
+        stops.update_player_sheet(team.team_name, data, spreadsheet_id)
 
     # possession_progression(analysed_game)
 
