@@ -128,10 +128,17 @@ class Player(Root):
 
         super(Player, self).__init__(**kwargs)
 
+    def __eq__(self, other):
+        return self.player_name == other.player_name
+
+    def __ne__(self, other):
+        return self.player_name != other.player_name
+
     def __str__(self):
         return self.player_name + "#" + str(self.player_number)
 
     __repr__ = __str__
+
 
 
 class Game(Root):
@@ -168,8 +175,6 @@ class Game(Root):
 
         super(Game, self).__init__(**kwargs)
 
-    # def get_current_scores(self):
-    #     return self.scores[-1]
 
     def get_filename(self, special=None):
         """
