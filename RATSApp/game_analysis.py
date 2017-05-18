@@ -346,7 +346,7 @@ def main():
             data.append([str(this_player.player_name), this_player.player_points, this_player.player_touches,
                          this_player.player_goals, this_player.player_assists, this_player.player_defences])
 
-        stops.update_player_sheet(team.team_name,data)
+        stops.update_player_sheet(team.team_name, data)
 
     # possession_progression(analysed_game)
 
