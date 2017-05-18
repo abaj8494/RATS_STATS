@@ -1,0 +1,2 @@
+name:Canada
+players:72|u|Mark Leduc,	77|u|Jenn Kwok,	52|u|Cam Harris,	89|u|Mark Lloyd,	24|u|Jeremy Norden,	8|u|Kielan Way,	19|u|Thomson McKnight,	3|u|Justin Norden,	7|u|Eric Dion,	91|u|Anne-Marie Carey,	2|u|Kate Beaulieu,	21|u|Mike Aizawa,	6|u|Michelle Ning,	1|u|Megan O'Brien,	4|u|Kevin Cheung,	5|u|Andrea Cheng,	9|u|Tiffany Lin,	10|u|Jessie Grignon-Tomas,	11|u|Patrick Mooney,	12|u|Geoff Powell,	14|u|Cory Reid,	22|u|Audrey St-Arnaud,	27|u|Tory Hislop,	28|u|Isabelle Lemay,	33|u|Carly Sakai,	44|u|Will Ranson,	48|u|Richard Tam,	57|u|Russell Street
