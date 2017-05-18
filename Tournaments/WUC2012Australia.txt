@@ -1,0 +1,2 @@
+name:Australia
+players:2|m|John Damiani,	12|f|Tegan Sneddon,	26|m|Huy Vu,	76|m|Warwick Shepherd,	34|f|Rebecca Carman,	1|m|Gavin Moore,	10|f|Alisa Moore,	3|m|Adam Mortimer,	4|f|Lila Hardge,	5|f|Amanda Parker,	6|m|Tim Lindsay-Brown,	7|m|David Knight,	8|f|Sarah Middleton,	9|m|Thomas Watson,	11|m|Calan Spielman,	14|f|Alex Rogers,	15|f|Vickie Saye,	16|m|Chris Kaliviotis,	42|m|Kendall Thorn,	47|f|Amy Hempel,	85|m|Tom Tulett,	88|f|Lucy Stevenson,	89|m|Tiger Webb,	97|m|James Ley
