@@ -1,2 +1,0 @@
-name:Australia
-players:70|f|Adelaide DENNIS,9|f|Alex PRENTICE,35|f|Catherine PHILLIPS,11|f|Kim SPRAGG,17|f|Michelle PHILLIPS,53|f|Mikhaila DIGNAM,13|f|Rebecca BRERETON,28|f|Rosie DAWSON,44|f|Sarah WENTWORTH,5|f|Vivien STETTNER,31|m|Alex LADOMATOS,7|m|Brendan ASHCROFT,6|m|Calan SPIELMAN,1|m|Lochlan WISE,14|m|Mark EVANS,45|m|Mark ISHERWOOD,23|m|Peter BLAKELEY,25|m|Rob ANDREWS,10|m|Sebastian BARR,85|m|Tom TULETT

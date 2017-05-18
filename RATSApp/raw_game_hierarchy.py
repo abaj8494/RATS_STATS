@@ -279,12 +279,13 @@ class Pull(Root):
     # TODO: Andy - this should have a TimeStamp
 
     all_pulls = [
-        # out-of-bounds
-        u"brick",  # stop the clap
-        u"sideline",
         # in
         u"caught",
         u"landed",
+        # out-of-bounds
+        u"brick",  #  stop the clap
+        # in # separated for display purposes
+        u"sideline",
         u"touched",
         u"untouched",
         u"dropped-pull",

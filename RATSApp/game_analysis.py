@@ -321,7 +321,7 @@ def discs_progression():
 def main():
     """"""
 
-    analysed_game = stops.retrieve_game_pickle('Test Match Series2017_ACT_M_NSW_M_final.p')
+    analysed_game = stops.retrieve_game_pickle('Test Match Series2017_Australia_Mixed_Canada_Mixed_final.p')
 
     data = []
 
@@ -345,7 +345,7 @@ def main():
 
         spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2012 Semifinal AUSvJPN
 
-        stops.update_player_sheet(team.team_name, data, spreadsheet_id)
+        stops.update_players_sheet(team.team_name, data, spreadsheet_id)
 
     # possession_progression(analysed_game)
 

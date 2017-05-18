@@ -144,11 +144,15 @@ class TeamSelectScreen(Screen):
             file = open(full_path, u'rb')
 
             players = []
+
+            staff = None # flag
             for line in file.readlines():
                 key, value = line.split(u':')
                 if key == u'name':
                     team_name = value.strip()
-                elif key == u'players':
+                if key == u'coaches':
+                    staff = value.split(u',')
+                if key == u'players':
                     team = value.split(u',')
                     for player in team:
                         try:
@@ -163,9 +167,17 @@ class TeamSelectScreen(Screen):
                                                      player_gender=gender)
                         players.append(player_obj)
 
+                else:
+                    print('### missed import key: ' +str(key))
+
+            # staff is now optional
+            #TODO: move this whole fucking thing to stops
+            if not staff:
+                staff = []
 
             team = hierarch.Team(team_name=team_name,
-                                 team_players=players)  # division='very mixed')
+                                 team_players=players,
+                                 team_coaches=staff)  # division='very mixed')
 
             file.close()
             sApp.unordered_teams.append(team)
@@ -621,7 +633,7 @@ class SelectActionScreen(Screen):
         self.update_sequence()
 
         for player in sApp.current_point.current_sequence().lines[sApp.current_point.current_sequence().offence]:
-            pb = ToggleButton(text=player.display_name, group=u'players')
+            pb = ToggleButton(text=player.display_name, group=u'players') #, size_hint=[0.33,None]) #StackLayout stuff
             pickcallback = partial(self.set_player, player)
             pb.bind(on_release=pickcallback)
             self.pblist.append(pb)
@@ -630,7 +642,7 @@ class SelectActionScreen(Screen):
         fakePlayer = hierarch.Player(player_name=sApp.game.teams[sApp.current_point.current_sequence().offence].team_name,
                                      player_number=-1,
                                      player_gender='G')
-        pb = ToggleButton(text=fakePlayer.display_name, group=u'players')
+        pb = ToggleButton(text=fakePlayer.display_name, group=u'players')#, size_hint=[0.33,None])
         pickcallback = partial(self.set_player,fakePlayer)
         pb.bind(on_release=pickcallback)
         self.pblist.append(pb)
@@ -706,8 +718,9 @@ class SelectActionScreen(Screen):
     def set_action(self, action, *args):
         # store the event
         sApp = App.get_running_app()
-        if self.temp_event[0] != 'player_not_set':
-            #button does nothing if haven't picked a player
+        # without a selected played only defensive actions are possible as they ask for player input afterwards
+        # these are all actions by the offensive players
+        if self.temp_event[0] != 'player_not_set' and action not in hierarch.Event.defensive_actions:
             self.temp_event[1] = action
             self.temp_event[3] = time.time()
 
@@ -732,19 +745,6 @@ class SelectActionScreen(Screen):
                 #print("- offensive turnover")
                 sApp.current_point.current_sequence().offence = 1 - sApp.current_point.current_sequence().offence
                 sApp.root.switch_to(SelectActionScreen())
-            # defensive turnovers
-            if event_obj.event_action in hierarch.Event.defensive_actions:
-                popupContent = BoxLayout(orientation=u'vertical')
-                for player in sApp.current_point.current_sequence().lines[1-sApp.current_point.current_sequence().offence]:
-                    pb = Button(text=player.display_name)
-                    pbcallback = partial(self.save_defensive_action, player , event_obj.event_action)
-                    pb.bind(on_release=pbcallback)
-                    popupContent.add_widget(pb)
-
-                self.popup = Popup(title=u'who got the block/int',
-                                   content=popupContent,
-                                   size_hint=[0.7, 0.7])
-                self.popup.open()
 
             if event_obj.event_action == u'goal':
                 # change this to the stacked or whatever, even x/y  boxex
@@ -769,18 +769,29 @@ class SelectActionScreen(Screen):
                 no.bind(on_release=self.end_point)
                 popupContent.add_widget(no)
 
-                # paws = Button(text=u'pause please')
-                # paws.bind(on_release=self.pause_game)
-                # popupContent.add_widget(paws)
-
-                # review = Button(text=u'review stats')
-                # review.bind(on_release=self.review_stats)
-                # popupContent.add_widget(review)
-
                 self.popup = Popup(title=u'was that goal the game winner?',
                                    content=popupContent,
                                    size_hint=[0.7, 0.7])
                 self.popup.open()
+
+        # these actions query for input about who the player is second
+        # and are thus handled separately.
+
+        elif action in hierarch.Event.defensive_actions:
+            # save block event etc
+            # defensive turnovers
+            popupContent = BoxLayout(orientation=u'vertical')
+            for player in sApp.current_point.current_sequence().lines[1-sApp.current_point.current_sequence().offence]:
+                pb = Button(text=player.display_name)
+                pbcallback = partial(self.save_defensive_action, player , action)
+                pb.bind(on_release=pbcallback)
+                popupContent.add_widget(pb)
+
+            self.popup = Popup(title=u'who got the block/int',
+                               content=popupContent,
+                               size_hint=[0.7, 0.7])
+            self.popup.open()
+
 
             return True
 
