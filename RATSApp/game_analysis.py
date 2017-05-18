@@ -184,7 +184,6 @@ class AnalysedPlayer(Root):
         self.player_defences_with_turnover = 0
         self.player_defences_breaks = 0
 
-
         """
         Possession Statistics On Offence: Probably a Team level analysis? Connections should go here.
         """
@@ -226,14 +225,6 @@ def run_player_analysis(player, game):
         player_gender=player.player_gender,
     )
 
-    # TODO: this is broken because of how RGH is structured so I'm gonna have to change something there
-
-    # player_statistics = AnalysedPlayer(
-    #     name=player.name,
-    #     number=player.number,
-    #     gender=player.gender,
-    # )
-
     for point in game.points:  # loop over points
 
         for sequence in point.sequences:  # loop over sequences
@@ -252,12 +243,12 @@ def run_player_analysis(player, game):
                 if event.event_player == player:
 
                     # single-check events
-                    player_statistics.player_touches+=1
+                    player_statistics.player_touches += 1
 
                     if event.event_action == 'goal':
                         player_statistics.player_goals += 1
 
-                    if i < len(sequence.events)-1: # dont go past the end - better safe than sorry
+                    if i < len(sequence.events)-1:  # dont go past the end - better safe than sorry
                         # print(str(i)+'#'+str(len(sequence.events)))
 
                         if sequence.events[i+1].event_action == 'goal':
@@ -271,7 +262,9 @@ def run_player_analysis(player, game):
 
             # calculated stats - these numbers to be run after reading over the whole game (for a player)
             if player_statistics.player_touches != 0:
-                player_statistics.completion_rate = player_statistics.player_turnovers / player_statistics.player_touches
+                print('{} / {} ').format(player_statistics.player_turnovers, player_statistics.player_touches)
+                player_statistics.completion_rate =\
+                    player_statistics.player_turnovers / player_statistics.player_touches
 
             else:
                 player_statistics.completion_rate = 1.00
@@ -334,17 +327,21 @@ def main():
 
     for team in analysed_game.teams:
         for player in team.team_players:
-            this_player = run_player_analysis(player,analysed_game)
-            if this_player.player_name == 'Dan Petrov':
+            this_player = run_player_analysis(player, analysed_game)
+            if this_player.player_name == 'Aaron Garbutt':  # test data - don't want to print it all
                 print('Name: ' + str(this_player.player_name))
                 print('Touches: ' + str(this_player.player_touches))
+                print('Turnovers: ' + str(this_player.player_turnovers))
                 print('Goals: ' + str(this_player.player_goals))
                 print('Assists: ' + str(this_player.player_assists))
                 print('Blocks: ' + str(this_player.player_defences))
                 print('Points Played: ' + str(this_player.player_points))
+                print('Completion %: ' + str(this_player.player_completion_rate))
                 print('__________________________________________')
+
             data.append([str(this_player.player_name), this_player.player_points, this_player.player_touches,
-                         this_player.player_goals, this_player.player_assists, this_player.player_defences])
+                         this_player.player_goals, this_player.player_assists, this_player.player_defences,
+                         this_player.player_turnovers])
 
         stops.update_player_sheet(team.team_name, data)
 
