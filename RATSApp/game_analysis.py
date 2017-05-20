@@ -346,11 +346,6 @@ def calculate_maidens(analysed_game):
                 print(sequence.lines[a])
 
 
-
-
-
-
-
 def main():
     """"""
 
