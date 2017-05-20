@@ -228,13 +228,15 @@ def run_player_analysis(player, game):
     for point in game.points:  # loop over points
         for sequence in point.sequences:  # loop over sequences
             # if the player is not in this sequence
-            if player.player_name not in [a.player_name for a in sequence.lines[0]] and [b.player_name for b in sequence.lines[1]]:
+            if player.player_name not in [a.player_name for a in sequence.lines[0]] and player.player_name not in [b.player_name for b in sequence.lines[1]]:
                 # previously we were directly comparing the objects (without having __cmp__ defined)
                 # this will compare the names, bypassing weird instantiation shit
                 # have now defined __ne__ and __eq__ but that will apply for games going forward
                 # this works for older games
 
-                print('continuing over '+str(player.player_name))
+                # good one robert
+
+                # print('continuing over '+str(player.player_name))
                 continue  # go to the next one
 
             player_statistics.player_points += 1
@@ -352,17 +354,17 @@ def calculate_maidens(analysed_game):
 def main():
     """"""
 
-    analysed_game = stops.retrieve_game_pickle('Test Match Series2017_Australia_Mixed_Barramundis_Canada_Mixed_half.p')
+    game_filename = 'Test Match Series2017_Australia_Japan_final.p'
+
+
+    analysed_game = stops.retrieve_game_pickle(game_filename)
     #for point in analysed_game.points:
     print('num points = '+str(len(analysed_game.points)))
 
-    for point in analysed_game.points:
-        if analysed_game.points.index(point) == 0:
-            for sequence in point.sequences:
-                print(sequence.lines)
-
-        #print(disp)
-
+    # for point in analysed_game.points:
+    #     if analysed_game.points.index(point) == 0:
+    #         for sequence in point.sequences:
+    #             print(sequence.lines)
 
     for team in analysed_game.teams:
         data = []
@@ -383,7 +385,15 @@ def main():
                          this_player.player_goals, this_player.player_assists, this_player.player_defences,
                          this_player.player_turnovers])
 
-        spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2016 Random Game AUSvCAN
+        # spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2016 Random Game AUSvCAN
+        spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
+
+        # copy pickle from stat taking to stat output working dir
+        stops.pipe_pickle_to_output(game_filename,
+                                    'C:\Users\\robsw\AppData\Roaming\stats',
+                                    'C:\Users\\robsw\PycharmProjects\RATS_STATS\RATSApp')
+
+
         stops.update_players_sheet(team.team_name, data, spreadsheet_id)
 
     # possession_progression(analysed_game)

@@ -29,6 +29,8 @@ import raw_game_hierarchy as hierarch
 #the app needs to run on android better hence:
 import storage_operations as stops
 
+# basic kivy theming defaults - don't do too much here, look for and build a better theming solution
+# presentation can come after the test matches (FlatKivy, KivyMD, etc)
 
 
 class PlayerButton(Button):
@@ -175,6 +177,9 @@ class TeamSelectScreen(Screen):
             if not staff:
                 staff = []
 
+            # order the players list by number
+            players = sorted(players, key=lambda x:int(x.player_number))
+
             team = hierarch.Team(team_name=team_name,
                                  team_players=players,
                                  team_coaches=staff)  # division='very mixed')
@@ -249,10 +254,24 @@ class SelectPlayersScreen(Screen):
         self.offenceTObutton.bind(on_release=partial(self.start_point_timeout,self.offence))
         self.ids.LeftBox.add_widget(self.offenceTObutton)
 
+        # colour codes - different colour text for each set of ten
+        # colours are in [r, g, b, a] each in range 0-1
+        # white [1,1,1,1]
+        # float_colour = colour / 255.0
+        #
+
         teamLabel = Label(text=sApp.game.teams[self.offence].team_name)
         self.ids.LeftBox.add_widget(teamLabel)
         for player in sApp.game.teams[self.offence].team_players:
-            pb = ToggleButton(text=player.display_name)
+            cardinal = int(player.player_number[0])
+            if cardinal % 2 == 0:
+                font_color = [1,0,0,1]
+            else:
+                font_color = [0,0,1,1]
+
+            pb = ToggleButton(text=player.display_name,
+                              font_color=[1,0,0,1])
+
             pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.LeftBox.add_widget(pb)
 
@@ -318,11 +337,13 @@ class SelectPlayersScreen(Screen):
         # gender ratio?
         # beach ultimate?
         if len(self.temp_dline) == 7 and len(self.temp_oline) == 7:
+
+            # order the player lists by number
+            self.temp_dline = sorted(self.temp_dline, key=lambda x: int(x.player_number))
+            self.temp_oline = sorted(self.temp_oline, key=lambda x: int(x.player_number))
+
             # if self.offence = 0, starting offence is on offence now
             # if self.offence = 1, the other team is on offence
-            # thus the lines should match this - even
-            # TODO: test this thoroughly
-
             if self.offence == 0:
                 lines = [self.temp_oline,self.temp_dline] # this is it here
             elif self.offence == 1:
