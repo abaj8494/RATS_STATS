@@ -322,6 +322,32 @@ def possession_progression(analysed_game):
 def discs_progression():
     """PlayerDiscs in a TeamPossession"""
 
+    pass
+
+
+def calculate_maidens(analysed_game):
+
+    team_maidens = []
+
+    for a in range(0, len(analysed_game.teams)):
+
+        for point in analysed_game.points:
+
+            for sequence in analysed_game.sequences:
+
+                sequence_maidens = []
+
+                if sequence.offence == analysed_game.teams[a]:  # if the team is starting this sequence on offence
+                    continue  # not interested in maidens
+
+                # ANDY - I don't think I want the nested in an elif, but maybe I do?
+                print(sequence.lines[a])
+
+
+
+
+
+
 
 def main():
     """"""
