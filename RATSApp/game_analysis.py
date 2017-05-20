@@ -359,8 +359,11 @@ def main():
                          this_player.player_goals, this_player.player_assists, this_player.player_defences,
                          this_player.player_turnovers])
 
+        #TODO: make fake player a property of the Team object - can't instantiate shit here
+
         # spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2016 Random Game AUSvCAN
-        spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
+        # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
+        spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
 
         # copy pickle from stat taking to stat output working dir
         stops.pipe_pickle_to_output(game_filename,

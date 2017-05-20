@@ -101,6 +101,7 @@ class ConfirmInputScreen(Screen):
         sApp.root.switch_to(MenuScreen())
         return True
 
+
 class TeamSelectScreen(Screen):
     def __init__(self, **kwargs):
         super(TeamSelectScreen, self).__init__(**kwargs)
@@ -254,23 +255,13 @@ class SelectPlayersScreen(Screen):
         self.offenceTObutton.bind(on_release=partial(self.start_point_timeout,self.offence))
         self.ids.LeftBox.add_widget(self.offenceTObutton)
 
-        # colour codes - different colour text for each set of ten
-        # colours are in [r, g, b, a] each in range 0-1
-        # white [1,1,1,1]
-        # float_colour = colour / 255.0
-        #
-
         teamLabel = Label(text=sApp.game.teams[self.offence].team_name)
         self.ids.LeftBox.add_widget(teamLabel)
         for player in sApp.game.teams[self.offence].team_players:
-            cardinal = int(player.player_number[0])
-            if cardinal % 2 == 0:
-                font_color = [1,0,0,1]
-            else:
-                font_color = [0,0,1,1]
-
-            pb = ToggleButton(text=player.display_name,
-                              font_color=[1,0,0,1])
+            font_color = self.color_by_numbers(player.player_number)
+            pb = ToggleButton(text='[color='+font_color+']'+player.display_name+'[/color]',
+                              background_normal='',
+                              markup=True)
 
             pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.LeftBox.add_widget(pb)
@@ -282,9 +273,28 @@ class SelectPlayersScreen(Screen):
         teamLabel = Label(text=sApp.game.teams[1 - self.offence].team_name)
         self.ids.RightBox.add_widget(teamLabel)
         for player in sApp.game.teams[1 - self.offence].team_players:
-            pb = ToggleButton(text=player.display_name)
+            font_color = self.color_by_numbers(player.player_number)
+            pb = ToggleButton(text='[color='+font_color+']'+player.display_name+'[/color]',
+                              background_normal='',
+                              markup=True)
+
             pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.RightBox.add_widget(pb)
+
+    def color_by_numbers(self,number):
+        """
+        takes in player number as A STRING and returns red or blue hex AS STRING
+        """
+        if len(number) == 1:
+            font_color = 'ff0000'  # red
+        else:
+            cardinal = int(number[0])
+            if cardinal % 2 == 0:
+                font_color = 'ff0000'  # red
+            else:
+                font_color = '0000ff'  # blue
+
+        return font_color
 
     def start_point_timeout(self,offence_source,*args):
         sApp = App.get_running_app()
@@ -414,6 +424,7 @@ class PullingScreen(Screen):
             sApp.root.switch_to(SelectActionScreen())
 
         return True
+
 
 class PlayBreakScreen(Screen):
     def __init__(self,**kwargs):
@@ -638,6 +649,7 @@ class PlayBreakScreen(Screen):
         self.to_popup.dismiss()
         sApp.root.switch_to(SelectActionScreen())
         return True
+
 
 class SelectActionScreen(Screen):
     def __init__(self, **kwargs):
