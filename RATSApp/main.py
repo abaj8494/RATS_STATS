@@ -23,7 +23,6 @@ from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.widget import Widget
 
 #stats
-import analysis as anal
 import raw_game_hierarchy as hierarch
 
 #the app needs to run on android better hence:
@@ -834,7 +833,7 @@ class SelectActionScreen(Screen):
         sApp = App.get_running_app()
         statscontent = BoxLayout()
         statscontent.add_widget(Label(text=u'offensive turns'))
-        statscontent.add_widget(Label(text=str(anal.offensive_turns(sApp.game))))
+        # statscontent.add_widget(Label(text=str(anal.offensive_turns(sApp.game))))
         #here we add the actual stats to review
 
         returnbut = Button(text=u'Return')
@@ -866,7 +865,6 @@ class SelectActionScreen(Screen):
         # save the time as some paused time so can return with working timer
         # save the game object as it exists
         # sApp = App.get_running_app()
-
 
     def end_point(self, *args):
         if self.popup:
@@ -955,7 +953,7 @@ class ReadScreen(Screen):
     def on_pre_enter(self):
         sApp = App.get_running_app()
         if sApp.game:
-            self.ids.BigBox.add_widget(Label(text=str(anal.basic_info(sApp.game)), size_hint=[1,0.01]))
+            # self.ids.BigBox.add_widget(Label(text=str(anal.basic_info(sApp.game)), size_hint=[1,0.01]))
 
             for point in sApp.game.points:
                 print(point)

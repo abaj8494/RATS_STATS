@@ -349,8 +349,16 @@ def calculate_maidens(analysed_game):
 def main():
     """"""
 
-    game_filename = 'Test Match Series2017_Australia_Japan_final.p'
+    game_filename = 'Test Match Series_Game22017_Australia_Japan_final.p'
 
+    # copy pickle from stat taking to stat output working dir
+    # this is set up specifically for Rob's laptop
+    # was also used for the test matches
+    # have to consider our overall logistical framework and how we want to separate out analysis and input
+
+    #stops.pipe_pickle_to_output(game_filename,
+    #                            'C:\Users\\robsw\AppData\Roaming\stats',
+    #                            'C:\Users\\robsw\PycharmProjects\RATS_STATS\RATSApp')
 
     analysed_game = stops.retrieve_game_pickle(game_filename)
     #for point in analysed_game.points:
@@ -376,7 +384,8 @@ def main():
                 print('Completion %: ' + str(this_player.player_completion_rate))
                 print('__________________________________________')
 
-            data.append([str(this_player.player_name), this_player.player_points, this_player.player_touches,
+            data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
+                         this_player.player_points, this_player.player_touches,
                          this_player.player_goals, this_player.player_assists, this_player.player_defences,
                          this_player.player_turnovers])
 
@@ -385,11 +394,6 @@ def main():
         # spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2016 Random Game AUSvCAN
         # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
         spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
-
-        # copy pickle from stat taking to stat output working dir
-        stops.pipe_pickle_to_output(game_filename,
-                                    'C:\Users\\robsw\AppData\Roaming\stats',
-                                    'C:\Users\\robsw\PycharmProjects\RATS_STATS\RATSApp')
 
 
         stops.update_players_sheet(team.team_name, data, spreadsheet_id)
