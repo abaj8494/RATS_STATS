@@ -24,6 +24,7 @@ import pickle
 # local project
 import raw_game_hierarchy as rgh
 import storage_operations as stops
+import internet_operations as int_ops
 
 # TODO: work out how to extend classes in RGH
 
@@ -396,7 +397,7 @@ def main():
         spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
 
 
-        stops.update_players_sheet(team.team_name, data, spreadsheet_id)
+        int_ops.update_players_sheet(team.team_name, data, spreadsheet_id)
 
     # possession_progression(analysed_game)
 
