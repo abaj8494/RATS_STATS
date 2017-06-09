@@ -3,57 +3,41 @@
 
 # game_hierarchy.py
 
-# defines structures for a live recording, with gaps for any analysis we want to run later
-# class attribute lists have single item indentation to make it easier to change the display order
-# I need to tweak the data storage for some actions/events/calls at runtime
-
-# TODO: Validate inputs, check out https://github.com/alecthomas/voluptuous
-# TODO: I want offence and defence explicitly stored, but for now 0 is offence and 1 is defence.
-# TODO: this is actually a number of structures (Peoples, Tournaments, Games), split it out after Nationals.
-
-
-# surgical.
 
 """
-PEOPLE
-
-classification levels for people in a game:
-    - INDIVIDUAL: each player on each team
-    - TEAM: each team considered as a whole
-    - GAME: everyone in the game considered as a whole
-    - TOURNAMENT: all players on all teams in all games considered as a whole
-
-GAME STRUCTURE
-
-classification levels for games:
-    - INDIVIDUAL: a single game
-    - DIVISION: a game as part of all games in a division
-    - TOURNAMENT: a game as part of all games at a tournament
-
-SEQUENCE
-
-classification levels for live game sequences:
-    - INDIVIDUAL: a single item within a game
-    - POSSESSION: all items from players on the same team for a possession
-    - POINT: all items from all players for a point
-    - GAME: all items from all players for all points in a game
 
 """
 
 
 class Root(object):
-    """Wrapper class for debugging."""
+    """
+    Wrapper class for debugging.
+    """
 
     def __init__(self, **kwargs):
         """
         Returns an AssertionError if any extraneous variables exist upon an __init__() call.
         """
 
-        if kwargs:  # for debug purposes
+        if kwargs:  # for debugging purposes
             print("Root.__init__() called.")
             print(kwargs)
 
         assert not kwargs
+
+
+class Group(Root):
+    """
+    A Group is a collection of affiliated teams. For example, Brunch Smashed and Brunch Cooked were both part of the 
+    Bench Group. Similarly, the Goannas, Bluebottles, and Stingrays can be considered as part of the Australia Group at 
+    the u24 level.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        
+        :param kwargs: 
+        """
 
 
 class Team(Root):  # TODO: inherit from Group
@@ -83,7 +67,7 @@ class Team(Root):  # TODO: inherit from Group
         #     'great grand masters'
         # ]
         # gender_strings = [
-        #     'open',
+        #     'men',
         #     'women',
         #     'mixed',
         # ]

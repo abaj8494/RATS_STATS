@@ -210,7 +210,7 @@ class Point(Root):
 
     def __init__(self, **kwargs):
         """
-        Should take starting offence as amandatory argument but idk what this junk does.
+        Should take starting offence as a mandatory argument but idk what this junk does.
         """
 
         # TODO: Andy - this needs fixing.
@@ -234,6 +234,7 @@ class Point(Root):
             self.score = kwargs.pop("score")
         else:
             self.score = [0,0]
+        # TODO: ANDY - for the 2nd Test, this is overwritten by the final score
 
         super(Point, self).__init__(**kwargs)
 
