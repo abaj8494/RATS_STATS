@@ -227,9 +227,12 @@ def run_player_analysis(player, game):
     )
 
     for point in game.points:  # loop over points
+
         for sequence in point.sequences:  # loop over sequences
+
             # if the player is not in this sequence
-            if player.player_name not in [a.player_name for a in sequence.lines[0]] and player.player_name not in [b.player_name for b in sequence.lines[1]]:
+            if player.player_name not in [a.player_name for a in sequence.lines[0]] \
+                    and player.player_name not in [b.player_name for b in sequence.lines[1]]:
                 # previously we were directly comparing the objects (without having __cmp__ defined)
                 # this will compare the names, bypassing weird instantiation shit
                 # have now defined __ne__ and __eq__ but that will apply for games going forward
@@ -270,7 +273,7 @@ def run_player_analysis(player, game):
 
             # calculated stats - these numbers to be run after reading over the whole game (for a player)
             if player_statistics.player_touches != 0:
-                #print('{} / {} ').format(player_statistics.player_turnovers, player_statistics.player_touches)
+                # print('{} / {} ').format(player_statistics.player_turnovers, player_statistics.player_touches)
                 player_statistics.completion_rate =\
                     player_statistics.player_turnovers / player_statistics.player_touches
 
