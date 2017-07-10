@@ -216,6 +216,43 @@ class AnalysedPlayer(Root):
 
         super(AnalysedPlayer, self).__init__(**kwargs)
 
+def edit_game(game):
+    # test match 2
+    # aus v jpn
+    fixed_game = game
+    first_p = fixed_game.points[0]
+    first_p.sequences.pop(0)
+    first_p.sequences[0].events.pop() # remove brendo goal
+    japan_fake = rgh.Player(player_name='Japan',
+                          player_number=-1,
+                          player_gender='T')
+    japan_22 = rgh.Player(player_name='Taku HONNA',
+                          player_number=22,
+                          player_gender='m')
+    japan_31 = rgh.Player(player_name='Yuko SATO',
+                          player_number=31,
+                          player_gender='f')
+    japan_15 = rgh.Player(player_name='Saori INOUE',
+                          player_number=15,
+                          player_gender='f')
+
+    first_p.sequences[0].events.append(rgh.Event(event_player=japan_fake,
+                                                event_action='hand-block',
+                                                 ts_start=0))
+    first_p.sequences[0].events.append(rgh.Event(event_player=japan_22,
+                                                event_action='pass',
+                                                 ts_start=0))
+    first_p.sequences[0].events.append(rgh.Event(event_player=japan_31,
+                                                event_action='pass',
+                                                 ts_start=0))
+    first_p.sequences[0].events.append(rgh.Event(event_player=japan_15,
+                                                event_action='pass',
+                                                 ts_start=0))
+    first_p.sequences[0].events.append(rgh.Event(event_player=japan_22,
+                                                event_action='goal',
+                                                 ts_start=0))
+
+    return fixed_game
 
 def run_player_analysis(player, game):
 
@@ -226,9 +263,11 @@ def run_player_analysis(player, game):
     )
 
     for point in game.points:  # loop over points
+        #if game.points.index(point) != 0:
+        #    break # only looking at the first point
         for sequence in point.sequences:  # loop over sequences
-            # if the player is not in this sequence
-            if player.player_name not in [a.player_name for a in sequence.lines[0]] and player.player_name not in [b.player_name for b in sequence.lines[1]]:
+            # if the player is not in this sequence and is also not the fake player
+            if player.player_name not in [a.player_name for a in sequence.lines[0]] and player.player_name not in [b.player_name for b in sequence.lines[1]] and player.player_gender != 'T':
                 # previously we were directly comparing the objects (without having __cmp__ defined)
                 # this will compare the names, bypassing weird instantiation shit
                 # have now defined __ne__ and __eq__ but that will apply for games going forward
@@ -244,28 +283,37 @@ def run_player_analysis(player, game):
             for i in range(0, len(sequence.events)):
 
                 event = sequence.events[i]
+                #print('event - player : '+str(event.event_action)+' - '+str(event.event_player.player_name))
 
                 if event.event_player.player_name == player.player_name:
 
-                    # single-check events
                     player_statistics.player_touches += 1
+
+                    # Checks on the current event
 
                     if event.event_action == 'goal':
                         print('goal scored by: '+str(player_statistics.player_name))
                         player_statistics.player_goals += 1
 
-                    if i < len(sequence.events)-1:  # dont go past the end - better safe than sorry
-                        # print(str(i)+'#'+str(len(sequence.events)))
-                        if sequence.events[i+1].event_action == 'goal':
-                            print('assist thrown by: ' + str(player_statistics.player_name))
-
-                            player_statistics.player_assists += 1
-
                     if event.event_action == 'block' or event.event_action == 'intercept':
                         player_statistics.player_defences += 1
+                        print('block by: '+str(player_statistics.player_name))
 
-                    if event.event_action in rgh.Event.turnover_actions:
-                        player_statistics.player_turnovers += 1
+                    # Checks on the following event
+
+                    if i < len(sequence.events)-1:  # dont go past the end - better safe than sorry
+                        #print(str(i)+'#'+str('ll'))
+                        if sequence.events[i+1].event_action == 'goal':
+                            #print('assist thrown by: ' + str(player_statistics.player_name))
+                            player_statistics.player_assists += 1
+                        if sequence.events[i+1].event_action in rgh.Event.turnover_actions:
+                            player_statistics.player_turnovers += 1
+                            print('turnover for: ' + str(player_statistics.player_name))
+
+
+                    # test 2
+                    # aus 26
+                    # jpn 12
 
             # calculated stats - these numbers to be run after reading over the whole game (for a player)
             if player_statistics.player_touches != 0:
@@ -349,7 +397,8 @@ def calculate_maidens(analysed_game):
 def main():
     """"""
 
-    game_filename = 'Test Match Series_Game22017_Australia_Japan_final.p'
+    game_filename = 'Test Match Series_Game22017_Australia_Japan_fixed1.p'
+    # first edit was to fix incorrectly assigned first goal
 
     # copy pickle from stat taking to stat output working dir
     # this is set up specifically for Rob's laptop
@@ -361,6 +410,12 @@ def main():
     #                            'C:\Users\\robsw\PycharmProjects\RATS_STATS\RATSApp')
 
     analysed_game = stops.retrieve_game_pickle(game_filename)
+
+    # edit the game using edit_game
+    #   analysed_game = edit_game(analysed_game)
+    # then store
+    #   stops.store_game_pickle(analysed_game,'C:\Users\\robsw\PycharmProjects\RATS_STATS\RATSApp\Test Match Series_Game22017_Australia_Japan_fixed1.p')
+
     #for point in analysed_game.points:
     print('num points = '+str(len(analysed_game.points)))
 
@@ -373,21 +428,34 @@ def main():
         data = []
         for player in team.team_players:
             this_player = run_player_analysis(player, analysed_game)
-            if this_player.player_name == 'Aaron Garbutt':  # test data - don't want to print it all
-                print('Name: ' + str(this_player.player_name))
-                print('Touches: ' + str(this_player.player_touches))
-                print('Turnovers: ' + str(this_player.player_turnovers))
-                print('Goals: ' + str(this_player.player_goals))
-                print('Assists: ' + str(this_player.player_assists))
-                print('Blocks: ' + str(this_player.player_defences))
-                print('Points Played: ' + str(this_player.player_points))
-                print('Completion %: ' + str(this_player.player_completion_rate))
-                print('__________________________________________')
+
+
+            # if this_player.player_name == 'Aaron Garbutt':  # test data - don't want to print it all
+            #     print('Name: ' + str(this_player.player_name))
+            #     print('Touches: ' + str(this_player.player_touches))
+            #     print('Turnovers: ' + str(this_player.player_turnovers))
+            #     print('Goals: ' + str(this_player.player_goals))
+            #     print('Assists: ' + str(this_player.player_assists))
+            #     print('Blocks: ' + str(this_player.player_defences))
+            #     print('Points Played: ' + str(this_player.player_points))
+            #     print('Completion %: ' + str(this_player.player_completion_rate))
+            #     print('__________________________________________')
 
             data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
                          this_player.player_points, this_player.player_touches,
                          this_player.player_goals, this_player.player_assists, this_player.player_defences,
                          this_player.player_turnovers])
+
+        fakePlayer = rgh.Player(player_gender='T',
+                           player_number=-1,
+                           player_name=team.team_name)
+        this_player = run_player_analysis(fakePlayer,analysed_game)
+
+        data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
+                     this_player.player_points, this_player.player_touches,
+                     this_player.player_goals, this_player.player_assists, this_player.player_defences,
+                     this_player.player_turnovers])
+
 
         #TODO: make fake player a property of the Team object - can't instantiate shit here
 
@@ -395,7 +463,7 @@ def main():
         # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
         spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
 
-
+        #no internet rn
         stops.update_players_sheet(team.team_name, data, spreadsheet_id)
 
     # possession_progression(analysed_game)

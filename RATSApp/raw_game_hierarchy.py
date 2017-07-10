@@ -178,10 +178,9 @@ class Game(Root):
 
     def get_filename(self, special=None):
         """
-        :param special: 
-        :return: 
+        string operation
+         gets a useable filename from the tournament, year,  and team names.
         """
-        # TODO: Rob why do you hate docstrings and readability whitespace.
 
         string = "{}{}_{}_{}".format(
             self.tournament,

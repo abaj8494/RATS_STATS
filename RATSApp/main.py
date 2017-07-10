@@ -22,7 +22,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.widget import Widget
 
-#stats
+# stats
 import raw_game_hierarchy as hierarch
 
 #the app needs to run on android better hence:
