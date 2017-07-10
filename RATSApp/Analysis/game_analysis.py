@@ -24,6 +24,7 @@ import pickle
 # local project
 import raw_game_hierarchy as rgh
 import storage_operations as stops
+import internet_operations as int_ops
 
 # TODO: work out how to extend classes in RGH
 
@@ -263,11 +264,14 @@ def run_player_analysis(player, game):
     )
 
     for point in game.points:  # loop over points
+
         #if game.points.index(point) != 0:
         #    break # only looking at the first point
         for sequence in point.sequences:  # loop over sequences
-            # if the player is not in this sequence and is also not the fake player
-            if player.player_name not in [a.player_name for a in sequence.lines[0]] and player.player_name not in [b.player_name for b in sequence.lines[1]] and player.player_gender != 'T':
+
+            # if the player is not in this sequence
+            if player.player_name not in [a.player_name for a in sequence.lines[0]] \
+                    and player.player_name not in [b.player_name for b in sequence.lines[1]]:
                 # previously we were directly comparing the objects (without having __cmp__ defined)
                 # this will compare the names, bypassing weird instantiation shit
                 # have now defined __ne__ and __eq__ but that will apply for games going forward
@@ -287,6 +291,7 @@ def run_player_analysis(player, game):
 
                 if event.event_player.player_name == player.player_name:
 
+                    # single-check events
                     player_statistics.player_touches += 1
 
                     # Checks on the current event
@@ -317,7 +322,7 @@ def run_player_analysis(player, game):
 
             # calculated stats - these numbers to be run after reading over the whole game (for a player)
             if player_statistics.player_touches != 0:
-                #print('{} / {} ').format(player_statistics.player_turnovers, player_statistics.player_touches)
+                # print('{} / {} ').format(player_statistics.player_turnovers, player_statistics.player_touches)
                 player_statistics.completion_rate =\
                     player_statistics.player_turnovers / player_statistics.player_touches
 
@@ -463,7 +468,7 @@ def main():
         # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
         spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
 
-        #no internet rn
+
         stops.update_players_sheet(team.team_name, data, spreadsheet_id)
 
     # possession_progression(analysed_game)
