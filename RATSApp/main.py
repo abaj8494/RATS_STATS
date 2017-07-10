@@ -1051,7 +1051,7 @@ class StatsApp(App):
         # popup confirmation is for nerds
         sApp = App.get_running_app()
         savename = sApp.game.get_filename(special=special)
-        path = os.path.join(sApp.user_data_dir, savename)
+        path = os.path.join(sApp.user_data_dir, 'Storage',savename)
 
         if special != '_auto':
             print('## saving special ##'+str(path))
