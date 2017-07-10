@@ -777,6 +777,7 @@ class SelectActionScreen(Screen):
             if event_obj.event_action in hierarch.Event.turnover_actions and event_obj.event_action not in hierarch.Event.defensive_actions:
                 #print("- offensive turnover")
                 sApp.current_point.current_sequence().offence = 1 - sApp.current_point.current_sequence().offence
+                # sequence.instantiate_possession()
                 sApp.root.switch_to(SelectActionScreen())
 
             if event_obj.event_action == u'goal':
@@ -857,6 +858,7 @@ class SelectActionScreen(Screen):
                                     
         sApp.current_point.current_sequence().events.append(blockevent)
         sApp.current_point.current_sequence().offence = 1 - sApp.current_point.current_sequence().offence
+        # sequence.instantiate_posession()
         if self.popup:
             self.popup.dismiss()
         sApp.root.switch_to(SelectActionScreen())

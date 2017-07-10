@@ -264,8 +264,17 @@ class Sequence(Root):
         self.lines = kwargs.pop('lines')  # two item list, each item a list of 7 players
 
         self.events = []
+        #self.possessions = []
 
         super(Sequence,self).__init__(**kwargs)
+
+    # def instantiate_possession
+    #   self.posessionss etc
+    #
+    #   does a possession store any data over than the list of events?
+    #
+
+
 
 
 # class TeamPossession(Root, ):

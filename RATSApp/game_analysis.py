@@ -272,15 +272,9 @@ def run_player_analysis(player, game):
             # if the player is not in this sequence
             if player.player_name not in [a.player_name for a in sequence.lines[0]] \
                     and player.player_name not in [b.player_name for b in sequence.lines[1]]:
-                # previously we were directly comparing the objects (without having __cmp__ defined)
-                # this will compare the names, bypassing weird instantiation shit
-                # have now defined __ne__ and __eq__ but that will apply for games going forward
-                # this works for older games
+                    # consider working out how to do __eq__ and __ne__ properly
 
-                # good one robert
-
-                # print('continuing over '+str(player.player_name))
-                continue  # go to the next one
+                continue
 
             player_statistics.player_points += 1
 
@@ -402,8 +396,8 @@ def calculate_maidens(analysed_game):
 def main():
     """"""
 
-    #game_filename = 'Test Match Series_Game22017_Australia_Japan_fixed1.p' # test match 2
-    game_filename = 'Test Match Series2017_Australia_Japan_final.p' # test match 1
+    game_filename = 'Test Match Series_Game22017_Australia_Japan_fixed1.p' # test match 2
+    # game_filename = 'Test Match Series2017_Australia_Japan_final.p' # test match 1
     # first edit was to fix incorrectly assigned first goal
 
     # copy pickle from stat taking to stat output working dir
@@ -464,8 +458,8 @@ def main():
         #TODO: make fake player a property of the Team object - can't instantiate shit here
 
         # spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2016 Random Game AUSvCAN
-        spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
-        # spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
+        # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
+        spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
 
 
         int_ops.update_players_sheet(team.team_name, data, spreadsheet_id)
