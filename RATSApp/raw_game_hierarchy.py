@@ -166,7 +166,7 @@ class Game(Root):
         self.points = []
         self.timeout_status = [0,0]
 
-        # self.stage = kwargs.pop("stage")  # choose from stages
+          # self.stage = kwargs.pop("stage")  # choose from stages
         # self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
         # self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
 

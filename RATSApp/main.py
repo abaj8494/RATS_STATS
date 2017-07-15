@@ -21,6 +21,10 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.widget import Widget
+from kivy.clock import Clock
+
+# kivyMD
+from kivymd.theming import ThemeManager
 
 # stats
 import raw_game_hierarchy as hierarch
@@ -51,17 +55,25 @@ class Separator(Widget):
 
 
 class MenuScreen(Screen):
-    def __init__(self, **kwargs):
-        super(MenuScreen, self).__init__(**kwargs)
+    def on_pre_enter(self, *args):
+        sApp = App.get_running_app()
+        # on first load the root widget won't exist, it'll use default
+        if sApp.root:
+            sApp.root.ids.toolbar.title = 'RATS App - Now Beautiful'
 
     def goto_confirm_input(self):
         sApp = App.get_running_app()
-        sApp.root.switch_to(ConfirmInputScreen())
+
+        configpath = os.path.join(sApp.user_data_dir, 'AUSvJPNTestMatches.cfg')
+        sApp.tournament_data = stops.import_config(configpath)
+
+
+        sApp.root.ids.rsm.current = 'confirm_input'
         return True
 
     def goto_continue_stats(self):
         sApp = App.get_running_app()
-        sApp.root.switch_to(ChooseStatsScreen())
+        sApp.root.ids.rsm.current = 'choose_stats'
         return True
 
 
@@ -69,18 +81,14 @@ class MenuScreen(Screen):
 
     def goto_read_stats(self):
         #sApp = App.get_running_app()
-        #sApp.root.switch_to(ExportScreen())
+        #sApp.root.ids.rsm.current = 'read_stats'
         return True
 
 
 class ConfirmInputScreen(Screen):
-    def __init__(self, **kwargs):
-        super(ConfirmInputScreen, self).__init__(**kwargs)
+    def on_pre_enter(self, *args):
         sApp = App.get_running_app()
-
-        configpath = os.path.join(sApp.user_data_dir,'AUSvJPNTestMatches.cfg')
-        sApp.tournament_data = stops.import_config(configpath)
-
+        sApp.root.ids.toolbar.title = 'Confirm Game Parameters'
         if sApp.tournament_data:
             content = ''
             for item in sApp.tournament_data:
@@ -93,21 +101,29 @@ class ConfirmInputScreen(Screen):
 
     def conf_input(self, *args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(TeamSelectScreen())
+        sApp.root.ids.rsm.current = 'team_select'
         return True
 
     def go_back(self, *args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(MenuScreen())
+        sApp.root.ids.rsm.current = 'menu'
         return True
 
 
 class TeamSelectScreen(Screen):
-    def __init__(self, **kwargs):
-        super(TeamSelectScreen, self).__init__(**kwargs)
-        sApp = App.get_running_app()
 
-        teamlistpath = os.path.join(sApp.user_data_dir, 'teamlists'.strip())
+    def __init__(self,**kwargs):
+        super(TeamSelectScreen,self).__init__(**kwargs)
+        sApp = App.get_running_app()
+        self.teamlistpath = os.path.join(sApp.user_data_dir, 'teamlists'.strip())
+
+    def on_pre_enter(self, *args):
+        sApp = App.get_running_app()
+        sApp.root.ids.toolbar.title = 'Select Teams'
+        """
+    #def on_pre_enter(self, *args):
+
+
         self.ids.BigBox.add_widget(Label(text='Select Team A (this is arbitrary)'))
         self.filechA = FileChooserListView(path=teamlistpath, size_hint_y=5)
         self.ids.BigBox.add_widget(self.filechA)
@@ -130,8 +146,11 @@ class TeamSelectScreen(Screen):
         menuBut = Button(text='Back')
         menuBut.bind(on_release=self.go_back)
         specialBox.add_widget(menuBut)
-
+        """
     def conf_selec(self, *args):
+        # UX-work
+        # need to protect this against confirming with no teams selected
+
         sApp = App.get_running_app()
 
         # this feels clunky, i'm splitting and joining all over the shop
@@ -188,20 +207,20 @@ class TeamSelectScreen(Screen):
             file.close()
             sApp.unordered_teams.append(team)
 
-        sApp.root.switch_to(SelectOffenceScreen())
+        sApp.root.ids.rsm.current = 'select_offence'
         return True
 
     def go_back(self, *args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(MenuScreen())
+        sApp.root.ids.rsm.current = 'menu'
         return True
 
 
 class SelectOffenceScreen(Screen):
-    def __init__(self, **kwargs):
-        super(SelectOffenceScreen, self).__init__(**kwargs)
+    def on_pre_enter(self, *args):
 
         sApp = App.get_running_app()
+        sApp.root.ids.toolbar.title = 'Select Offence'
         for team in sApp.unordered_teams:
             teambutton = Button(text=team.team_name)
             storecallback = partial(self.store_offence, teambutton)
@@ -226,14 +245,16 @@ class SelectOffenceScreen(Screen):
         keywords = dict(sApp.tournament_data)
         sApp.game = hierarch.Game(**keywords)
 
-        sApp.root.switch_to(SelectPlayersScreen())
+        sApp.root.ids.rsm.current = 'select_players'
         return True
 
 
 class SelectPlayersScreen(Screen):
-    def __init__(self, **kwargs):
-        super(SelectPlayersScreen, self).__init__(**kwargs)
+    def on_pre_enter(self, *args):
+
         sApp = App.get_running_app()
+        sApp.root.ids.toolbar.title = 'Select Players'
+
         if len(sApp.game.points) == 0: # if this is the first point
             #print('# this is the first point')
             self.offence = 0
@@ -378,16 +399,18 @@ class SelectPlayersScreen(Screen):
             for event in self.defence_timeouts_flagged:
                 sApp.current_point.current_sequence().events.append(event)
 
-            sApp.root.switch_to(PullingScreen())
+            sApp.root.ids.rsm.current = 'pulling'
         else:
             pass
         return True
 
 
 class PullingScreen(Screen):
-    def __init__(self, **kwargs):
-        super(PullingScreen, self).__init__(**kwargs)
+    def on_pre_enter(self, *args):
+
         sApp = App.get_running_app()
+        sApp.root.ids.toolbar.title = 'Select Puller'
+
         self.puller = 'puller_not_set'
         # print("starting pulling, off: "+str(sApp.current_point.current_sequence().offence))
         for player in sApp.current_point.current_sequence().lines[1 - sApp.current_point.current_sequence().offence]:
@@ -421,15 +444,19 @@ class PullingScreen(Screen):
                 sApp.current_point.current_sequence().offence = 1 - sApp.current_point.current_sequence().offence
                 print('dropped pull, new offence:'+str(sApp.current_point.current_sequence().offence))
 
-            sApp.root.switch_to(SelectActionScreen())
+            sApp.root.ids.rsm.current = 'select_action'
 
         return True
 
 
 class PlayBreakScreen(Screen):
-    def __init__(self,**kwargs):
-        super(PlayBreakScreen,self).__init__(**kwargs)
+
+    def on_pre_enter(self, *args):
+
         sApp = App.get_running_app()
+
+        sApp.root.ids.toolbar.title = 'Break in Play'
+
 
         self.new_lines = []
         self.player_off_def = None
@@ -460,7 +487,7 @@ class PlayBreakScreen(Screen):
 
     def go_back(self,*args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(SelectActionScreen())
+        sApp.root.ids.rsm.current = 'select_action'
         return True
 
     def do_injury(self,*args):
@@ -619,7 +646,7 @@ class PlayBreakScreen(Screen):
                                            offence=sApp.current_point.current_sequence().offence)
         self.onpopup.dismiss()
 
-        sApp.root.switch_to(SelectActionScreen())
+        sApp.root.ids.rsm.current = 'select_action'
         return True
 
     def do_timeout(self,*args):
@@ -647,18 +674,21 @@ class PlayBreakScreen(Screen):
                                 ts_end=time.time()+75)
         sApp.current_point.current_sequence().events.append(to_obj)
         self.to_popup.dismiss()
-        sApp.root.switch_to(SelectActionScreen())
+        sApp.root.ids.rsm.current = 'select_action'
         return True
 
 
 class SelectActionScreen(Screen):
-    def __init__(self, **kwargs):
-        super(SelectActionScreen, self).__init__(**kwargs)
+
+    def on_pre_enter(self, *args):
 
         self.popup = None
         self.temp_event = ['player_not_set', None, None, None]  # [player, action, ts_start, ts_end]
         self.pblist = []
         sApp = App.get_running_app()
+
+        sApp.root.ids.toolbar.title = 'Select Action'
+
 
         # sequence_display = Label(text=str(seq_content),pos_hint={'top':1})
         # not sure pos_hint works very well - possibly bc i never use it and hence am mixing
@@ -713,7 +743,7 @@ class SelectActionScreen(Screen):
 
     def playbreak_switch(self,*args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(PlayBreakScreen())
+        sApp.root.ids.rsm.current = 'play_break_screen'
         return True
 
     def undo_action(self,*args):
@@ -728,7 +758,7 @@ class SelectActionScreen(Screen):
             if ditched.event_action in hierarch.Event.turnover_actions:
                 sApp.current_point.current_sequence().offence = 1-sApp.current_point.current_sequence().offence
             print('## undo ## ' + str(ditched))
-            sApp.root.switch_to(SelectActionScreen())
+            sApp.root.ids.rsm.current = 'select_action'
 
         return True
 
@@ -778,7 +808,8 @@ class SelectActionScreen(Screen):
                 #print("- offensive turnover")
                 sApp.current_point.current_sequence().offence = 1 - sApp.current_point.current_sequence().offence
                 # sequence.instantiate_possession()
-                sApp.root.switch_to(SelectActionScreen())
+                # TODO: change to .current probably breaks this as a resetting mechanism
+                sApp.root.ids.rsm.current = 'select_action'
 
             if event_obj.event_action == u'goal':
                 # change this to the stacked or whatever, even x/y  boxex
@@ -861,7 +892,7 @@ class SelectActionScreen(Screen):
         # sequence.instantiate_posession()
         if self.popup:
             self.popup.dismiss()
-        sApp.root.switch_to(SelectActionScreen())
+        sApp.root.ids.rsm.current = 'select_action'
         return True
 
     # def pause_game(self, *args):
@@ -876,7 +907,7 @@ class SelectActionScreen(Screen):
         sApp.game.points.append(sApp.current_point)
         stops.store_game_pickle(sApp.game, sApp.save_path(special='_pointend'))
         sApp.current_point = None
-        sApp.root.switch_to(SelectPlayersScreen())
+        sApp.root.ids.rsm.current = 'select_players'
         return True
 
     def end_half(self, *args):
@@ -889,7 +920,7 @@ class SelectActionScreen(Screen):
         # fuck you
         stops.store_game_pickle(sApp.game,sApp.save_path(special='_half'))
 
-        sApp.root.switch_to(SelectPlayersScreen())
+        sApp.root.ids.rsm.current = 'select_players'
         return True
 
     def end_game(self, *args):
@@ -902,7 +933,7 @@ class SelectActionScreen(Screen):
 
         sApp.game = None #should we clear this here??
         sApp.unordered_teams = []
-        sApp.root.switch_to(MenuScreen())
+        sApp.root.ids.rsm.current = 'menu'
         return True
 
 
@@ -910,11 +941,11 @@ class SelectActionScreen(Screen):
 
 # this is where you can select a game file and continue on from the end
 class ChooseStatsScreen(Screen):
-    def __init__(self,**kwargs):
-        super(ChooseStatsScreen, self).__init__(**kwargs)
 
     def on_pre_enter(self, *args):
         sApp = App.get_running_app()
+        sApp.root.ids.toolbar.title = 'Load Stats - Experimental'
+
         # loadpath = os.path.join(sApp.user_data_dir)
         # self.ids.BigBox.add_widget(Label(text='Select Team A (this is arbitrary)'))
         loadpath = sApp.user_data_dir
@@ -943,18 +974,16 @@ class ChooseStatsScreen(Screen):
                 print("Detected a NoneType obj in game.points, discarding")
                 sApp.game.points.remove(point)
 
-        sApp.root.switch_to(SelectPlayersScreen())
+        sApp.root.ids.rsm.current = 'select_players'
 
 # strictly experimental - don't go here
 
 class ReadScreen(Screen):
-    def __init__(self, **kwargs):
-        super(ReadScreen, self).__init__(**kwargs)
-        self.ids.BigBox.add_widget(Label(text='stats go here',
-                                         size_hint=[1,0.05]))
 
     def on_pre_enter(self):
         sApp = App.get_running_app()
+        sApp.root.ids.toolbar.title = 'Check Readout - Nonfunctional'
+
         if sApp.game:
             # self.ids.BigBox.add_widget(Label(text=str(anal.basic_info(sApp.game)), size_hint=[1,0.01]))
 
@@ -971,20 +1000,19 @@ class ReadScreen(Screen):
 
     def go_back(self, *args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(MenuScreen())
+        sApp.root.ids.rsm.current = 'menu'
         return True
 
 
 class ExportScreen(Screen):
-    def __init__(self, **kwargs):
-        super(ExportScreen, self).__init__(**kwargs)
-
         # here i want to come in and have you choose which game to export
         # then export the basic stats to a csv file
         # then upload that to our gdrive
-        #
 
+    def on_pre_enter(self, *args):
         sApp = App.get_running_app()
+        sApp.root.ids.toolbar.title = 'Submit Taken Stats'
+
         if sApp.game:
             content = str(sApp.game.tournament) + str(sApp.game.time_cap) + str(sApp.game.point_cap) + str(
                 sApp.game.team_names) + '\n' + str(sApp.game.team_players)
@@ -1008,12 +1036,12 @@ class ExportScreen(Screen):
 
     def switch_config(self, *args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(SwitchScreen())
+        #sApp.root.ids.rsm.switch_to(SwitchScreen())
         return True
 
     def go_back(self, *args):
         sApp = App.get_running_app()
-        sApp.root.switch_to(MenuScreen())
+        sApp.root.ids.rsm.current = 'menu'
         return True
 
     def do_import(self,filenames):
@@ -1025,15 +1053,12 @@ class ExportScreen(Screen):
 
 
 class RatsScreenManager(ScreenManager):
-    def go_back(self):
-        # GO BACK TO THE PREVIOUS SCREEN
-        # this functionality will probably require redoing switch_to
-        # or some shit who knows
-        #
+    def goto_confirm_input(self):
         pass
 
 
 class StatsApp(App):
+    theme_cls = ThemeManager()
     def __init__(self):
         super(StatsApp, self).__init__()
 
@@ -1047,7 +1072,13 @@ class StatsApp(App):
 
     def build(self):
         sApp = App.get_running_app()
-        return Builder.load_file(u'stats.kv')
+        main_widget = Builder.load_file(u'stats.kv')
+        Clock.max_iteration = 5
+        #main_widget.ids.text_field_error.bind(
+        #    on_text_validate=self.set_error_message,
+        #    on_focus=self.set_error_message)
+        #self.bottom_navigation_remove_mobile(main_widget)
+        return main_widget
 
     def save_path(self,special=None):
         # popup confirmation is for nerds
