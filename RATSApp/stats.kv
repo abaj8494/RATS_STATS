@@ -1,5 +1,16 @@
 #:import Toolbar kivymd.toolbar.Toolbar
 #:import ThemeManager kivymd.theming.ThemeManager
+#:import MDCheckbox kivymd.selectioncontrols.MDCheckbox
+#:import MDTextField kivymd.textfields.MDTextField
+
+# drop this code in a widget to give it a big red background
+# perfect for debugging layout issues
+#canvas.before:
+#    Color:
+#        rgba: 1, 0, 0, 1  # red
+#    Rectangle:
+#        pos: self.pos
+#        size: self.size
 
 
 BoxLayout:
@@ -46,31 +57,151 @@ BoxLayout:
 <ConfirmInputScreen>
     name:'confirm_input'
     BoxLayout:
+        id:BiggerBox
         orientation:'vertical'
-        padding:[40,40,40,40]
-        spacing:20
-        id:MainLayout
-
-        Label:
-            text:'Ready to take ratstats for:'
-            font_size: 30
-        MDLabel:
-            id:content_disp
-            size_hint_y: None
-            #text_size: self.width, None
-            text_style:'Body1'
         BoxLayout:
             orientation:'horizontal'
             padding:[40,40,40,40]
             spacing:20
+            id:MainLayout
+            size_hint_y:0.8 # good but needs to align to top
+            BoxLayout:
+                orientation:'vertical'
+                id:LabelColumn
+                size_hint_x:0.3
+                #spacing:10
+                MDLabel:
+                    text:''
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Tournament'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Point Cap'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Time Cap'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Timeouts'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Year'
+                    text_style:'Caption'
+                    size_hint_y:0.2
 
-            Button:
+            BoxLayout:
+                orientation:'vertical'
+                id:DefaultColumn
+                size_hint_x:0.3
+                spacing:10
+                BoxLayout:
+                    orientation:'horizontal'
+                    size_hint_y:0.2
+                    MDLabel:
+                        text:'Default'
+                        text_style:'Caption'
+                    MDCheckbox
+                        id:defaultcheck
+                        active:True
+                        group:'config'
+                MDLabel:
+                    #tournament
+                    id:td_tournament
+                    text_style:'Body1'
+                    halign:'left'
+                    size_hint_y:0.2
+
+                MDLabel:
+                    #point cap
+                    id:td_point_cap
+                    size_hint_y:0.2
+                    text_style:'Caption'
+
+                MDLabel:
+                    #time cap
+                    id:td_time_cap
+                    size_hint_y:0.2
+                    text_style:'Caption'
+                MDLabel:
+                    #timeouts
+                    id:td_timeouts
+                    size_hint_y:0.2
+                    text_style:'Caption'
+                MDLabel:
+                    #year
+                    id:td_year
+                    size_hint_y:0.2
+                    text_style:'Caption'
+
+            BoxLayout:
+                #TODO: disabling the text inputs does not clear the text
+                orientation:'vertical'
+                id:CustomColumn
+                size_hint_x:0.3
+                spacing:10
+                BoxLayout:
+                    orientation:'horizontal'
+                    size_hint_y:0.2
+                    MDLabel:
+                        text:'Custom'
+                        text_style:'Caption'
+                    MDCheckbox
+                        id:customcheck
+                        active:False
+                        group:'config'
+                MDTextField:
+                    #tournament
+                    id:custom_tournament
+                    size_hint_y:0.2
+                    helper_text:'Tournament'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #point cap
+                    id:custom_point_cap
+                    size_hint_y:0.2
+                    helper_text:'Point Cap'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #time cap
+                    id:custom_time_cap
+                    size_hint_y:0.2
+                    helper_text:'Time Cap'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #timeouts
+                    id:custom_timeouts
+                    size_hint_y:0.2
+                    helper_text:'Timeouts'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #year
+                    id:custom_year
+                    size_hint_y:0.2
+                    helper_text:'Year'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+
+        BoxLayout:
+            orientation:'horizontal'
+            padding:[40,40,40,40]
+            spacing:20
+            id:buttonbox
+            size_hint_y:0.2
+            MDRaisedButton:
                 text:'Continue'
-                font_size: 30
                 on_release:root.conf_input()
-            Button:
+            MDRaisedButton:
                 text:'Back'
-                font_size: 30
                 on_release:root.go_back()
 
 <MenuScreen>

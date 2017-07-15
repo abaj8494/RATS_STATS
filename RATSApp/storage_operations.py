@@ -12,8 +12,9 @@ def import_config(path):
 
     Currently called from main.py
     """
-    if path is not None:
-        file = open(path, u'rb')
+    # if we pass in None path or the file does not exist, return None
+    if path is not None and os.path.exists(path):
+        file = open(path,u'rb')
         for line in file.readlines():
             key, value = line.split(u':')
             value = value.strip()

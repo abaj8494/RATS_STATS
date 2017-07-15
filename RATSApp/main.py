@@ -14,6 +14,7 @@ import os, time
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.stacklayout import StackLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
@@ -25,6 +26,8 @@ from kivy.clock import Clock
 
 # kivyMD
 from kivymd.theming import ThemeManager
+from kivymd.textfields import MDTextField
+
 
 # stats
 import raw_game_hierarchy as hierarch
@@ -67,6 +70,11 @@ class MenuScreen(Screen):
         configpath = os.path.join(sApp.user_data_dir, 'AUSvJPNTestMatches.cfg')
         sApp.tournament_data = stops.import_config(configpath)
 
+        # freed from the tyranny of config files
+        # now it will load this as the default ruleset if the config file isn't there
+        if sApp.tournament_data == None:
+            sApp.tournament_data = [['tournament','RATS_Test'],['point_cap',15],
+                                    ['time_cap',100],['timeouts',2],['year',2017]]
 
         sApp.root.ids.rsm.current = 'confirm_input'
         return True
@@ -89,18 +97,26 @@ class ConfirmInputScreen(Screen):
     def on_pre_enter(self, *args):
         sApp = App.get_running_app()
         sApp.root.ids.toolbar.title = 'Confirm Game Parameters'
-        if sApp.tournament_data:
-            content = ''
-            for item in sApp.tournament_data:
-                # lol this produces such gross output
-                content = content +str(item)
-                content = content + '\n'
-            self.ids.content_disp.text = content
-        else:
-            self.ids.content_disp.text = 'unable to load tournament configuration :('
+
+        #tournament_data[0] = tournament
+        #[1] = point_cap
+        #[2] = time_cap
+        #[3] = timeouts
+        #[4] = year
+
+        self.ids.td_tournament.text = str(sApp.tournament_data[0][1])
+        self.ids.td_point_cap.text = str(sApp.tournament_data[1][1])
+        self.ids.td_time_cap.text = str(sApp.tournament_data[2][1])
+        self.ids.td_timeouts.text = str(sApp.tournament_data[3][1])
+        self.ids.td_year.text = str(sApp.tournament_data[4][1])
 
     def conf_input(self, *args):
         sApp = App.get_running_app()
+
+
+        # check if the custom checkbox is checked
+        # and if so, load data from those fields
+
         sApp.root.ids.rsm.current = 'team_select'
         return True
 
@@ -1062,7 +1078,7 @@ class StatsApp(App):
     def __init__(self):
         super(StatsApp, self).__init__()
 
-        self.tournament_data = None
+        self.tournament_data = [None,None,None,None,None]
         self.current_point = None
         self.current_seq = None
         self.game = None
