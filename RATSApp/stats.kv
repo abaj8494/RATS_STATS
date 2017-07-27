@@ -40,7 +40,7 @@ BoxLayout:
         SelectActionScreen: # 'select_action'
 
 # <> makes it a rule
-<Separator@Widget>:
+<Separator@Widget>
     size_hint_y: None
     height: dp(6)
     color: 1, 1, 1, 1
@@ -53,6 +53,53 @@ BoxLayout:
             pos: self.pos
             size: self.size
             source: root.background_image
+
+<MenuScreen>
+    name:'menu'
+    BoxLayout:
+        orientation:'vertical'
+        padding:[40,40,40,40]
+        spacing:20
+        size_hint:(1,1)
+        MDLabel:
+            # i don't know why but i can't seem to resize this
+            # how is self.size being worked out
+            # it's too big for the menu imo
+
+            #canvas.before:
+            #    Color:
+            #        rgba: 1, 0, 0, 1  # red
+            #    Rectangle:
+            #        pos: self.pos
+            #        size: self.size
+            font_style:'Title'
+            theme_text_color:'Primary'
+            text:'Construct Your Life'
+            halign:'center'
+            size_hint:(1,0.25)
+        MDRaisedButton:
+            text:'Take New Stats'
+            pos_hint: {'center_x':0.5}#,'center_y':0.6}
+            #size_hint_x: 0.5 # this causes Critical Clock max_iteration warning
+            size_hint:(0.35,0.18)
+            on_release:root.goto_confirm_input()
+        MDRaisedButton:
+            text:'Continue Old Stats'
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.35,0.18)
+            on_release:root.goto_continue_stats()
+
+        MDRaisedButton:
+            text:'Check Readout'
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.35,0.18)
+            #on_release:root.goto_read_stats()
+
+        MDRaisedButton:
+            text:'Exit'
+            pos_hint:{'center_x':0.5}
+            size_hint:(0.35,0.18)
+            on_release:app.get_running_app().stop()
 
 <ConfirmInputScreen>
     name:'confirm_input'
@@ -204,51 +251,6 @@ BoxLayout:
                 text:'Back'
                 on_release:root.go_back()
 
-<MenuScreen>
-    name:'menu'
-
-
-
-    BoxLayout:
-        orientation:'vertical'
-        padding:[40,40,40,40]
-        spacing:20
-        size_hint:(1,1)
-        MDLabel:
-            # i don't know why but i can't seem to resize this
-            # how is self.size being worked out
-            # it's too big for the menu imo
-
-            #canvas.before:
-            #    Color:
-            #        rgba: 1, 0, 0, 1  # red
-            #    Rectangle:
-            #        pos: self.pos
-            #        size: self.size
-            font_style:'Title'
-            theme_text_color:'Primary'
-            text:'Construct Your Life'
-            halign:'center'
-        MDRaisedButton:
-            text:'Take New Stats'
-            pos_hint: {'center_x':0.5}#,'center_y':0.6}
-            #size_hint_x: 0.5 # this causes Critical Clock max_iteration warning
-            on_release:root.goto_confirm_input()
-        MDRaisedButton:
-            text:'Continue Old Stats'
-            pos_hint: {'center_x':0.5}
-            on_release:root.goto_continue_stats()
-
-        MDRaisedButton:
-            text:'Check Readout'
-            pos_hint: {'center_x':0.5}
-            #on_release:root.goto_read_stats()
-
-        MDRaisedButton:
-            text:'Exit'
-            pos_hint:{'center_x':0.5}
-            on_release:app.get_running_app().stop()
-
 <ChooseStatsScreen>
     name:'choose_stats'
     BoxLayout:
@@ -266,7 +268,6 @@ BoxLayout:
         spacing:5
         id:BigBox
         orientation:'vertical'
-
 
 <ExportScreen>
     name:'config_menu'
@@ -333,10 +334,35 @@ BoxLayout:
         orientation:'vertical'
         padding:[40,40,40,40]
         spacing:20
+        size_hint:(1,1)
         id:SOBox
+
         MDLabel:
+            id:whichlabel
+            size_hint:1,0.2
             text:'Which team is on offence:'
+            halign:'center'
             font_style: 'Title'
+            #canvas.before:
+            #    Color:
+            #        rgba: 1, 0, 0, 1  # red
+            #    Rectangle:
+            #        pos: self.pos
+            #        size: self.size
+
+        MDRaisedButton:
+            id:topbutton
+            size_hint:(0.8,0.2)
+            pos_hint:{'center_x':0.5}
+            text:'undef_Top'
+            on_release:root.store_offence(self.text)
+
+        MDRaisedButton:
+            id:bottombutton
+            size_hint:(0.8,0.2)
+            pos_hint:{'center_x':0.5}
+            text:'undef_Bottom'
+            on_release:root.store_offence(self.text)
 
 <SelectPlayersScreen>
     name:'select_players'
@@ -344,20 +370,30 @@ BoxLayout:
         id:BiggerBox
         orientation:'vertical'
         spacing:0
-        MDLabel:
-            text:'Who is on the line:'
-            font_style:'Title'
-            size_hint:[1,1]
-        #this isn't centred like i'd imagine
-        #whatever
-        MDLabel:
-            id:subtitle
-            # this should display the number of selected players
-            font_style:'Subhead'
-            size_hint:[0.5,0.5]
-        MDRaisedButton:
-            text:'confirm lines'
-            on_release:root.store_players()
+        padding:[20,20,20,20]
+        BoxLayout:
+            id:titlebox
+            orientation:'horizontal'
+            spacing:10
+            # add the take timeout buttons in here
+            MDLabel:
+                id:subtitle
+                text:'Offence: 0 | Defence: 0'
+                font_style:'Subhead'
+                size_hint:(0.25,1)
+            MDRaisedButton:
+                id:offenceTObutton
+                size_hint:(0.2,1)
+                on_release:root.start_point_timeout(root.offence)
+
+            MDRaisedButton:
+                id:defenceTObutton
+                size_hint:(0.2,1)
+                on_release:root.start_point_timeout(1-root.offence)
+            MDRaisedButton:
+                text:'confirm lines'
+                size_hint:(0.2,1)
+                on_release:root.store_players()
         BoxLayout:
             size_hint:[1,10]
             id:BigBox
@@ -365,11 +401,17 @@ BoxLayout:
             BoxLayout:
                 id:LeftBox
                 orientation:'vertical'
-                padding:[40,40,40,40]
+                padding:[20,20,20,20]
+                MDLabel:
+                    id:offenceLabel
+                    text:'Offence'
             BoxLayout:
                 id:RightBox
                 orientation:'vertical'
-                padding:[40,40,40,40]
+                padding:[20,20,20,20]
+                MDLabel:
+                    id:defenceLabel
+                    text:'Defence'
 
 <PullingScreen>
     name:'pulling'

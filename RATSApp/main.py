@@ -14,7 +14,6 @@ import os, time
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.stacklayout import StackLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
@@ -27,7 +26,7 @@ from kivy.clock import Clock
 # kivyMD
 from kivymd.theming import ThemeManager
 from kivymd.textfields import MDTextField
-
+from kivymd.button import MDRaisedButton, MDFlatButton
 
 # stats
 import raw_game_hierarchy as hierarch
@@ -35,27 +34,8 @@ import raw_game_hierarchy as hierarch
 #the app needs to run on android better hence:
 import storage_operations as stops
 
-
-# basic kivy theming defaults - don't do too much here, look for and build a better theming solution
-# presentation can come after the test matches (FlatKivy, KivyMD, etc)
-
-
-class PlayerButton(Button):
-    def __init__(self, **kwargs):
-        super(Button, self).__init__(**kwargs)
-        self.callback = None
-
-    def __str__(self):
-        return u'PB<' + self.text + u'>'
-
-    __repr__ = __str__
-
 class Separator(Widget):
     pass
-
-
-#rs # i'm reorganising the main.py file to more accurately match the flow through live stat taking
-
 
 class MenuScreen(Screen):
     def on_pre_enter(self, *args):
@@ -84,9 +64,7 @@ class MenuScreen(Screen):
         sApp.root.ids.rsm.current = 'choose_stats'
         return True
 
-
     # deactivate this so you can't accidentally fuck it all up
-
     def goto_read_stats(self):
         #sApp = App.get_running_app()
         #sApp.root.ids.rsm.current = 'read_stats'
@@ -113,7 +91,6 @@ class ConfirmInputScreen(Screen):
     def conf_input(self, *args):
         sApp = App.get_running_app()
 
-
         # check if the custom checkbox is checked
         # and if so, load data from those fields
 
@@ -136,91 +113,36 @@ class TeamSelectScreen(Screen):
     def on_pre_enter(self, *args):
         sApp = App.get_running_app()
         sApp.root.ids.toolbar.title = 'Select Teams'
-        """
-    #def on_pre_enter(self, *args):
 
-
-        self.ids.BigBox.add_widget(Label(text='Select Team A (this is arbitrary)'))
-        self.filechA = FileChooserListView(path=teamlistpath, size_hint_y=5)
-        self.ids.BigBox.add_widget(self.filechA)
-
-        self.ids.BigBox.add_widget(Separator())
-
-        self.ids.BigBox.add_widget(Label(text='Select Team B (this is arbitrary)'))
-        self.filechB = FileChooserListView(path=teamlistpath, size_hint_y=5)
-        self.ids.BigBox.add_widget(self.filechB)
-
-        self.ids.BigBox.add_widget(Separator())
-
-        specialBox = BoxLayout(orientation='horizontal')
-        self.ids.BigBox.add_widget(specialBox)
-
-        confBut = Button(text='Confirm Teams')
-        confBut.bind(on_release=self.conf_selec)
-        specialBox.add_widget(confBut)
-
-        menuBut = Button(text='Back')
-        menuBut.bind(on_release=self.go_back)
-        specialBox.add_widget(menuBut)
-        """
     def conf_selec(self, *args):
         # UX-work
         # need to protect this against confirming with no teams selected
 
         sApp = App.get_running_app()
 
-        # this feels clunky, i'm splitting and joining all over the shop
-        # TODO: move this to stops
-        # the stick in the mud here is the Player instantiation
+        pathA = self.ids.filechA.selection[0]
+        pathB = self.ids.filechB.selection[0]
 
-        path, teamAfn = os.path.split(self.filechA.selection[0])
-        path, teamBfn = os.path.split(self.filechB.selection[0])
-
-        filenames = [teamAfn,teamBfn]
+        filenames = [pathA,pathB]
         for filename in filenames:
-            full_path = os.path.join(sApp.user_data_dir, 'teamlists', filename)
-            file = open(full_path, u'rb')
+            team_data = stops.load_teamlist(filename)
+            player_objects = []
+            for player in team_data[2]:
+                player_obj = hierarch.Player(player_name=player[0],
+                                         player_number=player[1],
+                                         player_gender=player[2])
+                player_objects.append(player_obj)
 
-            players = []
 
-            staff = None # flag
-            for line in file.readlines():
-                key, value = line.split(u':')
-                if key == u'name':
-                    team_name = value.strip()
-                if key == u'coaches':
-                    staff = value.split(u',')
-                if key == u'players':
-                    team = value.split(u',')
-                    for player in team:
-                        try:
-                            number, gender, name = player.split(u'|')
-                        except:
-                            name = player
-                            number = 0
-                            gender = 'u'
+            fakePlayer = hierarch.Player(player_name=team_data[0],
+                                         player_number=-1,
+                                         player_gender='T')
+            player_objects.append(fakePlayer)
 
-                        player_obj = hierarch.Player(player_name=name.strip(),
-                                                     player_number=number,
-                                                     player_gender=gender)
-                        players.append(player_obj)
+            team = hierarch.Team(team_name=team_data[0],
+                                 team_coaches=team_data[1],
+                                 team_players=player_objects)  # division='very mixed')
 
-                else:
-                    print('### missed import key: ' +str(key))
-
-            # staff is now optional
-            #TODO: move this whole fucking thing to stops
-            if not staff:
-                staff = []
-
-            # order the players list by number
-            players = sorted(players, key=lambda x:int(x.player_number))
-
-            team = hierarch.Team(team_name=team_name,
-                                 team_players=players,
-                                 team_coaches=staff)  # division='very mixed')
-
-            file.close()
             sApp.unordered_teams.append(team)
 
         sApp.root.ids.rsm.current = 'select_offence'
@@ -237,27 +159,26 @@ class SelectOffenceScreen(Screen):
 
         sApp = App.get_running_app()
         sApp.root.ids.toolbar.title = 'Select Offence'
-        for team in sApp.unordered_teams:
-            teambutton = Button(text=team.team_name)
-            storecallback = partial(self.store_offence, teambutton)
-            teambutton.bind(on_release=storecallback)
-            self.ids.SOBox.add_widget(teambutton)
 
-    def store_offence(self, teambutton, *args):
+        self.ids.topbutton.text = sApp.unordered_teams[0].team_name
+        self.ids.bottombutton.text = sApp.unordered_teams[1].team_name
+
+    def store_offence(self, offence_name, *args):
         sApp = App.get_running_app()
-        offence_name = teambutton.text
         if sApp.unordered_teams[0].team_name == offence_name:
             teams = sApp.unordered_teams
         elif sApp.unordered_teams[1].team_name == offence_name:
             teams = sApp.unordered_teams
             teams.reverse()
         else:
-            print('invalid team selected for offence') # literally no idea
+            print('invalid team selected for offence') # undefined widgets calling this
+            print(offence_name)
+            print(self.ids.SOBox.children)
+            raise TypeError
 
 
         keywords = sApp.tournament_data
         keywords.append(['teams', teams])
-        # keywords.append(['game_stage','default_stage'])
         keywords = dict(sApp.tournament_data)
         sApp.game = hierarch.Game(**keywords)
 
@@ -272,7 +193,6 @@ class SelectPlayersScreen(Screen):
         sApp.root.ids.toolbar.title = 'Select Players'
 
         if len(sApp.game.points) == 0: # if this is the first point
-            #print('# this is the first point')
             self.offence = 0
             self.score = [0,0]
         elif sApp.current_point == 'HALF_REACHED': # if this is the first point after half
@@ -288,14 +208,15 @@ class SelectPlayersScreen(Screen):
         self.defence_timeouts_flagged = []
         self.offence_timeouts_flagged = []
 
-        self.offenceTObutton = Button(text='Take Timeout - '+str(sApp.game.timeout_status[self.offence])+' taken so far')
-        self.offenceTObutton.bind(on_release=partial(self.start_point_timeout,self.offence))
-        self.ids.LeftBox.add_widget(self.offenceTObutton)
+        self.ids.offenceTObutton.text = sApp.game.teams[self.offence].team_name+'\n Timeouts : ' + \
+                                    str(sApp.game.timeout_status[self.offence])
+        self.ids.defenceTObutton.text = sApp.game.teams[1 - self.offence].team_name + '\n Timeouts: ' + \
+                                        str(sApp.game.timeout_status[1 - self.offence])
 
-        teamLabel = Label(text=sApp.game.teams[self.offence].team_name)
-        self.ids.LeftBox.add_widget(teamLabel)
+        self.ids.offenceLabel.text = str(sApp.game.teams[self.offence].team_name)
+
         for player in sApp.game.teams[self.offence].team_players:
-            font_color = self.color_by_numbers(player.player_number)
+            font_color = self.color_by_numbers(str(player.player_number))
             pb = ToggleButton(text='[color='+font_color+']'+player.display_name+'[/color]',
                               background_normal='',
                               markup=True)
@@ -303,14 +224,10 @@ class SelectPlayersScreen(Screen):
             pb.bind(on_release=partial(self.swap_state, pb, player))
             self.ids.LeftBox.add_widget(pb)
 
-        self.defenceTObutton = Button(text='Take Timeout - ' + str(sApp.game.timeout_status[1-self.offence]) + ' taken so far')
-        self.defenceTObutton.bind(on_release=partial(self.start_point_timeout,1-self.offence))
-        self.ids.RightBox.add_widget(self.defenceTObutton)
+        self.ids.defenceLabel.text = str(sApp.game.teams[1 - self.offence].team_name)
 
-        teamLabel = Label(text=sApp.game.teams[1 - self.offence].team_name)
-        self.ids.RightBox.add_widget(teamLabel)
         for player in sApp.game.teams[1 - self.offence].team_players:
-            font_color = self.color_by_numbers(player.player_number)
+            font_color = self.color_by_numbers(str(player.player_number))
             pb = ToggleButton(text='[color='+font_color+']'+player.display_name+'[/color]',
                               background_normal='',
                               markup=True)
@@ -322,14 +239,19 @@ class SelectPlayersScreen(Screen):
         """
         takes in player number as A STRING and returns red or blue hex AS STRING
         """
+        # needs to handle -1 as the input for the fake player
         if len(number) == 1:
             font_color = 'ff0000'  # red
         else:
-            cardinal = int(number[0])
-            if cardinal % 2 == 0:
-                font_color = 'ff0000'  # red
+            if number[0] == '-':
+                # fake player
+                font_color = '00ff00'  # green
             else:
-                font_color = '0000ff'  # blue
+                cardinal = int(number[0])
+                if cardinal % 2 == 0:
+                    font_color = 'ff0000'  # red
+                else:
+                    font_color = '0000ff'  # blue
 
         return font_color
 
@@ -337,23 +259,18 @@ class SelectPlayersScreen(Screen):
         sApp = App.get_running_app()
         if offence_source == self.offence: # offence called the TO
             sApp.game.timeout_status[self.offence] = sApp.game.timeout_status[self.offence] + 1
-            self.offenceTObutton.text = 'Take Timeout - '+str(sApp.game.timeout_status[self.offence])+' taken so far'
+            self.ids.offenceTObutton.text = sApp.game.teams[self.offence].team_name + '\n Timeouts: '+str(sApp.game.timeout_status[self.offence])
             # create the event and timestamp it here, append to this list and chuck it on the sequence later
-            fakePlayer = hierarch.Player(player_name=sApp.game.teams[self.offence].team_name,
-                                         player_number=-1,
-                                         player_gender='T')
-            self.offence_timeouts_flagged.append(hierarch.Event(event_player=fakePlayer,
+
+            self.offence_timeouts_flagged.append(hierarch.Event(event_player=sApp.game.teams[self.offence].team_players[-1],
                                                                 event_action='timeout',
                                                                 ts_start=time.time(),
                                                                 ts_end=time.time()+75))
 
         elif offence_source == 1-self.offence: # defence gets to call them here too
             sApp.game.timeout_status[1-self.offence] = sApp.game.timeout_status[1-self.offence] + 1
-            self.defenceTObutton.text = 'Take Timeout - '+str(sApp.game.timeout_status[1-self.offence])+' taken so far'
-            fakePlayer = hierarch.Player(player_name=sApp.game.teams[1-self.offence].team_name,
-                                         player_number=-1,
-                                         player_gender='T')
-            self.defence_timeouts_flagged.append(hierarch.Event(event_player=fakePlayer,
+            self.ids.defenceTObutton.text = sApp.game.teams[1-self.offence].team_name + '\n Timeouts:' +str(sApp.game.timeout_status[1-self.offence])
+            self.defence_timeouts_flagged.append(hierarch.Event(event_player=sApp.game.teams[1-self.offence].team_players[-1],
                                                                 event_action='timeout',
                                                                 ts_start=time.time(),
                                                                 ts_end=time.time()+75))
@@ -363,6 +280,11 @@ class SelectPlayersScreen(Screen):
     def swap_state(self,pb,player,*args):
         # this is the NEW state - normal button pressed will trigger the if 'down' branch of this
         # offence here is just for checking which team the call is coming from and hence which list to edit
+
+        # this is not nearly consistent enough
+        # sometimes it the line lists are not in sync with the UI
+        # TODO: consider binding this function to the state of the button
+        # not just firing on_release
         sApp = App.get_running_app()
         if pb.state == 'normal':
             if player in sApp.game.teams[1 - self.offence].team_players:
@@ -1086,15 +1008,14 @@ class StatsApp(App):
 
         self.unordered_teams = [] # read in teams, check whos on offence next screen
 
-    def build(self):
-        sApp = App.get_running_app()
-        main_widget = Builder.load_file(u'stats.kv')
-        Clock.max_iteration = 5
-        #main_widget.ids.text_field_error.bind(
-        #    on_text_validate=self.set_error_message,
-        #    on_focus=self.set_error_message)
-        #self.bottom_navigation_remove_mobile(main_widget)
-        return main_widget
+    #def build(self):
+    #    """
+    #    this is only needed to explicitly define the kv file
+    #    otherwise it'll be automatically loaded because of the name
+    #    """
+    #    print('building app..')
+    #    main_widget = Builder.load_file(u'stats.kv')
+    #    return main_widget
 
     def save_path(self,special=None):
         # popup confirmation is for nerds

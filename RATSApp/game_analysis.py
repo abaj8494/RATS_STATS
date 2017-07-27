@@ -215,6 +215,19 @@ class AnalysedPlayer(Root):
         self.player_defences = 0
         # TODO: completion_rate = completions / touches
 
+        # Mixed
+        self.throws_to_same_gender = 0
+        self.throws_to_opposite_gender = 0
+
+        self.turnovers_to_same_gender = 0
+        self.turnovers_to_opposite_gender = 0
+
+        self.goals_to_same_gender = 0
+        self.goals_to_opposite_gender = 0
+
+        self.more_women_points_played = 0
+        self.more_men_points_played = 0
+
         super(AnalysedPlayer, self).__init__(**kwargs)
 
 def edit_game(game):
@@ -255,6 +268,49 @@ def edit_game(game):
 
     return fixed_game
 
+def run_gender_analysis(player,game):
+
+    player_statistics = AnalysedPlayer(
+        player_name=player.player_name,
+        player_number=player.player_number,
+        player_gender=player.player_gender,
+    )
+
+    for point in game.points:
+
+        for sequence in point.sequences:
+            # if they're not in this sequence, skip
+            if player.player_name not in [a.player_name for a in sequence.lines[0]] \
+                    and player.player_name not in [b.player_name for b in sequence.lines[1]]:
+                continue
+
+            for i in range(0, len(sequence.events)):
+
+                event = sequence.events[i]
+                #print('event - player : '+str(event.event_action)+' - '+str(event.event_player.player_name))
+                # if this event relates to this player
+                if event.event_player.player_name == player.player_name:
+                    player_statistics.player_touches += 1
+                    if i < len(sequence.events)-1:  # dont go past the end - better safe than sorry
+                        # don't know who the throw was for if it got blocked
+                        if sequence.events[i+1].event_action != 'block':
+
+                            if sequence.events[i+1].event_player.player_gender == player_statistics.player_gender:
+                                player_statistics.throws_to_same_gender += 1
+                                if sequence.events[i + 1].event_action in rgh.Event.turnover_actions:
+                                    player_statistics.turnovers_to_same_gender += 1
+                                elif sequence.events[i+1].event_action == 'goal':
+                                    player_statistics.goals_to_same_gender += 1
+
+                            elif sequence.events[i+1].event_player.player_gender != player_statistics.player_gender:
+                                player_statistics.throws_to_opposite_gender += 1
+                                if sequence.events[i + 1].event_action in rgh.Event.turnover_actions:
+                                    player_statistics.turnovers_to_opposite_gender += 1
+                                elif sequence.events[i+1].event_action == 'goal':
+                                    player_statistics.goals_to_opposite_gender += 1
+
+    return player_statistics
+
 def run_player_analysis(player, game):
 
     player_statistics = AnalysedPlayer(
@@ -277,6 +333,8 @@ def run_player_analysis(player, game):
                 continue
 
             player_statistics.player_points += 1
+            #TODO: this is actually counting the number of sequences they're on
+            # need to +1 if the are in any sequence in a point, but only +1 once per point
 
             for i in range(0, len(sequence.events)):
 
@@ -397,7 +455,7 @@ def main():
     """"""
 
     game_filename = 'Test Match Series_Game22017_Australia_Japan_fixed1.p' # test match 2
-    # game_filename = 'Test Match Series2017_Australia_Japan_final.p' # test match 1
+    #game_filename = 'Test Match Series2017_Australia_Japan_final.p' # test match 1
     # first edit was to fix incorrectly assigned first goal
 
     # copy pickle from stat taking to stat output working dir
@@ -414,58 +472,51 @@ def main():
     # then store
     #   stops.store_game_pickle(analysed_game,'C:\Users\\robsw\PycharmProjects\RATS_STATS\RATSApp\Test Match Series_Game22017_Australia_Japan_fixed1.p')
 
-    #for point in analysed_game.points:
     print('num points = '+str(len(analysed_game.points)))
-
-    # for point in analysed_game.points:
-    #     if analysed_game.points.index(point) == 0:
-    #         for sequence in point.sequences:
-    #             print(sequence.lines)
 
     for team in analysed_game.teams:
         data = []
         for player in team.team_players:
-            this_player = run_player_analysis(player, analysed_game)
+            #this_player = run_player_analysis(player, analysed_game)
+            this_player = run_gender_analysis(player, analysed_game)
 
+            # TODO: work out a better way of coding new analysis and swapping between them
 
-            # if this_player.player_name == 'Aaron Garbutt':  # test data - don't want to print it all
-            #     print('Name: ' + str(this_player.player_name))
-            #     print('Touches: ' + str(this_player.player_touches))
-            #     print('Turnovers: ' + str(this_player.player_turnovers))
-            #     print('Goals: ' + str(this_player.player_goals))
-            #     print('Assists: ' + str(this_player.player_assists))
-            #     print('Blocks: ' + str(this_player.player_defences))
-            #     print('Points Played: ' + str(this_player.player_points))
-            #     print('Completion %: ' + str(this_player.player_completion_rate))
-            #     print('__________________________________________')
+            # standard analysis
+            #data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
+            #             this_player.player_points, this_player.player_touches,
+            #             this_player.player_goals, this_player.player_assists, this_player.player_defences,
+            #             this_player.player_turnovers])
 
-            data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
+            # gender analysis
+            data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
                          this_player.player_points, this_player.player_touches,
-                         this_player.player_goals, this_player.player_assists, this_player.player_defences,
-                         this_player.player_turnovers])
+                         this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
+                         this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
+                         this_player.goals_to_same_gender, this_player.goals_to_opposite_gender])
 
+
+        # 20/1/17 - this is here only for compatability with the Test Match data - fake player is now built-in
         fakePlayer = rgh.Player(player_gender='T',
                            player_number=-1,
                            player_name=team.team_name)
-        this_player = run_player_analysis(fakePlayer,analysed_game)
+        this_player = run_gender_analysis(fakePlayer,analysed_game)
 
         data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
                      this_player.player_points, this_player.player_touches,
-                     this_player.player_goals, this_player.player_assists, this_player.player_defences,
-                     this_player.player_turnovers])
+                     this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
+                     this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
+                     this_player.goals_to_same_gender, this_player.goals_to_opposite_gender])
 
-
-        #TODO: make fake player a property of the Team object - can't instantiate shit here
 
         # spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2016 Random Game AUSvCAN
         # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
-        spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
+        # spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
+        # spreadsheet_id = '1f98e2VyU3Y6SVQ1nSeDl3QnrTAl7S5e2Y8MptNi-j5A' # test match 1 - gender
+        spreadsheet_id = '1dAuFwK7oWXBsaZQZ6ogpZ56XWa3bDQ_20kWDK97J_pw' # test match 2 - gender
 
 
         int_ops.update_players_sheet(team.team_name, data, spreadsheet_id)
-
-    # possession_progression(analysed_game)
-
 
 if __name__ == '__main__':
     sys.exit(main())

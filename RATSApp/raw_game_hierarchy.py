@@ -182,7 +182,7 @@ class Game(Root):
          gets a useable filename from the tournament, year,  and team names.
         """
 
-        string = "{}{}_{}_{}".format(
+        string = "{}_{}_{}_{}".format(
             self.tournament,
             self.year,
             self.teams[0].team_name,  # offence

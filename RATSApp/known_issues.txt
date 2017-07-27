@@ -1,14 +1,18 @@
+TO BE FIXED IN CODE:
+TeamSelectScreen - FileChoosers + KivyMD do not match
+> FileChoosers may cut off filenames on small screens
+!! PlayerSelectScreen is very inconsistent and sometimes sucks
 # NoneType objects in game.points - caused by closing early? - protected against in reading games
+
+ANALYSIS BUGS #*#*# Priority #*#*#
+ - How many points does the fake player play - is that total points
+ - looks like a bug in the total number of points
+ ------ ***8---- POINTS ARE ACTUALLY SEQUENCES AT THE MOMENT
 
 ## plans
 resuming saved game -> confirm input screen should have button -> popup -> select game to load- > continue
 
 DISPLAY STATS AT POINT END
-
-FIX GRAPHICS
-- whole UI needs a restrcture - can lean more on the kv file?
-- can definitely have superclasses of screens to bring consistency
-- can build out screens to be sublcasses of a screeen with whatever shit i want to go scross all of them
 
 Super long term
 - have one device viewing stats and one taking stats simultaneously
