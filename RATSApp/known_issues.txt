@@ -5,9 +5,7 @@ TeamSelectScreen - FileChoosers + KivyMD do not match
 # NoneType objects in game.points - caused by closing early? - protected against in reading games
 
 ANALYSIS BUGS #*#*# Priority #*#*#
- - How many points does the fake player play - is that total points
- - looks like a bug in the total number of points
- ------ ***8---- POINTS ARE ACTUALLY SEQUENCES AT THE MOMENT
+ - none known atm @ 8/1/17
 
 ## plans
 resuming saved game -> confirm input screen should have button -> popup -> select game to load- > continue
@@ -15,21 +13,20 @@ resuming saved game -> confirm input screen should have button -> popup -> selec
 DISPLAY STATS AT POINT END
 
 Super long term
-- have one device viewing stats and one taking stats simultaneously
 - location taking
 
 # BUSINESS
 - look at restructuring output into a relational database. Not sure about SQL, want open source.
 
 # PLACEHOLDERS
-- divisions, numbers, possessions
+- divisions, possessions
 
 TODO LIST:
 
 TO MAKE TAKING STATS EASIER:
 - same line / set lines
-- player numbers
 - resuming saved game
+- how much glitter is on field? (grams)
 
 STUFF TO BUILD:
 - the magic number
@@ -38,16 +35,16 @@ STUFF TO BUILD:
 - combination regressions
 
 - email Mike Palmer about livestream integration
-- take stats on Chilly game (fix player selection screen; Rob; make drops work)
-- make rewind function (not necessary until the next live taking)
+- take stats on Chilly game
+- be able to rewind goals (at least cancel in popup button)
 
 SOCIAL MEDIA
 - long term: build own website with good integration to our stuff
 - set up Google Account
-- need to decide on a name: The People's Statisticians, East Coast Bias, The Resident Statisticians;
-    The Rodent Statisticians
 - analysis posted in Google Sheets, any commentary in Google Docs
 - short term - set up Twitter/FB. Looking to get amongst Women's College Ulti, be explicit about our feminist utopia
+- keep making content about stats to be made
 
 REDO WORKFLOW
-- have git - need to work on csv storage + sql database
+- separate out the making of the analyses to the manipulation of the data
+- build web server with database

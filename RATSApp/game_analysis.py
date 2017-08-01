@@ -277,12 +277,15 @@ def run_gender_analysis(player,game):
     )
 
     for point in game.points:
-
+        playing_this_point_flag = False
         for sequence in point.sequences:
             # if they're not in this sequence, skip
             if player.player_name not in [a.player_name for a in sequence.lines[0]] \
-                    and player.player_name not in [b.player_name for b in sequence.lines[1]]:
+                    and player.player_name not in [b.player_name for b in sequence.lines[1]] \
+                    and player.player_gender != 'T':
+
                 continue
+            playing_this_point_flag = True
 
             for i in range(0, len(sequence.events)):
 
@@ -309,6 +312,9 @@ def run_gender_analysis(player,game):
                                 elif sequence.events[i+1].event_action == 'goal':
                                     player_statistics.goals_to_opposite_gender += 1
 
+        if playing_this_point_flag:
+            player_statistics.player_points+=1
+
     return player_statistics
 
 def run_player_analysis(player, game):
@@ -320,21 +326,19 @@ def run_player_analysis(player, game):
     )
 
     for point in game.points:  # loop over points
-
+        playing_this_point_flag = False
         #if game.points.index(point) != 0:
         #    break # only looking at the first point
         for sequence in point.sequences:  # loop over sequences
 
             # if the player is not in this sequence
             if player.player_name not in [a.player_name for a in sequence.lines[0]] \
-                    and player.player_name not in [b.player_name for b in sequence.lines[1]]:
+                    and player.player_name not in [b.player_name for b in sequence.lines[1]] \
+                    and player.player_gender != 'T':
                     # consider working out how to do __eq__ and __ne__ properly
 
                 continue
-
-            player_statistics.player_points += 1
-            #TODO: this is actually counting the number of sequences they're on
-            # need to +1 if the are in any sequence in a point, but only +1 once per point
+            playing_this_point_flag = True
 
             for i in range(0, len(sequence.events)):
 
@@ -380,6 +384,10 @@ def run_player_analysis(player, game):
 
             else:
                 player_statistics.completion_rate = 1.00
+
+
+        if playing_this_point_flag:
+            player_statistics.player_points+=1
 
     return player_statistics
 
@@ -454,8 +462,17 @@ def calculate_maidens(analysed_game):
 def main():
     """"""
 
+    # game_filename = 'Test Match Series2017_Australia_Japan_final.p'  # test match 1
     game_filename = 'Test Match Series_Game22017_Australia_Japan_fixed1.p' # test match 2
-    #game_filename = 'Test Match Series2017_Australia_Japan_final.p' # test match 1
+
+    # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
+    spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
+
+    # spreadsheet_id = '1f98e2VyU3Y6SVQ1nSeDl3QnrTAl7S5e2Y8MptNi-j5A' # test match 1 - gender
+    # spreadsheet_id = '1dAuFwK7oWXBsaZQZ6ogpZ56XWa3bDQ_20kWDK97J_pw' # test match 2 - gender
+
+    # spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc'  # WUGC2016 Random Game AUSvCAN
+
     # first edit was to fix incorrectly assigned first goal
 
     # copy pickle from stat taking to stat output working dir
@@ -477,43 +494,44 @@ def main():
     for team in analysed_game.teams:
         data = []
         for player in team.team_players:
-            #this_player = run_player_analysis(player, analysed_game)
-            this_player = run_gender_analysis(player, analysed_game)
+            this_player = run_player_analysis(player, analysed_game)
+            #this_player = run_gender_analysis(player, analysed_game)
 
             # TODO: work out a better way of coding new analysis and swapping between them
 
             # standard analysis
-            #data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
-            #             this_player.player_points, this_player.player_touches,
-            #             this_player.player_goals, this_player.player_assists, this_player.player_defences,
-            #             this_player.player_turnovers])
+            data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
+                         this_player.player_points, this_player.player_touches,
+                         this_player.player_goals, this_player.player_assists, this_player.player_defences,
+                         this_player.player_turnovers])
 
             # gender analysis
-            data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
-                         this_player.player_points, this_player.player_touches,
-                         this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
-                         this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
-                         this_player.goals_to_same_gender, this_player.goals_to_opposite_gender])
+            #data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
+            #            this_player.player_points, this_player.player_touches,
+            #             this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
+            #             this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
+            #             this_player.goals_to_same_gender, this_player.goals_to_opposite_gender])
 
 
         # 20/1/17 - this is here only for compatability with the Test Match data - fake player is now built-in
         fakePlayer = rgh.Player(player_gender='T',
                            player_number=-1,
                            player_name=team.team_name)
-        this_player = run_gender_analysis(fakePlayer,analysed_game)
+        this_player = run_player_analysis(fakePlayer,analysed_game)
+        #this_player = run_gender_analysis(fakePlayer,analysed_game)
 
-        data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
-                     this_player.player_points, this_player.player_touches,
-                     this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
-                     this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
-                     this_player.goals_to_same_gender, this_player.goals_to_opposite_gender])
+        # standard analysis
+        data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
+                    this_player.player_points, this_player.player_touches,
+                    this_player.player_goals, this_player.player_assists, this_player.player_defences,
+                    this_player.player_turnovers])
 
-
-        # spreadsheet_id = '1pV7Z2uWvxtRI-N2WX75I77wvJPXiaE2FQpuZWio4zFc' # WUGC2016 Random Game AUSvCAN
-        # spreadsheet_id = '118UBChrwhwPEf3-XqthPNSo3ksPVKaUIfbj8ruv5Z1E' # test match 1
-        # spreadsheet_id = '1aY4L_kNn_y7HuG7AYD7Vv0D3mVF_XqxxpD-Nt1qjMe0' # test match 2
-        # spreadsheet_id = '1f98e2VyU3Y6SVQ1nSeDl3QnrTAl7S5e2Y8MptNi-j5A' # test match 1 - gender
-        spreadsheet_id = '1dAuFwK7oWXBsaZQZ6ogpZ56XWa3bDQ_20kWDK97J_pw' # test match 2 - gender
+        # gender analysis
+        #data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
+        #             this_player.player_points, this_player.player_touches,
+        #             this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
+        #             this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
+        #             this_player.goals_to_same_gender, this_player.goals_to_opposite_gender])
 
 
         int_ops.update_players_sheet(team.team_name, data, spreadsheet_id)
