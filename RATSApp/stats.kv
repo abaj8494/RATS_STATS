@@ -419,17 +419,6 @@ BoxLayout:
         id:BiggerBox
         orientation:'vertical'
         spacing:0
-        Label:
-            text:'What was the pull:'
-            font_size:20
-            size_hint:[1,1]
-        #this isn't centred like i'd imagine
-        #whatever
-        Label:
-            text:'Available players left, Available actions right'
-            font_size:15
-            size_hint:[0.5,0.5]
-
         BoxLayout:
             size_hint:[1,10]
             id:BigBox
@@ -438,10 +427,19 @@ BoxLayout:
                 id:LeftBox
                 orientation:'vertical'
                 padding:[40,40,40,40]
+                spacing:13
+                MDLabel:
+                    text:'Available Players'
+                    size_hint_y:0.25
+
             BoxLayout:
                 id:RightBox
                 orientation:'vertical'
                 padding:[40,40,40,40]
+                spacing:13
+                MDLabel:
+                    text:'Available Outcomes'
+                    size_hint_y:0.25
 
 <SelectActionScreen>
     name:'select_action'
@@ -449,20 +447,23 @@ BoxLayout:
         id:BiggerBox
         orientation:'vertical'
         spacing:0
-        Label:
-            text:'Select Player, then Action. Event will be stored when you select Action'
-            font_size:20
-            size_hint:[1,1]
-        Label:
+        MDLabel:
+            text:'Event will be saved when you select action'
+            font_style:'Title'
+            pos_hint: {'center_x':0.5}
+            halign:'center'
+        MDLabel:
             text:'Last Three Events:'
-            font_size:15
-            size_hint:[0.5,0.5]
-        Label:
+            font_stlye:'Headline'
+            pos_hint: {'center_x':0.5}
+            halign:'center'
+        MDLabel:
             id:SequenceLabel
             # text:'No Sequence Loaded'
             font_size:15
+            halign:'center'
+            pos_hint: {'center_x':0.5}
             # size_hint:[1,0.5]
-
         BoxLayout:
             size_hint:[1,10]
             id:BigBox
@@ -472,8 +473,17 @@ BoxLayout:
                 id:LeftBox
                 orientation:'vertical'
                 # orientation:'lr-tb'
-                padding:[40,40,40,40]
+                padding:[20,0,20,20] # l, t, r, b
+                spacing:15
+                MDLabel:
+                    text:'Available Players'
+                    font_style:'Body2'
             BoxLayout:
                 id:RightBox
                 orientation:'vertical'
-                padding:[40,40,40,40]
+                padding:[20,0] #horiz , vert
+                spacing:10
+                MDLabel:
+                    text:'Available Actions'
+                    font_style:'Body2'
+                    size_hint_y:0.1

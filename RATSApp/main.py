@@ -14,6 +14,7 @@ import os, time
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
@@ -221,7 +222,7 @@ class SelectPlayersScreen(Screen):
                               background_normal='',
                               markup=True)
 
-            pb.bind(on_release=partial(self.swap_state, pb, player))
+            pb.bind(state=partial(self.swap_state, pb, player))
             self.ids.LeftBox.add_widget(pb)
 
         self.ids.defenceLabel.text = str(sApp.game.teams[1 - self.offence].team_name)
@@ -232,7 +233,7 @@ class SelectPlayersScreen(Screen):
                               background_normal='',
                               markup=True)
 
-            pb.bind(on_release=partial(self.swap_state, pb, player))
+            pb.bind(state=partial(self.swap_state, pb, player))
             self.ids.RightBox.add_widget(pb)
 
     def color_by_numbers(self,number):
@@ -283,8 +284,9 @@ class SelectPlayersScreen(Screen):
 
         # this is not nearly consistent enough
         # sometimes it the line lists are not in sync with the UI
-        # TODO: consider binding this function to the state of the button
-        # not just firing on_release
+        # 4/8, rebound this to the state property
+        # seems way better
+
         sApp = App.get_running_app()
         if pb.state == 'normal':
             if player in sApp.game.teams[1 - self.offence].team_players:
@@ -347,7 +349,7 @@ class PullingScreen(Screen):
     def on_pre_enter(self, *args):
 
         sApp = App.get_running_app()
-        sApp.root.ids.toolbar.title = 'Select Puller'
+        sApp.root.ids.toolbar.title = 'Who pulled, and how well?'
 
         self.puller = 'puller_not_set'
         # print("starting pulling, off: "+str(sApp.current_point.current_sequence().offence))
@@ -358,7 +360,8 @@ class PullingScreen(Screen):
             self.ids.LeftBox.add_widget(pb)
 
         for action in hierarch.Pull.all_pulls:
-            outcome = Button(text=action)
+            outcome = MDRaisedButton(text=action,
+                                     size_hint=(1,0.25))
             outcomecallback = partial(self.set_pull_outcome, outcome)
             outcome.bind(on_release=outcomecallback)
             self.ids.RightBox.add_widget(outcome)
@@ -390,11 +393,8 @@ class PullingScreen(Screen):
 class PlayBreakScreen(Screen):
 
     def on_pre_enter(self, *args):
-
         sApp = App.get_running_app()
-
         sApp.root.ids.toolbar.title = 'Break in Play'
-
 
         self.new_lines = []
         self.player_off_def = None
@@ -625,7 +625,7 @@ class SelectActionScreen(Screen):
         self.pblist = []
         sApp = App.get_running_app()
 
-        sApp.root.ids.toolbar.title = 'Select Action'
+        sApp.root.ids.toolbar.title = 'Select Player, then Action'
 
 
         # sequence_display = Label(text=str(seq_content),pos_hint={'top':1})
@@ -640,44 +640,67 @@ class SelectActionScreen(Screen):
             self.pblist.append(pb)
             self.ids.LeftBox.add_widget(pb)
 
-        fakePlayer = hierarch.Player(player_name=sApp.game.teams[sApp.current_point.current_sequence().offence].team_name,
-                                     player_number=-1,
-                                     player_gender='G')
-        pb = ToggleButton(text=fakePlayer.display_name, group=u'players')#, size_hint=[0.33,None])
-        pickcallback = partial(self.set_player,fakePlayer)
-        pb.bind(on_release=pickcallback)
-        self.pblist.append(pb)
-        self.ids.LeftBox.add_widget(pb)
+        #fakePlayer = hierarch.Player(player_name=sApp.game.teams[sApp.current_point.current_sequence().offence].team_name,
+        #                             player_number=-1,
+        #                            player_gender='G')
+        #pb = ToggleButton(text=fakePlayer.display_name, group=u'players')#, size_hint=[0.33,None])
+        #pickcallback = partial(self.set_player,fakePlayer)
+        #pb.bind(on_release=pickcallback)
+        #self.pblist.append(pb)
+        #self.ids.LeftBox.add_widget(pb)
+
+        action = 'pass'
+        select = MDRaisedButton(text=action)
+        selectcallback = partial(self.set_action, action)
+        select.bind(on_release=selectcallback)
+        self.ids.RightBox.add_widget(select)
+
+        rightGrid = GridLayout(cols=2,
+                               spacing=10,
+                               size_hint_y=0.9)
+
+        self.ids.RightBox.add_widget(rightGrid)
 
         for action in hierarch.Event.primary_actions:
-            select = Button(text=action)
+            select = MDRaisedButton(text=action)
             selectcallback = partial(self.set_action, action)
             select.bind(on_release=selectcallback)
-            self.ids.RightBox.add_widget(select)
+            #self.ids.RightBox.add_widget(select)
+            rightGrid.add_widget(select)
 
-        secondaryBox = BoxLayout(orientation='horizontal',
-                                 padding=[0,10])
+        #secondaryBox = BoxLayout(orientation='horizontal',
+        #                         padding=[0,10])
         for action in hierarch.Event.secondary_actions:
-            select = Button(text=action)
+            select = MDRaisedButton(text=action)
             selectcallback = partial(self.set_action, action)
             select.bind(on_release=selectcallback)
-            secondaryBox.add_widget(select)
-        self.ids.RightBox.add_widget(secondaryBox)
+            #secondaryBox.add_widget(select)
+        #self.ids.RightBox.add_widget(secondaryBox)
+            rightGrid.add_widget(select)
+
+        action = 'goal'
+        select = MDRaisedButton(text=action)
+        selectcallback = partial(self.set_action, action)
+        select.bind(on_release=selectcallback)
+        rightGrid.add_widget(select)
 
         for action in hierarch.Event.defensive_actions:
-            select = Button(text=action)
+            select = MDRaisedButton(text=action)
             selectcallback = partial(self.set_action, action)
             select.bind(on_release=selectcallback)
-            self.ids.RightBox.add_widget(select)
+            #self.ids.RightBox.add_widget(select)
+            rightGrid.add_widget(select)
 
-        playBreakButton = Button(text='Break in play')
+        playBreakButton = MDRaisedButton(text='Break in play')
         playBreakButton.bind(on_release=self.playbreak_switch)
-        self.ids.RightBox.add_widget(playBreakButton)
+        #self.ids.RightBox.add_widget(playBreakButton)
+        rightGrid.add_widget(playBreakButton)
 
-        undoButton = Button(text='Undo Event')
+        undoButton = MDRaisedButton(text='Undo Event')
         # undocallback = partial(self.undo_action)
         undoButton.bind(on_release=self.undo_action)
-        self.ids.RightBox.add_widget(undoButton)
+        #self.ids.RightBox.add_widget(undoButton)
+        rightGrid.add_widget(undoButton)
 
     def playbreak_switch(self,*args):
         sApp = App.get_running_app()
@@ -1004,7 +1027,6 @@ class StatsApp(App):
         self.current_point = None
         self.current_seq = None
         self.game = None
-        # game files aren't currently linked to tournament objects
 
         self.unordered_teams = [] # read in teams, check whos on offence next screen
 

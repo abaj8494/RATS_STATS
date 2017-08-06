@@ -396,11 +396,9 @@ class Event(TimeStamp):
 
     # these categories are for visual display purposes
     primary_actions = [
-        u'pass',
         u'down',
         u'drop',
         u'out-of-bounds',
-        u'goal',
     ]
 
     secondary_actions = [
