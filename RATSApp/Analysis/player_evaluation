@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# player_evaluation.py
+
+# Standard Library
+
+import game_hierarchy as gh
+
+"""
+counting statistics 
+disc > possession > point > game > tournament > season > career
+"""
+
+
+# player evaluations
+
+# on-off numbers for a game
+
+
+

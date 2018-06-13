@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 import game_hierarchy
 
 
-WORLDS_CHUNK = "http://scores.wugc2016.com/"
+WORLDS_CHUNK = "http://scores.wugc2016.com/?view=teams&season=WUGC16&list=allteams"
 
 
 def make_soup(hyperlink):
@@ -35,7 +35,11 @@ def find_divisions(soup):
 
     divisions = soup.find("div", class_="content").find_all("table")
 
-    return [
+    # for division in divisions:
+    #     print("\n")
+    #     print(division)
+
+    division_links = [
         # divisions
         [
             division.th.string,  # division name
@@ -53,6 +57,9 @@ def find_divisions(soup):
         for division in divisions if division.th.string != u"Guts"
     ]
 
+    # print(division_links)
+    return division_links
+
 
 def scrape_game():
 
@@ -63,13 +70,6 @@ def scrape_game():
 
     soup = make_soup("http://scores.wugc2016.com/?view=gameplay&game=223")
     # print(soup.prettify())
-
-    # game_headers = [
-    #                    header.get_text()
-    #                    for header
-    #                    in soup.find("table", border="1", cellpadding="2", width="100%").find_all("th")
-    #                ]
-    # # print(game_headers)
 
     # this is the main table I'm interested in
     game_scores = [
@@ -125,9 +125,9 @@ def scrape_game():
             print(row)
             game_progression.append(
                 [
-                row[5].string,
-                float(row[1].string),
-                float(row[2].string)
+                    row[5].string,
+                    float(row[1].string),
+                    float(row[2].string)
                 ]
             )  # home or guest
 
@@ -144,6 +144,16 @@ def scrape_game():
 def main():
 
     # TODO: this gets the game links for each team, leaving it to do the AUS-JAP women's game
+
+    # scrape_game()
+
+    soup = make_soup(WORLDS_CHUNK)
+
+    # print(soup)
+
+    divisions = find_divisions(soup)
+
+    print(divisions)
 
     scrape_game()
 

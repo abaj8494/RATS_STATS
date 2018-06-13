@@ -203,6 +203,7 @@ class TimeStamp(Root):
     def get_duration(self):
         return self.ts_end - self.ts_start
 
+
 class Game(Division, TimeStamp):
     """
     Data object for a Game of Ultimate.
@@ -244,6 +245,8 @@ class Game(Division, TimeStamp):
 
         # TODO: build this to track how many nerds are ruined
         # self.flips = kwargs.pop("flips")
+
+        # TODO: spirit scores
 
         super(Game, self).__init__(**kwargs)
 

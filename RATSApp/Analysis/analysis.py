@@ -11,8 +11,8 @@ import csv
 import pickle
 
 # third party
-#import numpy
-#import scipy.stats as ss
+# import numpy
+# import scipy.stats as ss
 
 # local project
 import game_hierarchy
@@ -26,7 +26,7 @@ def basic_info(game):
     # time_game_end is not stored unless you fully complete the game
     # and read_stats will crash bc it calls this (only load good games lol)
     info.append(game.score)
-    # [tournamnet, names, duration, score]
+    # [tournament, names, duration, score]
     return info
 
 
@@ -48,7 +48,7 @@ def offensive_turns(game):
     return oturns
 
 
-def playerstat_for_everyone(game,function):
+def playerstat_for_everyone(game, function):
     # this function lets you run the single player stat functions over all the players
 
     result = []
@@ -75,7 +75,7 @@ def event_count(game,player,event_to_find):
 def assists(game, player):
     ass_count = 0
     for point in game.points_list:
-        #for event in point.sequence:
+        # for event in point.sequence:
         for i in range (0,len(point.sequence)-1):
             if point.sequence[i][0] == player and point.sequence[i+1][1] == 'goal':
                 ass_count+=1
@@ -83,7 +83,7 @@ def assists(game, player):
 
 
 def touches(game,player):
-    #includes turnovers atm
+    # includes turnovers atm
     player_touches = 0
     for point in game.points_list:
         for event in point.sequence:
@@ -184,7 +184,6 @@ def write_csv_files(game):
             csv_file.close()
 
     return csv_file
-
 
 
 def open_raw_game(raw_game):
