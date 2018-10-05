@@ -1,14 +1,46 @@
-#:kivy 1.0
-#:import kivy kivy
+#:import Toolbar kivymd.toolbar.Toolbar
+#:import ThemeManager kivymd.theming.ThemeManager
+#:import MDCheckbox kivymd.selectioncontrols.MDCheckbox
+#:import MDTextField kivymd.textfields.MDTextField
 
-RatsScreenManager:
-# <> makes it a rule
-# this returns it as the root widget when we load with builder
+# drop this code in a widget to give it a big red background
+# perfect for debugging layout issues
+#canvas.before:
+#    Color:
+#        rgba: 1, 0, 0, 1  # red
+#    Rectangle:
+#        pos: self.pos
+#        size: self.size
+
+
+BoxLayout:
     orientation: 'vertical'
-    MenuScreen:
+    Toolbar:
+        id: toolbar
+        title: 'RATS App - Now Beautiful'
+        md_bg_color: app.theme_cls.primary_color
+        background_palette: 'Primary'
+        background_hue: '500'
 
+    RatsScreenManager:
+        id:rsm
+        orientation: 'vertical'
 
-<Separator@Widget>:
+        # Screen: <name>
+        MenuScreen: # 'menu'
+        ConfirmInputScreen: # 'confirm_input'
+        ChooseStatsScreen: # 'choose_stats'
+        ReadScreen: # 'read_stats'
+        ExportScreen: # 'config_menu'
+        PlayBreakScreen: # 'play_break_screen'
+        TeamSelectScreen: # 'team_select'
+        SelectOffenceScreen: # 'select_offence'
+        SelectPlayersScreen: # 'select_players'
+        PullingScreen: # 'pulling'
+        SelectActionScreen: # 'select_action'
+
+# <> makes it a rule
+<Separator@Widget>
     size_hint_y: None
     height: dp(6)
     color: 1, 1, 1, 1
@@ -22,68 +54,205 @@ RatsScreenManager:
             size: self.size
             source: root.background_image
 
-
 <MenuScreen>
     name:'menu'
     BoxLayout:
         orientation:'vertical'
         padding:[40,40,40,40]
         spacing:20
-        Label:
+        size_hint:(1,1)
+        MDLabel:
+            # i don't know why but i can't seem to resize this
+            # how is self.size being worked out
+            # it's too big for the menu imo
+
+            #canvas.before:
+            #    Color:
+            #        rgba: 1, 0, 0, 1  # red
+            #    Rectangle:
+            #        pos: self.pos
+            #        size: self.size
+            font_style:'Title'
+            theme_text_color:'Primary'
             text:'Construct Your Life'
-            font_size:40
-
-        Button:
+            halign:'center'
+            size_hint:(1,0.25)
+        MDRaisedButton:
             text:'Take New Stats'
-            font_size:20
+            pos_hint: {'center_x':0.5}#,'center_y':0.6}
+            #size_hint_x: 0.5 # this causes Critical Clock max_iteration warning
+            size_hint:(0.35,0.18)
             on_release:root.goto_confirm_input()
-
-        Button:
+        MDRaisedButton:
             text:'Continue Old Stats'
-            font_size:20
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.35,0.18)
             on_release:root.goto_continue_stats()
 
-        Button:
+        MDRaisedButton:
             text:'Check Readout'
-            font_size:20
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.35,0.18)
             #on_release:root.goto_read_stats()
 
-        Button:
+        MDRaisedButton:
             text:'Exit'
-            font_size:20
+            pos_hint:{'center_x':0.5}
+            size_hint:(0.35,0.18)
             on_release:app.get_running_app().stop()
 
 <ConfirmInputScreen>
-    name: 'confirm_input'
+    name:'confirm_input'
     BoxLayout:
+        id:BiggerBox
         orientation:'vertical'
-        padding:[40,40,40,40]
-        spacing:20
-        id:MainLayout
-
-        Label:
-            text:'Ready to take ratstats for:'
-            font_size: 30
-        Label:
-            id:content_disp
-            size_hint_y: None
-            text_size: self.width, None
         BoxLayout:
             orientation:'horizontal'
             padding:[40,40,40,40]
             spacing:20
+            id:MainLayout
+            size_hint_y:0.8 # good but needs to align to top
+            BoxLayout:
+                orientation:'vertical'
+                id:LabelColumn
+                size_hint_x:0.3
+                #spacing:10
+                MDLabel:
+                    text:''
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Tournament'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Point Cap'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Time Cap'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Timeouts'
+                    text_style:'Caption'
+                    size_hint_y:0.2
+                MDLabel:
+                    text:'Year'
+                    text_style:'Caption'
+                    size_hint_y:0.2
 
-            Button:
+            BoxLayout:
+                orientation:'vertical'
+                id:DefaultColumn
+                size_hint_x:0.3
+                spacing:10
+                BoxLayout:
+                    orientation:'horizontal'
+                    size_hint_y:0.2
+                    MDLabel:
+                        text:'Default'
+                        text_style:'Caption'
+                    MDCheckbox
+                        id:defaultcheck
+                        active:True
+                        group:'config'
+                MDLabel:
+                    #tournament
+                    id:td_tournament
+                    text_style:'Body1'
+                    halign:'left'
+                    size_hint_y:0.2
+
+                MDLabel:
+                    #point cap
+                    id:td_point_cap
+                    size_hint_y:0.2
+                    text_style:'Caption'
+
+                MDLabel:
+                    #time cap
+                    id:td_time_cap
+                    size_hint_y:0.2
+                    text_style:'Caption'
+                MDLabel:
+                    #timeouts
+                    id:td_timeouts
+                    size_hint_y:0.2
+                    text_style:'Caption'
+                MDLabel:
+                    #year
+                    id:td_year
+                    size_hint_y:0.2
+                    text_style:'Caption'
+
+            BoxLayout:
+                #TODO: disabling the text inputs does not clear the text
+                orientation:'vertical'
+                id:CustomColumn
+                size_hint_x:0.3
+                spacing:10
+                BoxLayout:
+                    orientation:'horizontal'
+                    size_hint_y:0.2
+                    MDLabel:
+                        text:'Custom'
+                        text_style:'Caption'
+                    MDCheckbox
+                        id:customcheck
+                        active:False
+                        group:'config'
+                MDTextField:
+                    #tournament
+                    id:custom_tournament
+                    size_hint_y:0.2
+                    helper_text:'Tournament'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #point cap
+                    id:custom_point_cap
+                    size_hint_y:0.2
+                    helper_text:'Point Cap'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #time cap
+                    id:custom_time_cap
+                    size_hint_y:0.2
+                    helper_text:'Time Cap'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #timeouts
+                    id:custom_timeouts
+                    size_hint_y:0.2
+                    helper_text:'Timeouts'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+                MDTextField:
+                    #year
+                    id:custom_year
+                    size_hint_y:0.2
+                    helper_text:'Year'
+                    helper_text_mode:'persistent'
+                    disabled:defaultcheck.active
+
+        BoxLayout:
+            orientation:'horizontal'
+            padding:[40,40,40,40]
+            spacing:20
+            id:buttonbox
+            size_hint_y:0.2
+            MDRaisedButton:
                 text:'Continue'
-                font_size: 30
                 on_release:root.conf_input()
-            Button:
+            MDRaisedButton:
                 text:'Back'
-                font_size: 30
                 on_release:root.go_back()
 
 <ChooseStatsScreen>
-    name:'choosestats'
+    name:'choose_stats'
     BoxLayout:
         orientation:'vertical'
         padding:[40,40,40,40]
@@ -99,7 +268,6 @@ RatsScreenManager:
         spacing:5
         id:BigBox
         orientation:'vertical'
-
 
 <ExportScreen>
     name:'config_menu'
@@ -127,8 +295,38 @@ RatsScreenManager:
         padding:[40,40,40,40]
         spacing:20
         id:BigBox
-        orientation:'vertical'
+        orientation:'horizontal'
+        #TODO: work out how to change filechooser theme
+        # this black background is bc default font is white
+        # kivyMD doesn't seem to have a filechooser widget
 
+        canvas.before:
+            Color:
+                rgb: 0, 0, 0
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        FileChooserListView:
+            id:filechA
+            path:root.teamlistpath
+            size_hint_x:0.5
+
+        FileChooserListView:
+            id:filechB
+            path:root.teamlistpath
+            size_hint_x:0.5
+
+    BoxLayout:
+        orientation:'horizontal'
+        padding:[40,40,40,40]
+        spacing:20
+        MDRaisedButton:
+            text:'Confirm Teams'
+            on_release:root.conf_selec()
+        MDRaisedButton:
+            text:'Back'
+            on_release:root.go_back()
 
 <SelectOffenceScreen>
     name:'select_offence'
@@ -136,10 +334,35 @@ RatsScreenManager:
         orientation:'vertical'
         padding:[40,40,40,40]
         spacing:20
+        size_hint:(1,1)
         id:SOBox
-        Label:
+
+        MDLabel:
+            id:whichlabel
+            size_hint:1,0.2
             text:'Which team is on offence:'
-            font_size: 30
+            halign:'center'
+            font_style: 'Title'
+            #canvas.before:
+            #    Color:
+            #        rgba: 1, 0, 0, 1  # red
+            #    Rectangle:
+            #        pos: self.pos
+            #        size: self.size
+
+        MDRaisedButton:
+            id:topbutton
+            size_hint:(0.8,0.2)
+            pos_hint:{'center_x':0.5}
+            text:'undef_Top'
+            on_release:root.store_offence(self.text)
+
+        MDRaisedButton:
+            id:bottombutton
+            size_hint:(0.8,0.2)
+            pos_hint:{'center_x':0.5}
+            text:'undef_Bottom'
+            on_release:root.store_offence(self.text)
 
 <SelectPlayersScreen>
     name:'select_players'
@@ -147,20 +370,30 @@ RatsScreenManager:
         id:BiggerBox
         orientation:'vertical'
         spacing:0
-        Label:
-            text:'Who is on the line:'
-            font_size:20
-            size_hint:[1,1]
-        #this isn't centred like i'd imagine
-        #whatever
-        Label:
-            id:subtitle
-            # this should display the number of selected players
-            font_size:15
-            size_hint:[0.5,0.5]
-        Button:
-            text:'confirm lines'
-            on_release:root.store_players()
+        padding:[20,20,20,20]
+        BoxLayout:
+            id:titlebox
+            orientation:'horizontal'
+            spacing:10
+            # add the take timeout buttons in here
+            MDLabel:
+                id:subtitle
+                text:'Offence: 0 | Defence: 0'
+                font_style:'Subhead'
+                size_hint:(0.25,1)
+            MDRaisedButton:
+                id:offenceTObutton
+                size_hint:(0.2,1)
+                on_release:root.start_point_timeout(root.offence)
+
+            MDRaisedButton:
+                id:defenceTObutton
+                size_hint:(0.2,1)
+                on_release:root.start_point_timeout(1-root.offence)
+            MDRaisedButton:
+                text:'confirm lines'
+                size_hint:(0.2,1)
+                on_release:root.store_players()
         BoxLayout:
             size_hint:[1,10]
             id:BigBox
@@ -168,11 +401,17 @@ RatsScreenManager:
             BoxLayout:
                 id:LeftBox
                 orientation:'vertical'
-                padding:[40,40,40,40]
+                padding:[20,20,20,20]
+                MDLabel:
+                    id:offenceLabel
+                    text:'Offence'
             BoxLayout:
                 id:RightBox
                 orientation:'vertical'
-                padding:[40,40,40,40]
+                padding:[20,20,20,20]
+                MDLabel:
+                    id:defenceLabel
+                    text:'Defence'
 
 <PullingScreen>
     name:'pulling'
@@ -180,17 +419,6 @@ RatsScreenManager:
         id:BiggerBox
         orientation:'vertical'
         spacing:0
-        Label:
-            text:'What was the pull:'
-            font_size:20
-            size_hint:[1,1]
-        #this isn't centred like i'd imagine
-        #whatever
-        Label:
-            text:'Available players left, Available actions right'
-            font_size:15
-            size_hint:[0.5,0.5]
-
         BoxLayout:
             size_hint:[1,10]
             id:BigBox
@@ -199,10 +427,19 @@ RatsScreenManager:
                 id:LeftBox
                 orientation:'vertical'
                 padding:[40,40,40,40]
+                spacing:13
+                MDLabel:
+                    text:'Available Players'
+                    size_hint_y:0.25
+
             BoxLayout:
                 id:RightBox
                 orientation:'vertical'
                 padding:[40,40,40,40]
+                spacing:13
+                MDLabel:
+                    text:'Available Outcomes'
+                    size_hint_y:0.25
 
 <SelectActionScreen>
     name:'select_action'
@@ -210,20 +447,23 @@ RatsScreenManager:
         id:BiggerBox
         orientation:'vertical'
         spacing:0
-        Label:
-            text:'Select Player, then Action. Event will be stored when you select Action'
-            font_size:20
-            size_hint:[1,1]
-        Label:
+        MDLabel:
+            text:'Event will be saved when you select action'
+            font_style:'Title'
+            pos_hint: {'center_x':0.5}
+            halign:'center'
+        MDLabel:
             text:'Last Three Events:'
-            font_size:15
-            size_hint:[0.5,0.5]
-        Label:
+            font_stlye:'Headline'
+            pos_hint: {'center_x':0.5}
+            halign:'center'
+        MDLabel:
             id:SequenceLabel
             # text:'No Sequence Loaded'
             font_size:15
+            halign:'center'
+            pos_hint: {'center_x':0.5}
             # size_hint:[1,0.5]
-
         BoxLayout:
             size_hint:[1,10]
             id:BigBox
@@ -233,8 +473,17 @@ RatsScreenManager:
                 id:LeftBox
                 orientation:'vertical'
                 # orientation:'lr-tb'
-                padding:[40,40,40,40]
+                padding:[20,0,20,20] # l, t, r, b
+                spacing:15
+                MDLabel:
+                    text:'Available Players'
+                    font_style:'Body2'
             BoxLayout:
                 id:RightBox
                 orientation:'vertical'
-                padding:[40,40,40,40]
+                padding:[20,0] #horiz , vert
+                spacing:10
+                MDLabel:
+                    text:'Available Actions'
+                    font_style:'Body2'
+                    size_hint_y:0.1

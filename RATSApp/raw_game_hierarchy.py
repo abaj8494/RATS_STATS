@@ -166,7 +166,7 @@ class Game(Root):
         self.points = []
         self.timeout_status = [0,0]
 
-        # self.stage = kwargs.pop("stage")  # choose from stages
+          # self.stage = kwargs.pop("stage")  # choose from stages
         # self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
         # self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
 
@@ -182,7 +182,7 @@ class Game(Root):
          gets a useable filename from the tournament, year,  and team names.
         """
 
-        string = "{}{}_{}_{}".format(
+        string = "{}_{}_{}_{}".format(
             self.tournament,
             self.year,
             self.teams[0].team_name,  # offence
@@ -264,8 +264,17 @@ class Sequence(Root):
         self.lines = kwargs.pop('lines')  # two item list, each item a list of 7 players
 
         self.events = []
+        #self.possessions = []
 
         super(Sequence,self).__init__(**kwargs)
+
+    # def instantiate_possession
+    #   self.posessionss etc
+    #
+    #   does a possession store any data over than the list of events?
+    #
+
+
 
 
 # class TeamPossession(Root, ):
@@ -387,11 +396,9 @@ class Event(TimeStamp):
 
     # these categories are for visual display purposes
     primary_actions = [
-        u'pass',
         u'down',
         u'drop',
         u'out-of-bounds',
-        u'goal',
     ]
 
     secondary_actions = [
