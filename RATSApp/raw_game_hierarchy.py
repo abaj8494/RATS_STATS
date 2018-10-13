@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # raw_game_hierarchy.py
 # made from game_hierarchy.py @ 28/4/17 - thank you andy
 
@@ -5,7 +8,7 @@
 # it will hold all the data taken from the game in the simplest structure
 # such that it can be read into game_analysis.py to give useful numbers
 
-# Timestamp and Root are never going to be instantiated on their own, only for superclassing
+# Timestamp and Root are never going to be instantiated on their own, only for super classing
 # Team, Player, Point, Event objects will be instantiated multiple times
 # Game will only be created once per game taken
 
@@ -74,7 +77,6 @@ class TimeStamp(Root):
             self.ts_end = kwargs.pop("ts_end")
 
             if self.ts_end and self.ts_start:  # default value is None
-                # this is janky af - fix it when we have time
                 # print('WARNING - None passed to TimeStamp')
                 # TODO: fix the program so this doesn't get here
 
@@ -98,8 +100,9 @@ class Team(Root):
         self.team_name = kwargs.pop("team_name")
         self.team_players = kwargs.pop("team_players")
 
-        # TODO: Andy - added coaches as an empty property for analysis but it should just be in the .cfg file.
+        # TODO Andy - added coaches as an empty property for analysis but it should just be in the .cfg file.
         # Rob - optional means the analysis won't fail - but also neither will the import
+
         if "team_coaches" in kwargs:
             self.team_coaches = kwargs.pop("team_coaches")
         else:
@@ -140,7 +143,6 @@ class Player(Root):
     __repr__ = __str__
 
 
-
 class Game(Root):
     """
     Data object for a Game of Ultimate.
@@ -164,9 +166,9 @@ class Game(Root):
 
         # same index / offence system - to track through stat taking
         self.points = []
-        self.timeout_status = [0,0]
+        self.timeout_status = [0, 0]
 
-          # self.stage = kwargs.pop("stage")  # choose from stages
+        # self.stage = kwargs.pop("stage")  # choose from stages
         # self.wind = kwargs.pop("wind")  # relative to first possession, choose from winds
         # self.temperature = kwargs.pop("temperature")  # choose an integer value in degrees Celsius
 
@@ -175,11 +177,10 @@ class Game(Root):
 
         super(Game, self).__init__(**kwargs)
 
-
     def get_filename(self, special=None):
         """
         string operation
-         gets a useable filename from the tournament, year,  and team names.
+         gets a usable filename from the tournament, year,  and team names.
         """
 
         string = "{}_{}_{}_{}".format(
@@ -222,6 +223,7 @@ class Point(Root):
         # starting offence is always 0 - this number will track it during stat taking
         # need to be able to tell it who's on offence to carry results from previous points
         # sequences will have offence to track in there
+
         if "starting_offence" in kwargs:
             self.starting_offence = kwargs.pop("starting_offence")
         else:
@@ -229,10 +231,12 @@ class Point(Root):
 
         # starting offence is score[0]
         # you can pass the score in when starting the next point if you want
+
         if "score" in kwargs:
             self.score = kwargs.pop("score")
         else:
-            self.score = [0,0]
+            self.score = [0, 0]
+
         # TODO: ANDY - for the 2nd Test, this is overwritten by the final score
 
         super(Point, self).__init__(**kwargs)
@@ -257,6 +261,7 @@ class Sequence(Root):
     Sequence is a level below Point, and includes all actions with the same group of players.
     It changes after a Goal or Injury call.
     """
+
     def __init__(self, **kwargs):
 
         # list of events - ends on timeout, injury or goal (goal ends the point also)
@@ -264,17 +269,15 @@ class Sequence(Root):
         self.lines = kwargs.pop('lines')  # two item list, each item a list of 7 players
 
         self.events = []
-        #self.possessions = []
+        # self.possessions = []
 
-        super(Sequence,self).__init__(**kwargs)
+        super(Sequence, self).__init__(**kwargs)
 
     # def instantiate_possession
-    #   self.posessionss etc
+    #   self.possessions etc
     #
     #   does a possession store any data over than the list of events?
     #
-
-
 
 
 # class TeamPossession(Root, ):
@@ -297,7 +300,7 @@ class Pull(Root):
         u"caught",
         u"landed",
         # out-of-bounds
-        u"brick",  #  stop the clap
+        u"brick",  # stop the clap
         # in # separated for display purposes
         u"sideline",
         u"touched",
@@ -337,7 +340,7 @@ class Pull(Root):
         super(Pull, self).__init__(**kwargs)
 
     def __str__(self):
-        return self.puller +' : ' + self.pull_reception
+        return self.puller + ' : ' + self.pull_reception
 
 
 class Event(TimeStamp):

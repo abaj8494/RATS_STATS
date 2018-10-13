@@ -55,8 +55,9 @@ class Team(Root):  # TODO: inherit from Group
         self.team = kwargs.pop("team")
 
         # TODO: expand people to have a role attribute. For now it should just be a list of players.
-        self.people = kwargs.pop("people")
-
+        self.players = kwargs.pop("players")
+        self.staff = kwargs.pop("staff")
+        # self.people = kwargs.pop("people")
         # self.division = kwargs.pop("division")
 
         # TODO: build a regex to extract gender and age from division
@@ -108,7 +109,7 @@ class Player(Root):
         self.player = kwargs.pop("player")
         self.number = kwargs.pop("number")
         self.gender = kwargs.pop("gender")
-        # the length of this block is joy.
+        self.roles = kwargs.pop("roles")
 
         # TODO: analysis attributes go here
 
@@ -116,6 +117,26 @@ class Player(Root):
 
     def __str__(self):
         return self.player
+
+
+class Staff(Root):
+    """A staff is part of the team in a support capacity."""
+
+    def __init__(self, **kwargs):
+        """Takes staff, gender, role as mandatory arguments."""
+
+        print("Staff.__init__() called.")
+
+        self.staff = kwargs.pop("staff")
+
+        self.gender = kwargs.pop("gender")
+        self.roles = kwargs.pop("roles")
+
+        super(Staff, self).__init__(**kwargs)
+
+    # TODO: print statement
+    def __str__(self):
+        return self.staff
 
 
 class Tournament(Root):

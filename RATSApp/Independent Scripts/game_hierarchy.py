@@ -39,6 +39,10 @@ class Group(Root):
         :param kwargs: 
         """
 
+        self.group = kwargs.pop("group")
+
+        super(Group, self).__init__(**kwargs)
+
 
 class Team(Root):  # TODO: inherit from Group
     """A team is a made up of players and coaches."""

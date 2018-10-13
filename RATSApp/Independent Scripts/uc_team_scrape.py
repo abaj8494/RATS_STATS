@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup
 # TODO: Division names are saved as user inputs because there is no Goddess. Need to build a regex to handle that.
 # TODO: entry form is now number|gender|name
 
+
 def get_divisions(soup):
     """Returns a list of all tournament divisions."""
 
@@ -86,7 +87,7 @@ def write_team_text_file(tournament_abbreviation, team_entry):
 
 
 def main():
-    """Takes an tournament link and returns a list of teams and their players in each division."""
+    """Takes a tournament link and returns a list of teams and their players in each division."""
 
     tournament_url = unicode(raw_input("Enter Tournament hyperlink: "))
     tournament_abbreviation = tournament_url.split("/")[-1]

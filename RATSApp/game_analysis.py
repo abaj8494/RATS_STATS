@@ -107,7 +107,7 @@ class AnalysedTeam(Root):
         self.team_defensive_efficiency = 0.00  # goals scored per defensive possession
 
         """
-        Retention: Passes Completed Per Pass Attemped
+        Retention: Passes Completed Per Pass Attempted
         """
 
         # Touches
@@ -230,6 +230,7 @@ class AnalysedPlayer(Root):
 
         super(AnalysedPlayer, self).__init__(**kwargs)
 
+
 def edit_game(game):
     # test match 2
     # aus v jpn
@@ -267,6 +268,7 @@ def edit_game(game):
                                                  ts_start=0))
 
     return fixed_game
+
 
 def run_gender_analysis(player,game):
 
@@ -316,6 +318,7 @@ def run_gender_analysis(player,game):
             player_statistics.player_points+=1
 
     return player_statistics
+
 
 def run_player_analysis(player, game):
 
@@ -384,7 +387,6 @@ def run_player_analysis(player, game):
 
             else:
                 player_statistics.completion_rate = 1.00
-
 
         if playing_this_point_flag:
             player_statistics.player_points+=1
@@ -495,7 +497,7 @@ def main():
         data = []
         for player in team.team_players:
             this_player = run_player_analysis(player, analysed_game)
-            #this_player = run_gender_analysis(player, analysed_game)
+            # this_player = run_gender_analysis(player, analysed_game)
 
             # TODO: work out a better way of coding new analysis and swapping between them
 
@@ -506,19 +508,18 @@ def main():
                          this_player.player_turnovers])
 
             # gender analysis
-            #data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
+            # data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
             #            this_player.player_points, this_player.player_touches,
             #             this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
             #             this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
             #             this_player.goals_to_same_gender, this_player.goals_to_opposite_gender])
-
 
         # 20/1/17 - this is here only for compatability with the Test Match data - fake player is now built-in
         fakePlayer = rgh.Player(player_gender='T',
                            player_number=-1,
                            player_name=team.team_name)
         this_player = run_player_analysis(fakePlayer,analysed_game)
-        #this_player = run_gender_analysis(fakePlayer,analysed_game)
+        # this_player = run_gender_analysis(fakePlayer,analysed_game)
 
         # standard analysis
         data.append([str(this_player.player_name),this_player.player_number, this_player.player_gender,
@@ -527,7 +528,7 @@ def main():
                     this_player.player_turnovers])
 
         # gender analysis
-        #data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
+        # data.append([str(this_player.player_name), this_player.player_number, this_player.player_gender,
         #             this_player.player_points, this_player.player_touches,
         #             this_player.throws_to_same_gender, this_player.throws_to_opposite_gender,
         #             this_player.turnovers_to_same_gender, this_player.turnovers_to_opposite_gender,
@@ -535,6 +536,7 @@ def main():
 
 
         int_ops.update_players_sheet(team.team_name, data, spreadsheet_id)
+
 
 if __name__ == '__main__':
     sys.exit(main())

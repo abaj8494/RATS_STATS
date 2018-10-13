@@ -1,0 +1,2 @@
+team:Ger U24 Men'S
+players:Tim Buchholz, Johannes Schall, Arcady Maier, Andreas Wohlleber, Stefanie Buchholz, Jan Schmidt, Gerrit Schlosza, Lars Schmidt, Mo Brucklacher, Maximilian Olbert, Torben Hörnschemeyer, Anton Scheytt, Conrad Schlör, David Metzger, Jan Schollän, Martin Wohlleber, Moritz Schoch, Jonathan Schall, Eike Cramer, Damaris Nagel, Marko  Krause, Fabian Binder, Malte Spanuth, Stefan Kuhn, David Schall, Jörg Reinert, Marcel Hartmann
