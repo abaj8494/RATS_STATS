@@ -25,9 +25,10 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 
 # kivyMD
+from kivymd.app import MDApp
 from kivymd.theming import ThemeManager
-from kivymd.textfields import MDTextField
-from kivymd.button import MDRaisedButton, MDFlatButton
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.button import MDRaisedButton, MDFlatButton
 
 # stats
 import raw_game_hierarchy as hierarch
@@ -1018,8 +1019,7 @@ class RatsScreenManager(ScreenManager):
         pass
 
 
-class StatsApp(App):
-    theme_cls = ThemeManager()
+class StatsApp(MDApp):
     def __init__(self):
         super(StatsApp, self).__init__()
 

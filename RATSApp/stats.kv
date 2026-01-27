@@ -1,7 +1,7 @@
-#:import Toolbar kivymd.toolbar.Toolbar
+#:import MDTopAppBar kivymd.uix.toolbar.MDTopAppBar
 #:import ThemeManager kivymd.theming.ThemeManager
-#:import MDCheckbox kivymd.selectioncontrols.MDCheckbox
-#:import MDTextField kivymd.textfields.MDTextField
+#:import MDCheckbox kivymd.uix.selectioncontrol.MDCheckbox
+#:import MDTextField kivymd.uix.textfield.MDTextField
 
 # drop this code in a widget to give it a big red background
 # perfect for debugging layout issues
@@ -15,12 +15,10 @@
 
 BoxLayout:
     orientation: 'vertical'
-    Toolbar:
+    MDTopAppBar:
         id: toolbar
         title: 'RATS App - Now Beautiful'
         md_bg_color: app.theme_cls.primary_color
-        background_palette: 'Primary'
-        background_hue: '500'
 
     RatsScreenManager:
         id:rsm
@@ -72,7 +70,7 @@ BoxLayout:
             #    Rectangle:
             #        pos: self.pos
             #        size: self.size
-            font_style:'Title'
+            font_style:'H6'
             theme_text_color:'Primary'
             text:'Construct Your Life'
             halign:'center'
@@ -342,7 +340,7 @@ BoxLayout:
             size_hint:1,0.2
             text:'Which team is on offence:'
             halign:'center'
-            font_style: 'Title'
+            font_style: 'H6'
             #canvas.before:
             #    Color:
             #        rgba: 1, 0, 0, 1  # red
@@ -379,7 +377,7 @@ BoxLayout:
             MDLabel:
                 id:subtitle
                 text:'Offence: 0 | Defence: 0'
-                font_style:'Subhead'
+                font_style:'Subtitle1'
                 size_hint:(0.25,1)
             MDRaisedButton:
                 id:offenceTObutton
@@ -449,7 +447,7 @@ BoxLayout:
         spacing:0
         MDLabel:
             text:'Event will be saved when you select action'
-            font_style:'Title'
+            font_style:'H6'
             pos_hint: {'center_x':0.5}
             halign:'center'
         MDLabel:
