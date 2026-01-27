@@ -1,6 +1,7 @@
 # Mac Display
 *.DS_Store
 
+
 # PyCharm
 .idea
 **/.idea/workspace.xml
@@ -101,3 +102,5 @@ ENV/
 # Buildozer
 .buildozer/
 bin/
+
+RATSAPP/build_apk.sh
