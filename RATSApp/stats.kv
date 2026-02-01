@@ -257,7 +257,14 @@ BoxLayout:
         spacing:20
         id:BigBox
 
-        #Label:
+    BoxLayout:
+        orientation:'horizontal'
+        padding:[40,40,40,40]
+        spacing:20
+        size_hint_y:0.15
+        MDRaisedButton:
+            text:'Back'
+            on_release:root.go_back()
 
 <ReadScreen>
     name:'read_stats'
@@ -343,12 +350,6 @@ BoxLayout:
             text:'Which team is on offence:'
             halign:'center'
             font_style: 'H6'
-            #canvas.before:
-            #    Color:
-            #        rgba: 1, 0, 0, 1  # red
-            #    Rectangle:
-            #        pos: self.pos
-            #        size: self.size
 
         MDRaisedButton:
             id:topbutton
@@ -363,6 +364,12 @@ BoxLayout:
             pos_hint:{'center_x':0.5}
             text:'undef_Bottom'
             on_release:root.store_offence(self.text)
+
+        MDRaisedButton:
+            text:'Back'
+            size_hint:(0.3,0.1)
+            pos_hint:{'center_x':0.5}
+            on_release:root.go_back()
 
 <SelectPlayersScreen>
     name:'select_players'
@@ -440,6 +447,13 @@ BoxLayout:
                 MDLabel:
                     text:'Available Outcomes'
                     size_hint_y:0.25
+        BoxLayout:
+            orientation:'horizontal'
+            padding:[40,10,40,10]
+            size_hint_y:0.1
+            MDRaisedButton:
+                text:'Back'
+                on_release:root.go_back()
 
 <SelectActionScreen>
     name:'select_action'
