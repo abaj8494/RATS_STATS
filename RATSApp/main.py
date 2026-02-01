@@ -109,8 +109,9 @@ class TeamSelectScreen(Screen):
 
     def __init__(self,**kwargs):
         super(TeamSelectScreen,self).__init__(**kwargs)
-        sApp = App.get_running_app()
-        self.teamlistpath = os.path.join(sApp.user_data_dir, 'teamlists'.strip())
+        # Use the app directory for teamlists, not user_data_dir
+        app_dir = os.path.dirname(os.path.abspath(__file__))
+        self.teamlistpath = os.path.join(app_dir, 'teamlists')
 
     def on_pre_enter(self, *args):
         sApp = App.get_running_app()
