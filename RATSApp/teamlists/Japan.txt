@@ -1,0 +1,3 @@
+name: Japan
+staff: Coach X,Manager Y
+players: 1|M|Yamada Taro,2|F|Tanaka Yuki,3|M|Suzuki Ken,4|F|Sato Mika,5|M|Ito Hiroshi,6|F|Watanabe Aiko,7|M|Takahashi Ryo,8|F|Nakamura Yui,9|M|Kobayashi Kenji,10|F|Kato Sakura,11|M|Yoshida Takeshi,12|F|Yamamoto Emi,13|M|Sasaki Daiki,14|F|Matsumoto Hana

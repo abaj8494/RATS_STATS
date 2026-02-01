@@ -1,0 +1,3 @@
+name: Australia
+staff: Coach A,Manager B
+players: 1|M|Player One,2|F|Player Two,3|M|Player Three,4|F|Player Four,5|M|Player Five,6|F|Player Six,7|M|Player Seven,8|F|Player Eight,9|M|Player Nine,10|F|Player Ten,11|M|Player Eleven,12|F|Player Twelve,13|M|Player Thirteen,14|F|Player Fourteen
