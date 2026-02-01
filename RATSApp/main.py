@@ -188,8 +188,21 @@ class SelectOffenceScreen(Screen):
         sApp.root.ids.rsm.current = 'select_players'
         return True
 
+    def go_back(self, *args):
+        sApp = App.get_running_app()
+        sApp.unordered_teams = []
+        sApp.root.ids.rsm.current = 'team_select'
+        return True
+
 
 class SelectPlayersScreen(Screen):
+    def on_leave(self, *args):
+        # Clear dynamic widgets to avoid duplicates on re-entry
+        self.ids.LeftBox.clear_widgets()
+        self.ids.RightBox.clear_widgets()
+        self.ids.LeftBox.add_widget(Label(text='Offence'))
+        self.ids.RightBox.add_widget(Label(text='Defence'))
+
     def on_pre_enter(self, *args):
 
         sApp = App.get_running_app()
@@ -348,6 +361,13 @@ class SelectPlayersScreen(Screen):
 
 
 class PullingScreen(Screen):
+    def on_leave(self, *args):
+        # Clear dynamic widgets to avoid duplicates on re-entry
+        self.ids.LeftBox.clear_widgets()
+        self.ids.RightBox.clear_widgets()
+        self.ids.LeftBox.add_widget(Label(text='Available Players'))
+        self.ids.RightBox.add_widget(Label(text='Available Outcomes'))
+
     def on_pre_enter(self, *args):
 
         sApp = App.get_running_app()
@@ -391,8 +411,17 @@ class PullingScreen(Screen):
 
         return True
 
+    def go_back(self, *args):
+        sApp = App.get_running_app()
+        sApp.current_point = None
+        sApp.root.ids.rsm.current = 'select_players'
+        return True
+
 
 class PlayBreakScreen(Screen):
+    def on_leave(self, *args):
+        # Clear dynamic widgets to avoid duplicates on re-entry
+        self.ids.BigBox.clear_widgets()
 
     def on_pre_enter(self, *args):
         sApp = App.get_running_app()
@@ -619,6 +648,12 @@ class PlayBreakScreen(Screen):
 
 
 class SelectActionScreen(Screen):
+    def on_leave(self, *args):
+        # Clear dynamic widgets to avoid duplicates on re-entry
+        self.ids.LeftBox.clear_widgets()
+        self.ids.RightBox.clear_widgets()
+        self.ids.LeftBox.add_widget(Label(text='Available Players'))
+        self.ids.RightBox.add_widget(Label(text='Available Actions'))
 
     def on_pre_enter(self, *args):
 
@@ -904,6 +939,9 @@ class SelectActionScreen(Screen):
 
 # this is where you can select a game file and continue on from the end
 class ChooseStatsScreen(Screen):
+    def on_leave(self, *args):
+        # Clear dynamic widgets to avoid duplicates on re-entry
+        self.ids.BigBox.clear_widgets()
 
     def on_pre_enter(self, *args):
         sApp = App.get_running_app()
@@ -939,9 +977,17 @@ class ChooseStatsScreen(Screen):
 
         sApp.root.ids.rsm.current = 'select_players'
 
+    def go_back(self, *args):
+        sApp = App.get_running_app()
+        sApp.root.ids.rsm.current = 'menu'
+        return True
+
 # strictly experimental - don't go here
 
 class ReadScreen(Screen):
+    def on_leave(self, *args):
+        # Clear dynamic widgets to avoid duplicates on re-entry
+        self.ids.BigBox.clear_widgets()
 
     def on_pre_enter(self):
         sApp = App.get_running_app()
@@ -971,6 +1017,10 @@ class ExportScreen(Screen):
         # here i want to come in and have you choose which game to export
         # then export the basic stats to a csv file
         # then upload that to our gdrive
+
+    def on_leave(self, *args):
+        # Clear dynamic widgets to avoid duplicates on re-entry
+        self.ids.BigBox.clear_widgets()
 
     def on_pre_enter(self, *args):
         sApp = App.get_running_app()
